@@ -1,12 +1,13 @@
 # compmethods-cg2288
 BIS 634
 # Problem 1
-    def temp_tester(normal_temp):
-    def actual_temp(temp):
-        if (abs(normal_temp - temp) < 1):
-            return True
-        return False
-    return actual_temp
+The following function takes in a given normal temperature and returns if another temperature is within 1 degree of the normal temperature. If it is, it returns True; if it is not, it returns False. 
+    *def temp_tester(normal_temp):
+        def actual_temp(temp):
+            if (abs(normal_temp - temp) < 1):
+                return True
+            return False
+        return actual_temp
   
   ##Do you mean of the true/false answer, my code, or the question?
 
