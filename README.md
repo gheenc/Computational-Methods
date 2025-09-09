@@ -1,7 +1,7 @@
 # compmethods-cg2288
 BIS 634
 # Problem 1
-def temp_tester(normal_temp):
+    def temp_tester(normal_temp):
     def actual_temp(temp):
         if (abs(normal_temp - temp) < 1):
             return True
