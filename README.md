@@ -72,6 +72,10 @@ I checked this worked by describing Florida and ensuring the peak number given m
       florida.describe()
 ##FINISH RETURN DATE. WITH EXAMPLES
 
+      def date_of_peak(state_df):
+          max_case_count = state_df['new case count'].idxmax()
+          max_case_row = state_df.loc[max_case_count]
+          return max_case_row['date']
 ##CREATE FUNCTION OEAKBETWEEN TWO STATES AND WHICH HAD PEAK FIRST WITH HOW MANY DAYS IN BETWEEN. WITH EXAMPLES
 
 ##ANALYZE FLORIDA
@@ -100,5 +104,29 @@ I again examined the statistics of the data set by using describe
       data.describe()
 Then we could see that, for weight, the mean was 39.51, standard deviation was 24.15, minimum was 0.00075 and the maxiumum was 99.99.
 
-I then plotted a histogram using ggplot with the bins=10 as I thought this provided a good overview  of the data in realtion to the scale (0-100). With a smaller bin width, you could loose some of the true distribution of the data because it becomes very minute but a larger bin width, some of the distribution gets lost. Ten is also a good number because it divides 100 evenly. With too many bins (like bins=100), the graph can become seem to focus in on individual data points rather than visualizing the data as groups. With too few bins (like bins = 3), you lose the trends you are able to visualize through creating a graph. I also set the color to be black so the individual bins could be seen better. 
-You can see the data is largest around 10-60 ages and is similarly distributed there as well. There are fewer data points in the final bin, the 90-100 group that may be considered outliers. 
+I then plotted a histogram using ggplot with the bins=10 and changed the color to be black, again, to help with visualtization. For weight, we see most of the data collected in the 60-70 bin (which is odd considering the average is in the 30s). There seems to be an outlier in teh 0-10 bin although this data is more conentrated in one area than the age data was.
+
+From the scatterplot, we can tell there is a relationship between age and weight in that, typically, weight has a small range until about 20 years of age. After 20, the data suggests that there is more varaibility in the weight. 
+There is an outlier at around 35 years of age and 20 weight. Their data does not follow the general relationship observed. 
+I confirmed my identification of this outlier by adding a linear regression line to the plot to understand better how intense the relationship level was between data. I also re analyzed the describe outlook to better understand the standard deviations of the data and confirmed that this data point would lie outside the standard deviation. It would be ideal to add the standard deviation as a visualization to the plot because then you can see if the data point lands in or out of the catchment of the standard deviation. 
+###INSERT THE GRAPHS!!!!!
+#SOURCES
+
+#Problem 4
+To compare the entries I asked for the legnth of M and F in the databases.
+
+      len(patient_data[patient_data['gender']=='M'])  
+      len(patient_data[patient_data['gender']=='F'])
+
+This returned 45 for males and 55 for females. I confirmed males have less than females by placing both on either side of the <
+
+      len(patient_data[patient_data['gender']=='M']) > len(patient_data[patient_data['gender']=='F']) 
+returned False 
+
+      len(patient_data[patient_data['gender']=='M']) < len(patient_data[patient_data['gender']=='F'])
+returned True
+
+##diagnosis -> subject id
+##function testing
+##age calculation
+##reflection
