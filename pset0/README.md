@@ -97,7 +97,7 @@ I checked this with 3 more states to ensure functionality.
 ```
 ![case counts of Tennessee, Rhode Island, and Georgia](images/states2_graphs.png)
 
-To determine when a state peaked, I created a variable named peak that returned the max new cases counted. 
+To determine when a state peaked, I created a fucntion named date_of_peak that returns the date of it's max new case count.  
 
 ```python
 def date_of_peak(df, state):
@@ -107,46 +107,56 @@ def date_of_peak(df, state):
     max_case_row = data3.loc[max_case_count,"date"]
     return max_case_row
 ```
-We can once again see an example with Florida
+I tested this function with Tennesse and Georgia because I could visualize when their peak was from the graph and therefore check the functions return
 
-      peak=florida['new case count'].max()
+```python
+date_of_peak(coviddata, "Georgia")
+date_of_peak(coviddata, "Tennessee")
+```
 
-I checked this worked by describing Florida and ensuring the peak number given matched the max in the cases column given in the describe output
+I then created a function to test what state had it's peak first and how many days between. 
 
-      florida.describe()
+```python
+def compare(df, state1, state2):
+    peak_date1 = date_of_peak(df, state1)
+    peak_date2 = date_of_peak(df, state2)
+    delta = abs((peak_date1 - peak_date2).days)
+    if peak_date1 > peak_date2:
+        earlier_date = peak_date2
+        earlier_state = state2
+        later_date = peak_date1
+        later_state = state1
+        return(f"{state2} had its peak first and the peak was {delta} days apart")
+    elif peak_date1 < peak_date2:
+        earlier_date = peak_date1
+        earlier_state = state1
+        later_date = peak_date2
+        later_state = state2
+        return(f"{state1} had its peak first and the peak was {delta} days apart")
+    elif peak_date1 == peak_date2:
+        return(f"{state2} and {state1} had its peak on the same day")
+```
+I tested this with Tennessee and Georgia, Florida and Wyoming, and Tennessee and Washington to test all three options of state1 peaking first, state2 peaking first and the states peaking at the same time.
 
-To better approach this problem and allow 
+```python
+compare(coviddata, "Tennessee", "Georgia")
 
-      def date_of_peak(state_df):
-          max_case_count = state_df['new case count'].idxmax()
-          max_case_row = state_df.loc[max_case_count]
-          return max_case_row['date']
+compare(coviddata, "Florida", "Wyoming")
 
-to test what state had it's peak first and how many days between I created this function
+compare(coviddata, "Tennessee", "Washington")
+```
+I then extrapolated Florida into its own data frame to analyze the data and plotted it.
 
-       def compare(df, state1, state2):
-          peak_date1 = date_of_peak(df, state1)
-          peak_date2 = date_of_peak(df, state2)
-          delta = abs((peak_date1 - peak_date2).days)
-          if peak_date1 > peak_date2:
-              earlier_date = peak_date2
-              earlier_state = state2
-              later_date = peak_date1
-              later_state = state1
-              return(f"{state2} had its peak first and the peak was                         {delta} days apart")
-          elif peak_date1 < peak_date2:
-                earlier_date = peak_date1
-                earlier_state = state1
-                later_date = peak_date2
-              later_state = state2
-              return(f"{state1} had its peak first and the peak was                         {delta} days apart")
-          elif peak_date1 == peak_date2:
-              return(f"{state2} and {state1} had its peak on the same day")
-##ANALYZE FLORIDA
+```python
+florida = coviddata[coviddata['state']=='Florida']
 
+florida.describe()
+
+ggplot(florida, p9.aes(x='date', y='new_case_count', color='state'))+ p9.geom_line()+ p9.labs(title = 'New COVID Cases by State')+ p9.theme(axis_text_x=p9.element_text(angle=45))
+```
 ![Florida case count graph](images/florida.png)
 
-##ADD SOURCES
+We can see in the middle of 2021, Flordia had a negative new case count of -40,527. Also, toward the end of 2022, rather than having reports everyday, there are sporatic bouts of reporting. It seems they have changed their reporting cadence and potentially changed reporting standards within the state.
 
 # Problem 3
 I imported the data from the SQLite Database [3]
