@@ -4,22 +4,29 @@ BIS 634
 # Problem 1
 The following function takes in a given normal temperature and returns if another temperature is within 1 degree of the normal temperature. If it is, it returns True; if it is not, it returns False. 
 
-      def temp_tester(normal_temp):
-        def actual_temp(temp):
-            if (abs(normal_temp - temp) < 1):
-                return True
-            return False
-        return actual_temp
+```python
+def temp_tester(normal_temp):
+    def actual_temp(temp):
+        if (abs(normal_temp - temp) < 1):
+            return True
+        return False
+    return actual_temp
+```
   
-  ##Do you mean of the true/false answer, my code, or the question?
+There can be some ambiguity in this in that the function does not tell you how far the imput temperature is from normal or in which direction. So, medically, you don't know if someone only has a slight fever or if they have an emergent fever. Similarly, you don't know if someone has a fever or if they are hypothermic - you just know that their temperate is outside the range of normal. 
 
-Testing the temp_tester function using human_tester = temp_tester(37) and    chicken_tester = temp_tester(41.1) returned the following results
+Testing the function returned the following results:
  
-      chicken_tester(42) = True
-      human_tester(42) = False
-      chicken_tester(43) = False
-      human_tester(35) = False
-      human_tester(98.6) = False
+ ```python
+ human_tester = temp_tester(37)
+chicken_tester = temp_tester(41.1)
+
+chicken_tester(42) = True
+human_tester(42) = False
+chicken_tester(43) = False
+human_tester(35) = False
+human_tester(98.6) = False
+```
       
 # Problem 2
 First, to create a function that takes in a list of state names and plots new COVID cases in a line graph, new case counts needed to be obtained. I did this by frist extrapolating the states of interest from the full data set. You can see an example of this being done with Florida as a state of interest. This then creates a variable that easily pulls a smaller databasee of that interest.
