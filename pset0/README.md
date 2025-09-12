@@ -63,8 +63,9 @@ The X axis is progresses through the dates and the y axis shows the number of ne
 
 To determine when a state peaked, I created a variable named peak that returned the max new cases counted. This relied on the previously created state dataframe. 
 
-      peak=state_df['new case count'].max()
-
+```python
+peak=state_df['new case count'].max()
+```
 We can once again see an example with Florida
 
       peak=florida['new case count'].max()
@@ -107,6 +108,7 @@ to test what state had it's peak first and how many days between I created this 
 ##ADD SOURCES
 
 # Problem 3
+
 
 ![weight graph](images/weight_counts.png)
 
