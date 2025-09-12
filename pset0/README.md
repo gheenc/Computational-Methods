@@ -108,40 +108,78 @@ to test what state had it's peak first and how many days between I created this 
 ##ADD SOURCES
 
 # Problem 3
+I imported the data from the SQLite Database [3]
+```python 
+import pandas as pd
+import sqlite3
+with sqlite3.connect("pset0-population.db") as db:
+data = pd.read_sql_query("SELECT * FROM population", db)
+```
 
+I also imported plotnnine for later use during graphing.
 
-![weight graph](images/weight_counts.png)
+```python
+import plotnine as p9
+from plotnine import geom_bar, ggplot, aes, geom_histogram, geom_smooth, theme_bw
+```
+Visualizing the data, we can see the column names are: name, age, weight, eyecolor and there are 152361 rows or individuals in the data set.
 
-We can see by importing the data the column headers of 'name', 'age', 'weight', and 'eyecolor.' 
+```python
+data
+len(data)
+```
+We can see the following statistics for the age group: Mean = 39.51, standard deviation = 24.15, minimum = .000748, maximum = 99.99.
 
-      data
-      #ADD PHOTO OF DATABASE?
+```python
+data.describe()
+print(data['age'].max())
+print(data['age'].min())
+print(data['age'].mean())
+print(data['age'].std())
+```
+The age distributions were graphed in a histogram.
 
-We can also confirm the number of items in the list to be 152361 by getting the length of the data base.
+```python
+h = ggplot(data, aes(x ='age'))+ geom_histogram(bins=10, color = 'black')
+``` 
 
-      len(data)
-I examined the statistics of the data set by using describe
+![graph of age distributions](images/age_counts.png)
+For the histogram of age, I chose to use bin size of 10. With a smaller bin width, you could loose some of the true distribution of the data because it becomes very minute but a larger bin width, some of the distribution gets lost. With too many bins (like bins=100), the graph can become seem to focus in on individual data points rather than visualizing the data as groups. With too few bins (like bins = 3), you lose the trends you are able to visualize through creating a graph. I also changed the color to black to be easier to visualize.
+There is a potential outlier in the 90-100 bucket. 
+The majority of data points are pretty uniformly distributed in the 10-60 age range. 
 
-      data.describe()
-Then we could see that, for age, the mean was 39.51, standard deviation was 24.15, minimum was 0.00075 and the maxiumum was 99.99.
+For the weight group we can see the following statistics: mean = 60.88, standard deviation = 18.41, minimum = 3.382, maximum = 100.44
 
-I then plotted a histogram using ggplot with the bins=10 as I thought this provided a good overview  of the data in realtion to the scale (0-100). With a smaller bin width, you could loose some of the true distribution of the data because it becomes very minute but a larger bin width, some of the distribution gets lost. Ten is also a good number because it divides 100 evenly. With too many bins (like bins=100), the graph can become seem to focus in on individual data points rather than visualizing the data as groups. With too few bins (like bins = 3), you lose the trends you are able to visualize through creating a graph. I also set the color to be black so the individual bins could be seen better. 
-You can see the data is largest around 10-60 ages and is similarly distributed there as well. There are fewer data points in the final bin, the 90-100 group that may be considered outliers. 
+```python
+print(data['weight'].max())
+print(data['weight'].min())
+print(data['weight'].mean())
+print(data['weight'].std())
+```
+```python
+g = ggplot(data, aes(x ='weight'))+ geom_histogram(bins=10, color = 'black')
+```
 
-I again examined the statistics of the data set by using describe
+![graph of weight distribution](images/weight_counts.png)
 
-      data.describe()
-Then we could see that, for weight, the mean was 39.51, standard deviation was 24.15, minimum was 0.00075 and the maxiumum was 99.99.
+I chose 10 bins again for the same reason stated in the age histogram. I also liked 10 because it evenly and logically slpit 100 into 10 even group.  
 
-I then plotted a histogram using ggplot with the bins=10 and changed the color to be black, again, to help with visualtization. For weight, we see most of the data collected in the 60-70 bin (which is odd considering the average is in the 30s). There seems to be an outlier in teh 0-10 bin although this data is more conentrated in one area than the age data was.
+```python
+f = p9.ggplot(data, p9.aes(x='age', y='weight'))+p9.geom_point()
+```
+![scatterplot of age vs weight](images/age_vs_weight.png)
 
 From the scatterplot, we can tell there is a relationship between age and weight in that, typically, weight has a small range until about 20 years of age. After 20, the data suggests that there is more varaibility in the weight. 
 There is an outlier at around 35 years of age and 20 weight. Their data does not follow the general relationship observed. 
 I confirmed my identification of this outlier by adding a linear regression line to the plot to understand better how intense the relationship level was between data. I also re analyzed the describe outlook to better understand the standard deviations of the data and confirmed that this data point would lie outside the standard deviation. It would be ideal to add the standard deviation as a visualization to the plot because then you can see if the data point lands in or out of the catchment of the standard deviation. 
-###INSERT THE GRAPHS!!!!!
-#SOURCES
 
-#Problem 4
+```python
+fg = p9.ggplot(data, p9.aes(x='age', y='weight'))+p9.geom_point()+p9.geom_smooth(method='lm', se=True, color='blue')
+```
+
+![age vs weight with a linear regression line](images/age_vs_weight_with_line.png)
+
+# Problem 4
 To compare the entries I asked for the legnth of M and F in the databases.
 
       len(patient_data[patient_data['gender']=='M'])  
@@ -166,3 +204,6 @@ returned True
 ##function testing
 ##age calculation
 ##reflection
+
+References
+[3]pset0-population.db SQLite
