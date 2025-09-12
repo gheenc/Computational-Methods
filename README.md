@@ -59,7 +59,8 @@ We are then able to plot the total interested states dataframe using ggplot. You
 
 The X axis is progresses through the dates and the y axis shows the number of new cases. Colors are varied based on state and the axis labels are titled to increase readability for the viewer. 
 
-##CAN I INSERT THE GRAPH
+![case counts of multiple states](images/state_graphs.png)
+
 To determine when a state peaked, I created a variable named peak that returned the max new cases counted. This relied on the previously created state dataframe. 
 
       peak=state_df['new case count'].max()
