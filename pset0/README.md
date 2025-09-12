@@ -107,6 +107,9 @@ to test what state had it's peak first and how many days between I created this 
 ##ADD SOURCES
 
 # Problem 3
+
+![weight graph](images/weight_counts.png)
+
 We can see by importing the data the column headers of 'name', 'age', 'weight', and 'eyecolor.' 
 
       data
