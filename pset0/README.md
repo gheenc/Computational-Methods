@@ -29,49 +29,83 @@ human_tester(98.6) = False
 ```
       
 # Problem 2
-First, to create a function that takes in a list of state names and plots new COVID cases in a line graph, new case counts needed to be obtained. I did this by frist extrapolating the states of interest from the full data set. You can see an example of this being done with Florida as a state of interest. This then creates a variable that easily pulls a smaller databasee of that interest.
 
-      state_df = coviddata[coviddata['state']=='state of interest']
-      florida = coviddata[coviddata['state'] == 'Florida']
-##CAN I ENTER THE DATAFRAME
+Data was downloaded from the New York Times Github of covid-19-data [1].
 
-New case counts were then obtained for the state of interest. I created a function that would add a column of 'new case count' to the state of interest data frame by looping through the state cases and subtracting from the day before, thereby obtaining a new case count. This new case count was then added in the 'new case count' column in the state of interest data frame. 
-
-      def new_case_count(state_df):
-          state_cases = list(state_df['cases'])
-          new_case_list = list(range(len(state_cases)))
-          new_case_list[0]=0
-          for i in range(1, len(state_cases)):
-              new_case_list[i] = state_cases[i] - state_cases[i-1]
-          state_df['new case count']=new_case_list
-          return state_df
-
-Then, when multiple states are wanted to cycle through, for example Washington, Illinois, and Virginia...
-
-      states = ['Washington", "illinois", "Virginia"]
-
-a new dataframe of all interested states can be created whos new cases will be plotted.
-
-      plot_state = pd.DataFrame()
-
-Then, a for loop can be written to cycle through all states in the states list and create a state dataframe, as we saw with Florida, with new case counts already obtained. This state dataframe is then added to the dataframe of all interested states. This is done for all interested states. 
-
-    for state in states:
-      state_df = new_case_count(coviddata[coviddata['state']==state])
-      plot_state = pd.concat([plot_state, state_df], ignore_index = True)   
-
-We are then able to plot the total interested states dataframe using ggplot. You can see an graph here following our example of Washington, Illinois, and Virginia, but any state could be plotted by inserting the name (exactly as written in the original database) into the states list. 
-
-      ggplot(plot_state, p9.aes(x='date', y='new case count', color='state'))+ p9.geom_line()+ p9.labs(title = 'New COVID Cases by State')+ p9.theme(axis_text_x=p9.element_text(angle=45))
-
-The X axis is progresses through the dates and the y axis shows the number of new cases. Colors are varied based on state and the axis labels are titled to increase readability for the viewer. 
-
-![case counts of multiple states](images/state_graphs.png)
-
-To determine when a state peaked, I created a variable named peak that returned the max new cases counted. This relied on the previously created state dataframe. 
+I imported pandas, plotnine, and the data.
 
 ```python
-peak=state_df['new case count'].max()
+import pandas as pd
+import plotnine as p9
+from plotnine import geom_bar, ggplot, aes, geom_line, labs, theme, geom_point
+coviddata = pd.read_csv("us-states.csv")
+```
+I think converted all dates in the data set to be useable timestamps in pandas. 
+
+```python
+coviddata['date']=pd.to_datetime(coviddata['date'])
+```
+I then created a function that would add a new column called new_case_counts to the existing COVID data frame. I had to trouble shoot the function so it would group by states and create the new case count rather than creating new case count from dataframe with the states intermixed. I then added this new column to the overall COVID dataframe. I visualized the dataset again to ensure this new column was added.
+
+```python
+def new_case_count(df):
+    df["new_case_count"] = df.groupby(["state"])["cases"].diff().fillna(0)
+    return df
+
+new_case_count(coviddata)
+```
+
+Next, I created a function that loops through multiple states and graphs new case counts versus the date. The states of interst need to be listed as variable states.  
+
+```python
+states = ["Washington", "Illinois", "Virginia"]
+```
+
+```python
+plot_state = pd.DataFrame()
+for state in states:
+    state_df = new_case_count(coviddata[coviddata['state']==state])
+    plot_state = pd.concat([plot_state, state_df], ignore_index = True)
+```
+
+We can visualize plot state to ensure only the states of interest have been chosen
+
+```python
+plot_state
+```
+We can then plot the graph. 
+```python
+g = ggplot(plot_state, p9.aes(x='date', y='new_case_count', color='state'))+ p9.geom_line()+ p9.labs(title = 'New COVID Cases by State')+ p9.theme(axis_text_x=p9.element_text(angle=45))
+```
+
+The X axis progresses through the dates and the y axis shows the number of new cases. Colors are varied based on state and the axis labels are titled to increase readability for the viewer. 
+
+![case counts of Washington, Illinois, Virginia](images/state_graphs.png)
+
+I checked this with 3 more states to ensure functionality. 
+
+```python
+ states2 = ["Tennessee", "Rhode Island", "Georgia"]
+
+ plot_state2 = pd.DataFrame()
+
+ for state in states2:
+    state_df = new_case_count(coviddata[coviddata['state']==state])
+    plot_state2 = pd.concat([plot_state2, state_df], ignore_index = True)
+
+ ggplot(plot_state2, p9.aes(x='date', y='new_case_count', color='state'))+ p9.geom_line()+ p9.labs(title = 'New COVID Cases by State')+ p9.theme(axis_text_x=p9.element_text(angle=45))
+```
+![case counts of Tennessee, Rhode Island, and Georgia](images/states2_graphs.png)
+
+To determine when a state peaked, I created a variable named peak that returned the max new cases counted. 
+
+```python
+def date_of_peak(df, state):
+    data2 = new_case_count(df)
+    data3 = data2[data2["state"]==state]
+    max_case_count = data3["new_case_count"].idxmax()
+    max_case_row = data3.loc[max_case_count,"date"]
+    return max_case_row
 ```
 We can once again see an example with Florida
 
@@ -213,4 +247,5 @@ returned True
 ##reflection
 
 References
+[1] https://github.com/nytimes/covid-19-data
 [3]pset0-population.db SQLite
