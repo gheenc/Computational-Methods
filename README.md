@@ -101,6 +101,8 @@ to test what state had it's peak first and how many days between I created this 
               return(f"{state2} and {state1} had its peak on the same day")
 ##ANALYZE FLORIDA
 
+![Florida case count graph](images/florida.png)
+
 ##ADD SOURCES
 
 # Problem 3
