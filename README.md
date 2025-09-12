@@ -147,10 +147,12 @@ returned False
       len(patient_data[patient_data['gender']=='M']) < len(patient_data[patient_data['gender']=='F'])
 returned True
 
-       def diagnosis_pt(diagnosis_name):
-          code = diagnosis_data[diagnosis_data['icd9_code']==diagnosis_name]
-          ids = icd_data.loc[zip(code,'subject_id')]
-          return (ids)
+    def diagnosis_pt(diagnosis_name):
+          code =                               diagnosis_data[diagnosis_data['long_title']==diagnosis_name]["icd9_code"].item()
+          test = icd_data[icd_data["icd9_code"]==code]['subject_id']
+          return list(test)
+
+    diagnosis_pt('Intestinal infection due to Clostridium difficile')
     
 ##diagnosis -> subject id
 ##function testing
