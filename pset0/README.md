@@ -207,7 +207,7 @@ h = ggplot(data, aes(x ='age'))+ geom_histogram(bins=10, color = 'black')
 ``` 
 
 ![graph of age distributions](images/age_counts.png)
-For the histogram of age, I chose to use bin size of 10. With a smaller bin width, you could loose some of the true distribution of the data because it becomes very minute but a larger bin width, some of the distribution gets lost. With too many bins (like bins=100), the graph can become seem to focus in on individual data points rather than visualizing the data as groups. With too few bins (like bins = 3), you lose the trends you are able to visualize through creating a graph. I also changed the color to black to be easier to visualize.
+For the histogram of age, I chose to use bin size of 10. With a smaller bin width, you could loose some of the true distribution of the data because it becomes very minute but with a larger bin width, some of the distribution gets lost. With too many bins (like bins=100), the graph can become seem too focused on individual data points rather than visualizing the data as groups. With too few bins (like bins = 3), you lose the trends you are able to visualize from creating a graph. I also changed the color to black for visuality purposes.
 There is a potential outlier in the 90-100 bucket. 
 The majority of data points are pretty uniformly distributed in the 10-60 age range. 
 
@@ -230,7 +230,7 @@ g = ggplot(data, aes(x ='weight'))+ geom_histogram(bins=10, color = 'black')
 
 ![graph of weight distribution](images/weight_counts.png)
 
-I chose 10 bins again for the same reason stated in the age histogram. I also liked 10 because it evenly and logically slpit 100 into 10 even group.  
+I chose 10 bins again for the same reason stated in the age histogram. I also liked 10 because it evenly and logically slpit 100 into 10 even group. There is a definite outlier in the 0-10 weight bucket. Most of the data values are focused in the 60-70 bucket.
 
 ```python
 f = p9.ggplot(data, p9.aes(x='age', y='weight'))+p9.geom_point()
