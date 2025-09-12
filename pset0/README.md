@@ -97,7 +97,7 @@ I checked this with 3 more states to ensure functionality.
 ```
 ![case counts of Tennessee, Rhode Island, and Georgia](images/states2_graphs.png)
 
-To determine when a state peaked, I created a fucntion named date_of_peak that returns the date of it's max new case count.  
+To determine when a state peaked, I created a fucntion named date_of_peak that returns the date of it's max new case count [1A]. 
 
 ```python
 def date_of_peak(df, state):
@@ -159,7 +159,7 @@ ggplot(florida, p9.aes(x='date', y='new_case_count', color='state'))+ p9.geom_li
 We can see in the middle of 2021, Flordia had a negative new case count of -40,527. Also, toward the end of 2022, rather than having reports everyday, there are sporatic bouts of reporting. It seems they have changed their reporting cadence and potentially changed reporting standards within the state.
 
 # Problem 3
-I imported the data from the SQLite Database [3]
+I imported the data from the SQLite Database [2]
 ```python 
 import pandas as pd
 import sqlite3
@@ -230,32 +230,130 @@ fg = p9.ggplot(data, p9.aes(x='age', y='weight'))+p9.geom_point()+p9.geom_smooth
 
 ![age vs weight with a linear regression line](images/age_vs_weight_with_line.png)
 
+I used this website to help with code for histogram [3] and this website to help with code for scatterplots [4]
+
 # Problem 4
+
+I imported date time packages and pandas in addition to the needed data sets. All data was collected from the MIMIC-III Database [5]. I visualized the data sets to make sure they imported correctly.
+
+```python
+from datetime import datetime
+from dateutil.relativedelta import relativedelta, MO
+import pandas as pd
+patient_data = pd.read_csv("PATIENTS.csv")
+diagnosis_data = pd.read_csv("D_ICD_DIAGNOSES.csv")
+icd_data = pd.read_csv("DIAGNOSES_ICD.csv")
+```
+I had all data sets fill NaN entries with a 0 instead.
+
+```python
+icd_data
+icd_data.fillna(0)
+
+diagnosis_data
+diagnosis_data.fillna(0)
+```
+
+I went ahead and converted time and date stamps timestamp objects in the patient dataset [2A].
+
+```python
+patient_data
+patient_data['dob']=pd.to_datetime(patient_data['dob'], errors='coerce')
+patient_data['dod']=pd.to_datetime(patient_data['dod'], errors='coerce')
+
+patient_data.fillna(0)
+```
 To compare the entries I asked for the legnth of M and F in the databases.
 
-      len(patient_data[patient_data['gender']=='M'])  
-      len(patient_data[patient_data['gender']=='F'])
+```python
+len(patient_data[patient_data['gender']=='M'])  
+len(patient_data[patient_data['gender']=='F'])
+```
 
 This returned 45 for males and 55 for females. I confirmed males have less than females by placing both on either side of the <
 
-      len(patient_data[patient_data['gender']=='M']) > len(patient_data[patient_data['gender']=='F']) 
+```python
+len(patient_data[patient_data['gender']=='M']) > len(patient_data[patient_data['gender']=='F']) 
 returned False 
+```
 
-      len(patient_data[patient_data['gender']=='M']) < len(patient_data[patient_data['gender']=='F'])
-returned True
+I created a function to intake disease long names and return the patients id who had that disease.
+```python
+ def diagnosis_pt(diagnosis_name):
+    code = diagnosis_data[diagnosis_data['long_title']==diagnosis_name]['icd9_code'].item()
+    test = icd_data[icd_data['icd9_code']==code]['subject_id']
+    if test.empty:
+      return "There are no patients with this diagnosis"
+    else:
+      return list(test)
+```
+I tested it with 'Intestinal infection due to Clostridium difficile' which had multiple patients.
 
-    def diagnosis_pt(diagnosis_name):
-          code =                               diagnosis_data[diagnosis_data['long_title']==diagnosis_name]["icd9_code"].item()
-          test = icd_data[icd_data["icd9_code"]==code]['subject_id']
-          return list(test)
+```python
+diagnosis_pt('Intestinal infection due to Clostridium difficile')
 
-    diagnosis_pt('Intestinal infection due to Clostridium difficile')
-    
-##diagnosis -> subject id
-##function testing
-##age calculation
-##reflection
+[10043, 10045, 10094, 10102, 40595, 41976, 44228]
+```
+
+I also tested with 'Contact with and (suspected) exposure to mold' which had no patients.
+
+```python
+diagnosis_pt('Contact with and (suspected) exposure to mold')
+
+There are no patients with this diagnosis
+```
+
+To calculate in days the age of patients I ensured again that the date/times were in time stamps. 
+
+```python
+pd.to_datetime(patient_data["dob"])
+pd.to_datetime(patient_data["dod"])
+```
+I then created the function. I added barriers for if the DOB or DOD were empty in the dataframe. [2A]
+
+```python
+def dod_dob(diagnosis_name):
+    code = diagnosis_data[diagnosis_data['long_title']==diagnosis_name]['icd9_code'].item()
+    test = icd_data[icd_data['icd9_code']==code]['subject_id']
+    test2 = test.values
+    dob = patient_data[patient_data['subject_id'].isin(test2)]['dob']
+    dod = patient_data[patient_data['subject_id'].isin(test2)]['dod']
+    valid_indices = dob.notna() & dod.notna()
+    dob=dob[valid_indices]
+    dod = dod[valid_indices]
+    if dob.empty:
+        return "DOB is empty and operation cannot be preformed"
+    if dod.empty:
+        return "DOD is empty and operation cannot be preformed"
+    differences = [(d.to_pydatetime() - b.to_pydatetime()).days for d, b in zip(dod, dob )]
+    return differences
+```
+
+I tested on Intestinal infection due to Clostridium difficile.
+```python
+dod_dob('Intestinal infection due to Clostridium difficile')
+
+returned [29891, 25087, 109593, 25626, 27999, 24235, 21358]
+```
+
+The patients diagnoised with Intestinal infection due to C.diff as 29891, 25087, 109593, 25626, 27999, 24235, 21358 days old respectfully. All patients are older then 58. The third patient is 300 years old, however, so there must be a data error in their file. Besides them, the oldest patient with C.diff is 81 years old. 
+
+This activity shows that working across multiple data sets can quickly become difficult. Even with only 3 variables to keep track of, it added an extra layer of tracking and thought to understand which data set you needed to index into to get your wanted information. While it is doable for this activity, more complex data quickly creates more opportunities for error.  
+
+Representing the data with dictionaries starting with the subject id and containing patient info and diagnoises would create easier location of data about an individual patient themselves. It would create difficulty for anyone looking to research how diseases affect multiple patients, like if one gender has a higher incidence of C.diff. 
+A dictionary keyed by diagnosis with a list of patients would have the alternative effect. It would be easy to research the presence of a diagnoisis but difficult to see how prevelant it really is amongst a population.
+
+Alternatively, 
+
+
 
 References
 [1] https://github.com/nytimes/covid-19-data
-[3]pset0-population.db SQLite
+[2]pset0-population.db SQLite
+[3]https://plotnine.org/reference/examples/geom_histogram-preview
+[4] https://www.geeksforgeeks.org/data-visualization/data-visualization-using-plotnine-and-ggplot2-in-python/
+[5]https://physionet.org/content/mimiciii-demo/1.4/
+
+AI Use:
+[1A] I was using idmax and kept getting an error. Asked AI and it said to use idxmax. 
+[2A] I had trouble with the dod-dob function returning with an overflow error. I trouble shooted with AI and had to add things to ensure date/time was in a good format. Once it began working it was returning in years, so I also used AI to troubleshoot how to have it return in days. 
