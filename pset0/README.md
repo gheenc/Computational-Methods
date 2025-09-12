@@ -111,7 +111,10 @@ I tested this function with Tennesse and Georgia because I could visualize when 
 
 ```python
 date_of_peak(coviddata, "Georgia")
+returned Timestamp('2022-01-04 00:00:00')
+
 date_of_peak(coviddata, "Tennessee")
+Timestamp('2022-01-18 00:00:00')
 ```
 
 I then created a function to test what state had it's peak first and how many days between. 
@@ -140,10 +143,13 @@ I tested this with Tennessee and Georgia, Florida and Wyoming, and Tennessee and
 
 ```python
 compare(coviddata, "Tennessee", "Georgia")
+returned 'Georgia had its peak first and the peak was 14 days apart'
 
 compare(coviddata, "Florida", "Wyoming")
+returned 'Florida had its peak first and the peak was 14 days apart'
 
 compare(coviddata, "Tennessee", "Washington")
+returned 'Washington and Tennessee had its peak on the same day'
 ```
 I then extrapolated Florida into its own data frame to analyze the data and plotted it.
 
@@ -178,6 +184,7 @@ Visualizing the data, we can see the column names are: name, age, weight, eyecol
 ```python
 data
 len(data)
+returned 152361
 ```
 We can see the following statistics for the age group: Mean = 39.51, standard deviation = 24.15, minimum = .000748, maximum = 99.99.
 
@@ -187,6 +194,11 @@ print(data['age'].max())
 print(data['age'].min())
 print(data['age'].mean())
 print(data['age'].std())
+
+returned 99.99154733076972
+0.0007476719217636152
+39.51052792739697
+24.152760068601445
 ```
 The age distributions were graphed in a histogram.
 
@@ -206,6 +218,11 @@ print(data['weight'].max())
 print(data['weight'].min())
 print(data['weight'].mean())
 print(data['weight'].std())
+
+returned 100.43579300336947
+3.3820836824389326
+60.884134159929715
+18.411824265661494
 ```
 ```python
 g = ggplot(data, aes(x ='weight'))+ geom_histogram(bins=10, color = 'black')
@@ -275,6 +292,9 @@ This returned 45 for males and 55 for females. I confirmed males have less than 
 ```python
 len(patient_data[patient_data['gender']=='M']) > len(patient_data[patient_data['gender']=='F']) 
 returned False 
+
+len(patient_data[patient_data['gender']=='M']) < len(patient_data[patient_data['gender']=='F'])
+returned True
 ```
 
 I created a function to intake disease long names and return the patients id who had that disease.
@@ -341,10 +361,21 @@ The patients diagnoised with Intestinal infection due to C.diff as 29891, 25087,
 This activity shows that working across multiple data sets can quickly become difficult. Even with only 3 variables to keep track of, it added an extra layer of tracking and thought to understand which data set you needed to index into to get your wanted information. While it is doable for this activity, more complex data quickly creates more opportunities for error.  
 
 Representing the data with dictionaries starting with the subject id and containing patient info and diagnoises would create easier location of data about an individual patient themselves. It would create difficulty for anyone looking to research how diseases affect multiple patients, like if one gender has a higher incidence of C.diff. 
-A dictionary keyed by diagnosis with a list of patients would have the alternative effect. It would be easy to research the presence of a diagnoisis but difficult to see how prevelant it really is amongst a population.
+A dictionary keyed by diagnosis with a list of patients would have the alternative effect. It would be easy to research the presence of a diagnoisis but difficult to see how prevelant it really is amongst a population. Using a dictionary instead of a dataframe, however, you would lose the visual benefit the tabular functionalities a dataframe provides. Because dictionaries are not hierarchical, they would not provide any usefulness for adding a time aspect to these data sets. For example, if someone wanted to transform the existing data set to include what order a patient received each diagnosis, that would not be possible in a dictionary format.
 
-Alternatively, 
+Alternatively, we can see by finding the lengths of patient_data and diagnosis_data how this would produce different lenghts of dictionarys. Sorting by subject_id would create 100 dictionary entries, which is feasible, but it doesn't show the depth of infection within the population and how many diseases are present. Alternatively, sorting by a dictionary of diagnoses requires 14,567 entries which would ask a lot of the memory power and managment of the institution. 
 
+```python
+len(patient_data['subject_id'])
+
+returns 100
+
+len(diagnosis_data['long_title'])
+
+returns 14567
+```
+
+Transforming the data from a dataframe into a dictionary would require all the data to be paired up in either a tuple or a list. So, we could create a dictionary entry that is a row of each dataset (eg. diagnosis data would become a dictionary group of one icd code, the matching short title, and the matching long title repeated for each icd code) [6]. 
 
 
 References
@@ -353,7 +384,9 @@ References
 [3]https://plotnine.org/reference/examples/geom_histogram-preview
 [4] https://www.geeksforgeeks.org/data-visualization/data-visualization-using-plotnine-and-ggplot2-in-python/
 [5]https://physionet.org/content/mimiciii-demo/1.4/
+[6]
 
 AI Use:
 [1A] I was using idmax and kept getting an error. Asked AI and it said to use idxmax. 
 [2A] I had trouble with the dod-dob function returning with an overflow error. I trouble shooted with AI and had to add things to ensure date/time was in a good format. Once it began working it was returning in years, so I also used AI to troubleshoot how to have it return in days. 
+
