@@ -1,4 +1,5 @@
 # compmethods-cg2288
+Caroline Gheen - cg2288
 BIS 634
 # Problem 1
 The following function takes in a given normal temperature and returns if another temperature is within 1 degree of the normal temperature. If it is, it returns True; if it is not, it returns False. 
@@ -21,7 +22,7 @@ Testing the temp_tester function using human_tester = temp_tester(37) and    chi
       human_tester(98.6) = False
       
 # Problem 2
-First, to create a function that takes in a list of state names and plots new COVID cases in a line graph, new case counts needed to be obtained. I did this by frist extrapolating the states of interest from the full data set. You can see an example of this being done with Florida as a state of interest
+First, to create a function that takes in a list of state names and plots new COVID cases in a line graph, new case counts needed to be obtained. I did this by frist extrapolating the states of interest from the full data set. You can see an example of this being done with Florida as a state of interest. This then creates a variable that easily pulls a smaller databasee of that interest.
 
       state_df = coviddata[coviddata['state']=='state of interest']
       florida = coviddata[coviddata['state'] == 'Florida']
@@ -70,14 +71,34 @@ We can once again see an example with Florida
 I checked this worked by describing Florida and ensuring the peak number given matched the max in the cases column given in the describe output
 
       florida.describe()
-##FINISH RETURN DATE. WITH EXAMPLES
+
+To better approach this problem and allow 
 
       def date_of_peak(state_df):
           max_case_count = state_df['new case count'].idxmax()
           max_case_row = state_df.loc[max_case_count]
           return max_case_row['date']
-##CREATE FUNCTION OEAKBETWEEN TWO STATES AND WHICH HAD PEAK FIRST WITH HOW MANY DAYS IN BETWEEN. WITH EXAMPLES
 
+to test what state had it's peak first and how many days between I created this function
+
+       def compare(df, state1, state2):
+          peak_date1 = date_of_peak(df, state1)
+          peak_date2 = date_of_peak(df, state2)
+          delta = abs((peak_date1 - peak_date2).days)
+          if peak_date1 > peak_date2:
+              earlier_date = peak_date2
+              earlier_state = state2
+              later_date = peak_date1
+              later_state = state1
+              return(f"{state2} had its peak first and the peak was                         {delta} days apart")
+          elif peak_date1 < peak_date2:
+                earlier_date = peak_date1
+                earlier_state = state1
+                later_date = peak_date2
+              later_state = state2
+              return(f"{state1} had its peak first and the peak was                         {delta} days apart")
+          elif peak_date1 == peak_date2:
+              return(f"{state2} and {state1} had its peak on the same day")
 ##ANALYZE FLORIDA
 
 ##ADD SOURCES
