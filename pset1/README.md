@@ -37,3 +37,32 @@ Administering meds at t=1.9000000000000006
 ```
 
 To fix, I coded the function so that it only return 2 decimal places. This will help the calculations stay aligned. I tested it with (0.1, 1), (0.1, 2), and (0.15, 3).
+
+#Problem 3
+algoritim 1 - data 1 is making little increments. for 100, only goes 20-50.
+algorithm 1-data 2 runs a list easily for 100. Starts at 0 goes to 99
+algorithm 1- data 3 runs a list easily for every number in 100. Starts at 1 ends at 100
+
+Algorithm 1 is running a cycling list (?).
+Algorithm 2 is running a binary search tree. 
+
+Algorithm 1 is cycling through a list that is adding one point to the last (?). 
+Algorithm 2 divides the data in half then splits it among a left branch and a right branch. It then cycles through the branches resulting in the number (THIS NEEDS TO BE CLEANED).
+
+perf counter source [1] 
+For 1: 
+alg1 (2.390 e-5) < alg2 (2.029 e-5)
+
+For 1000:
+alg1 (1.8099 e-5)< alg2 (1.8000 e-5))
+
+
+
+
+
+
+
+
+
+Sources used
+[1] https://www.geeksforgeeks.org/python/time-perf_counter-function-in-python/
