@@ -36,7 +36,7 @@ Administering meds at t=1.8000000000000005
 Administering meds at t=1.9000000000000006
 ```
 
-To fix, I coded the function so that it only return 2 decimal places. This will help the calculations stay aligned. I tested it with (0.1, 1), (0.1, 2), and (0.15, 3).
+To fix, I coded the function so that it only return 2 decimal places [1]. This will help the calculations stay aligned. I tested it with (0.1, 1), (0.1, 2), and (0.15, 3).
 
 #Problem 3
 algoritim 1 - data 1 is making little increments. for 100, only goes 20-50.
@@ -50,19 +50,51 @@ Algorithm 1 is cycling through a list that is adding one point to the last (?).
 Algorithm 2 divides the data in half then splits it among a left branch and a right branch. It then cycles through the branches resulting in the number (THIS NEEDS TO BE CLEANED).
 
 perf counter source [1] 
-For 1: 
-alg1 (2.390 e-5) < alg2 (2.029 e-5)
+Data 1 tested on both algorithm:
+For 1:
+alg1 (.0001846)< alg2 (.0001995)
+
+For 100: 
+alg1 (.001192) < alg2 (.001157)
 
 For 1000:
-alg1 (1.8099 e-5)< alg2 (1.8000 e-5))
+alg1 (0.0834) > alg2 (0.00550)
 
+For 5000:
+alg1 (2.2507) > alg2 (0.0258)
 
+At larger numbers, algorithm 1 is slower than algorithm 2
 
+Data 2 tested on both algorithm:
+For 1:
+alg1 (.000114)< alg2 (6.72 e-5)
 
+For 100: 
+alg1 (7.33 e-5) > alg2 (.000306)
+
+For 1000:
+alg1 (.000199) > alg2 (.00145)
+
+For 5000:
+alg1 (.000908) > alg2 (.014)
+
+Data 3 tested on both algorithm:
+For 1:
+alg1 (8.580 e-5) > alg2 (8.690 e-5)
+
+For 100: 
+alg1 (.000995) < alg2 (.000284)
+
+For 1000:
+alg1 (0.1039) < alg2 (0.00194)
+
+For 5000:
+alg1 (2.832) <> alg2 (.00927)
 
 
 
 
 
 Sources used
-[1] https://www.geeksforgeeks.org/python/time-perf_counter-function-in-python/
+[1] Asked ChatGPT how to code so that only 2 decimal places were returned  
+[2] https://www.geeksforgeeks.org/python/time-perf_counter-function-in-python/
