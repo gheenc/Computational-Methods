@@ -3,6 +3,7 @@ cg2288 - Caroline Gheen
 
 Problem 1
 
+Sources: [1] https://pythonguides.com/read-xml-files-in-python/
 
 Problem 2
 This function is administering medicine in increments. So, if you tell the function you want to administer medicine in 6 units, it will give 6 units until it hits the amount that is tstop. Tstop is the amount that meds need to stop being administered at; delta_t is the difference between what was administered + what was just administered; and the number of doses administered is the amount needed to get to tstop in the amount of t.
@@ -89,7 +90,7 @@ For 1000:
 alg1 (0.1039) < alg2 (0.00194)
 
 For 5000:
-alg1 (2.832) <> alg2 (.00927)
+alg1 (2.832) < alg2 (.00927)
 
 
 
