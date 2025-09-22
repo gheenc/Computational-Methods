@@ -9,9 +9,9 @@ loading xml data
 visualizing data and finding attributable tags
 
 Problem 2
-This function is administering medicine in increments. So, if you tell the function you want to administer medicine in 6 units, it will give 6 units until it hits the amount that is tstop. Tstop is the amount that meds need to stop being administered at; delta_t is the difference between what was administered + what was just administered; and the number of doses administered is the amount needed to get to tstop in the amount of t.
+a. This function is administering medicine in increments. So, if you tell the function you want to administer medicine in 6 units, it will give 6 units until it hits the amount that is tstop. Tstop is the amount that meds need to stop being administered at; delta_t is the difference between what was administered + what was just administered; and the number of doses administered is the amount needed to get to tstop in the amount of t.
 
-When you call 0.25, 1 you get, as expected it took four rounds of administering 0.25 doses amounts to reach full dosage of 1. 
+b. When you call 0.25, 1 you get, as expected it took four rounds of administering 0.25 doses amounts to reach full dosage of 1. 
 
 When you call 0.1, 1 you start getting wonky decimal numbers. The dose of 3 is displayed as 3.0000000000000004. This goes awry after the 0.7 dosage. The next dose, which should be 0.8 is 0.7999999999999999. Then the dosage is 0.8999999999999999 then 0.9999999999999999. These trailing decimals will compound into an issue, which is not great when delivering medicine. Insulin, for example, is delivered in units because it is so potent - too much insulin or too little insulin for a diabetic can have profound impacts.
  On this example, the med delivery technically never reaches 1 and we can see even more when imputting (0.1, 2) how this can be an issue. We can see the compounding trailing decimals in 1.4-1.9 and ultimately,  our patient never recieves their full dose of medicine. 
@@ -43,18 +43,18 @@ Administering meds at t=1.9000000000000006
 To fix, I coded the function so that it only return 2 decimal places [1]. This will help the calculations stay aligned. I tested it with (0.1, 1), (0.1, 2), and (0.15, 3).
 
 #Problem 3
-algoritim 1 - data 1 is making little increments. for 100, only goes 20-50.
+a. algoritim 1 - data 1 is making little increments. for 100, only goes 20-50.
 algorithm 1-data 2 runs a list easily for 100. Starts at 0 goes to 99
 algorithm 1- data 3 runs a list easily for every number in 100. Starts at 1 ends at 100
 
-Algorithm 1 is running a cycling list (?).
+b. Algorithm 1 is running a list that cycles.
 Algorithm 2 is running a binary search tree. 
 
 Algorithm 1 is cycling through a list that is adding one point to the last (?). 
 Algorithm 2 divides the data in half then splits it among a left branch and a right branch. It then cycles through the branches resulting in the number (THIS NEEDS TO BE CLEANED).
 
 perf counter source [1] 
-Data 1 tested on both algorithm:
+c. Data 1 tested on both algorithm:
 For 1:
 alg1 (.0001846)< alg2 (.0001995)
 
@@ -95,7 +95,12 @@ alg1 (0.1039) < alg2 (0.00194)
 For 5000:
 alg1 (2.832) < alg2 (.00927)
 
+d. Using data 1, algorithm 2 preforms faster at all n values. Algorithm 1 performs faster if the data 
+Using data 2, algorithm 2 preforms better at all n values. 
 
+Using data 3, the algorithms perform similarly at small numbers but eventually algorithm 1 preforms better. 
+
+Algorthim 1 is preferred for more mathematical data that is being sorted. Algorithm 2 is preferred for Both algorithms worked well on 3 which is a small dataset. 
 
 
 
