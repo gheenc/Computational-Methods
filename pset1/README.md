@@ -42,6 +42,9 @@ Administering meds at t=1.9000000000000006
 
 To fix, I coded the function so that it only return 2 decimal places [1]. This will help the calculations stay aligned. I tested it with (0.1, 1), (0.1, 2), and (0.15, 3).
 
+Sources used
+[1] Asked ChatGPT how to code so that only 2 decimal places were returned  
+
 #Problem 3
 a. algoritim 1 - data 1 is making little increments. for 100, only goes 20-50.
 algorithm 1-data 2 runs a list easily for 100. Starts at 0 goes to 99
@@ -95,15 +98,18 @@ alg1 (0.1039) < alg2 (0.00194)
 For 5000:
 alg1 (2.832) < alg2 (.00927)
 
-d. Using data 1, algorithm 2 preforms faster at all n values. Algorithm 1 performs faster if the data 
-Using data 2, algorithm 2 preforms better at all n values. 
+d. Using data 1, algorithm 2 preforms faster at all n values. Algorithm 1 performs faster on the data 
+
+![time elapsed using alg1 and alg2 on data 1](data1_algs.png)
+
+Using data 2, algorithm 2 preforms better at all n values.
+![time elapsed using alg1 and alg2 on data 2](data2_algs.png) 
 
 Using data 3, the algorithms perform similarly at small numbers but eventually algorithm 1 preforms better. 
+![time elapsed using alg1 and alg2 on data 3](data3_algs.png) [2]
 
 Algorthim 1 is preferred for more mathematical data that is being sorted. Algorithm 2 is preferred for Both algorithms worked well on 3 which is a small dataset. 
 
-
-
-Sources used
-[1] Asked ChatGPT how to code so that only 2 decimal places were returned  
-[2] https://www.geeksforgeeks.org/python/time-perf_counter-function-in-python/
+Sources Used: 
+[1] https://www.geeksforgeeks.org/python/time-perf_counter-function-in-python/
+[2]Asked Yale Clarity how to plot so axises as log-log and how to save photo of graph generated in matplot. 
