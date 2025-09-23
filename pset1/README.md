@@ -24,11 +24,95 @@ Administering meds at t=0.75
 
 c. When you call 0.1, 1 you start getting wonky decimal numbers. The dose of 3 is displayed as 3.0000000000000004. This goes awry after the 0.7 dosage. The next dose, which should be 0.8 is 0.7999999999999999. Then the dosage is 0.8999999999999999 then 0.9999999999999999. 
 
+```python
+administer_meds(0.1,1)
+
+Administering meds at t=0
+Administering meds at t=0.1
+Administering meds at t=0.2
+Administering meds at t=0.30000000000000004
+Administering meds at t=0.4
+Administering meds at t=0.5
+Administering meds at t=0.6
+Administering meds at t=0.7
+Administering meds at t=0.7999999999999999
+Administering meds at t=0.8999999999999999
+Administering meds at t=0.9999999999999999
+```
+
 d. The dosage is not as expected and this could lead to a compounding effect of delivering too much medicine. The times are also not as expected because with the trailing decimals, the function is not realizing it has hit t-stop.  
 
 e. These trailing decimals will compound into an issue, which is not great when delivering medicine. Insulin, for example, is delivered in units because it is so potent - too much insulin or too little insulin for a diabetic can have profound impacts.
 
 f. To fix, I coded the function so that it only return 2 decimal places [1]. This will help the calculations stay aligned. I tested it with (0.1, 1), (0.1, 2), and (0.15, 3).
+```python
+def administer_meds1(delta_t, tstop):
+    t = 0
+    while t < tstop: 
+        print(f"Administering meds at t={t:.2f}")
+        t += delta_t
+
+
+administer_meds1(0.1,1)
+Administering meds at t=0.00
+Administering meds at t=0.10
+Administering meds at t=0.20
+Administering meds at t=0.30
+Administering meds at t=0.40
+Administering meds at t=0.50
+Administering meds at t=0.60
+Administering meds at t=0.70
+Administering meds at t=0.80
+Administering meds at t=0.90
+Administering meds at t=1.00
+
+administer_meds1(0.1, 2)
+Administering meds at t=0.00
+Administering meds at t=0.10
+Administering meds at t=0.20
+Administering meds at t=0.30
+Administering meds at t=0.40
+Administering meds at t=0.50
+Administering meds at t=0.60
+Administering meds at t=0.70
+Administering meds at t=0.80
+Administering meds at t=0.90
+Administering meds at t=1.00
+Administering meds at t=1.10
+Administering meds at t=1.20
+Administering meds at t=1.30
+Administering meds at t=1.40
+Administering meds at t=1.50
+Administering meds at t=1.60
+Administering meds at t=1.70
+Administering meds at t=1.80
+Administering meds at t=1.90
+
+administer_meds(0.15, 3)
+
+Administering meds at t=0
+Administering meds at t=0.15
+Administering meds at t=0.3
+Administering meds at t=0.44999999999999996
+Administering meds at t=0.6
+Administering meds at t=0.75
+Administering meds at t=0.9
+Administering meds at t=1.05
+Administering meds at t=1.2
+Administering meds at t=1.3499999999999999
+Administering meds at t=1.4999999999999998
+Administering meds at t=1.6499999999999997
+Administering meds at t=1.7999999999999996
+Administering meds at t=1.9499999999999995
+Administering meds at t=2.0999999999999996
+Administering meds at t=2.2499999999999996
+Administering meds at t=2.3999999999999995
+Administering meds at t=2.5499999999999994
+Administering meds at t=2.6999999999999993
+Administering meds at t=2.849999999999999
+Administering meds at t=2.999999999999999
+```
+
 
 Sources used:
 
