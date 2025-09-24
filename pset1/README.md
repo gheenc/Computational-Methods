@@ -3,11 +3,39 @@ cg2288 - Caroline Gheen
 
 Problem 1
 
-Sources: [1] https://pythonguides.com/read-xml-files-in-python/
+a. No patients share the same age. We can ensure this by finding the duplicates of the age tag, which returns with there are no duplicates [3,4]. 
+![histogram of age distribution of patients](age_distribution.png)
+
+```python
+element_counts = Counter(ages_list)
+
+duplicate_ages= [(age, count) for age, count in element_counts.items() if count > 1]
+
+print("Duplicate Child Elements:")
+for age, count in duplicate_ages:
+    print(f"Age: {age}, Count: {count}")
+
+Duplicate Child Elements:
+```
+Extra Credit: If there were multiple patients with the same age, it would change the way they are retrieved and sorted along the rest of the problem. 
+
+b. Each gender is encoded as a full word; either 'male,' 'female,' or 'unknown.'
+
+
+Sources: 
+
+[1] https://pythonguides.com/read-xml-files-in-python/
 loading xml data
 
 [2] https://www.geeksforgeeks.org/python/reading-and-writing-xml-files-in-python/
 visualizing data and finding attributable tags
+
+[3] Asked Yale Clarity how to determine duplicates in a list of all childs of unique tags in XML.
+
+[4] Asked Yale Clarity how to add a title to a graph in ggplot.
+
+[5] Asked Yale Clarity how to see all unique entires in my list of child tags. 
+[6] Asked Yale Clarity how to format coding for a bar chart in matplot and trouble shooting scaling. 
 
 #Problem 2
 
