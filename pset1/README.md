@@ -21,7 +21,53 @@ Extra Credit: If there were multiple patients with the same age, it would change
 
 b. Each gender is encoded as a full word; either 'male,' 'female,' or 'unknown.'
 
+![bar chart of counts of gender in patients](gender_graph.png)
 
+[6,7]
+
+c. Oldest patient is 84.99855742449432 years old.  
+```
+sorted_ages = sorted(ages_list, reverse=True)
+sorted_ages
+
+[84.99855742449432,
+ 84.9982928781625,
+ 84.99820162144917,
+ 84.99794285222339,
+ 84.99723990226988,
+ 84.99653633733828,
+ 84.99641667282472,
+ 84.99619681756418,
+ 84.99616424705508,
+ 84.99581057797228,
+ 84.99520133249439,
+ 84.99518045537798,
+ 84.99482936296276,
+ 84.99481316244473,
+ 84.9946352369426,
+ 84.99420273952046,
+ 84.99405027835297,
+ 84.9928674957938,
+ 84.99222782900651,
+ 84.99219574178792,
+ 84.99212933829894,
+ 84.99208819918721,
+ 84.99103779613714,
+ 84.99102296716515,
+ 84.99039601734279,
+...
+ 84.60864216053271,
+ 84.60862996617146,
+ 84.60819876170447,
+ 84.6071120339206,
+ ...]
+Output is truncated.
+```
+
+d. It would be better to arrange the data in a set, which is O(n). Using a set allows for more overhead as it functions at a constant time and is just looking at the hash and placing. 
+Lists, while they take longer with larger data sets, are ordered. Therefore, if wanting to do something with ordered meaning, a list would be better. If wanting to do something with large data in which you want to minimize overhead, use a set. 
+
+e. 
 Sources: 
 
 [1] https://pythonguides.com/read-xml-files-in-python/
@@ -35,7 +81,13 @@ visualizing data and finding attributable tags
 [4] Asked Yale Clarity how to add a title to a graph in ggplot.
 
 [5] Asked Yale Clarity how to see all unique entires in my list of child tags. 
-[6] Asked Yale Clarity how to format coding for a bar chart in matplot and trouble shooting scaling. 
+[6] Asked Yale Clarity to troubleshoot errors when coding for bar plot and saving the image. 
+
+[7] https://www.geeksforgeeks.org/pandas/bar-plot-in-matplotlib/
+
+[8] https://www.geeksforgeeks.org/python/python-sorted-function/
+
+[9] Asked Yale Clarity how to round sorted list to 1 decimal place. 
 
 #Problem 2
 
@@ -153,6 +205,7 @@ algorithm 1 and 2 -data 2 runs a list easily for 100. Starts at 0 goes to 99
 algorithm 1 and 2- data 3 runs a list easily for every number in 100. Starts at 1 ends at 100.
 
 I hypothesize that Algorithm 1 is running a bubble sort. Algorithm 2 is running a merge sort.
+
 ```python
  alg1(data1(100))
  [20.204472832048545,
@@ -360,24 +413,19 @@ alg2(data2(100))
 b. Algorithm 1 is cycling through a list that if the index + 1 is less than the index it places it places it before in the list, otherwise it returns the value. 
 Algorithm 2 divides the data in half then splits it among a left branch and a right branch. It then proceeds down each branch and if the left branch is less than the right branch it adds the number to the left branch and moves to the next value until nothing remains. 
 
-c. Data 1 tested on both algorithms [1]:
+c. 
+The Big O of algorithm 1 is n^2.
+The Big O of algorithm 2 is n log n.
 
-The Big O of algorithm 1 is...
-The Big O of algorithm 2 is...
+Data 1 tested on both algorithms [1]:  
 
 ![time elapsed using alg1 and alg2 on data 1](data1_algs.png)
 
 Data 2 tested on both algorithms:
 
-The Big O of algorithm 1 is...
-The Big O of algorithm 2 is...
-
 ![time elapsed using alg1 and alg2 on data 2](data2_algs.png)
 
 Data 3 tested on both algorithms:
-
-The Big O of algorithm 1 is...
-The Big O of algorithm 2 is...
  
 ![time elapsed using alg1 and alg2 on data 3](data3_algs.png) [2]
 
@@ -387,8 +435,7 @@ For data 2, algorithm 1 preforms better at all n values. Algorithm 1 is very fas
 
 Using data 3, the algorithms perform similarly at small numbers but eventually algorithm 2 preforms faster. Both increase at similar increments as data increases. 
 
-Algorthim 1 is perferable for .
-Algorithm 2 is perferable for  
+Algorithm 2 is perferable for super small n's and data well over 10^2. Between those points algorithm 1 is faster.
 
 Sources Used: 
 [1] https://www.geeksforgeeks.org/python/time-perf_counter-function-in-python/
