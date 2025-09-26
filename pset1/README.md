@@ -854,12 +854,12 @@ for patient_id, _ in fake_one_digit:
 
 Both timings of the time elapsed during the running of in/contains and has_data are displayed in the graph below. 
 
-![line graph displaying time elapsed during in and has operations in a binary search tree]('in_and_has_graph.png')
+![line graph displaying time elapsed during in and has operations in a binary search tree](in_and_has_graph.png)
 
 Based on this graph, the has_data method consistently performed slower than the in/contains method. We can see better from the in method that as the n of patient id increases, so does the time elapsed. This line look more like the O(log n) line that we would expect. 
 The timing of the has_data method is very close to O(1), so there may be an error in the measuring of the times. 
 
-![line graph displaying time elapsed to construct a tree with varying n sizes]('time_construct_tree.png')
+![line graph displaying time elapsed to construct a tree with varying n sizes](time_construct_tree.png)
 
 I repeated a similar process to time elapsed time during the construction of a tree of various n's. Again, I only varied the n size of patient id, but a more thorough test would also vary the patient id n size. 
 
@@ -924,8 +924,8 @@ Sources:
 
 
 # Appendix of Code #
-Problem 1: 
-# %%
+**Problem 1:** 
+
 !pip install BeautifulSoup4
 import plotnine as p9
 from plotnine import geom_bar, ggplot, aes, geom_histogram, geom_smooth, theme_bw, labs
@@ -936,32 +936,32 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import MultipleLocator
 import random
 
-# %%
+
 with open('pset1-patients.xml', 'r') as file:
     data = file.read()
 print(data)
 
-# %%
+
 Bs_data = BeautifulSoup(data, 'xml')
 
-# %%
+
 patients_bs = Bs_data.find_all('patient')
 
-# %%
+
 ages_list = []
 for patient in patients_bs:
     ages = float(patient.get('age'))
     ages_list.append(ages)
 
-# %%
+
 ages_df = pd.DataFrame({'age':ages_list})
 
-# %%
+
 a = ggplot(ages_df, aes(x='age'))+ geom_histogram(bins=50, color = 'black') + labs(title='Distribution of Patient Ages') + theme_bw()
 a
 a.save("age_distribution.png")
 
-# %%
+
 element_counts = Counter(ages_list)
 
 duplicate_ages= [(age, count) for age, count in element_counts.items() if count > 1]
@@ -970,26 +970,26 @@ print("Duplicate Child Elements:")
 for age, count in duplicate_ages:
     print(f"Age: {age}, Count: {count}")
 
-# %%
+
 genders_list = []
 for patient in patients_bs:
     genders = patient.get('gender')
     genders_list.append(genders)
 genders_list
 
-# %%
+
 unique_genders = set(genders_list)
 for tag in unique_genders:
     print(tag)
 
-# %%
+
 genders_df = pd.DataFrame({'gender':genders_list})
 gender_counts = genders_df['gender'].value_counts().reset_index()
 gender_counts.columns = ['gender', 'count']
 
 gender_counts
 
-# %%
+
 plt.bar(gender_counts['gender'], gender_counts['count'], color=['pink', 'blue', 'gray'])
 plt.title('Distribution of Gender')
 plt.xlabel('Genders')
@@ -997,19 +997,19 @@ plt.ylabel('Counts')
 plt.savefig("gender_graph.png")
 plt.show()
 
-# %%
+
 sorted_ages = sorted(ages_list)
 
-# %%
+
 reverse_sorted_ages = sorted(ages_list, reverse=True)
 reverse_sorted_ages[0]
 
 
-# %%
+
 oldest_pt = Bs_data.find('patient', {'age':reverse_sorted_ages[0]})
 print(oldest_pt)
 
-# %%
+
 def binary_search(arr, x):
     low = 0
     high = len(arr) - 1
@@ -1025,18 +1025,18 @@ def binary_search(arr, x):
             return mid
     return None
 
-# %%
+
 index = binary_search(sorted_ages, 41.5)
 forty_pt = Bs_data.find('patient', {'age':sorted_ages[index]})
 print(forty_pt)
 
-# %%
+
 index = binary_search(sorted_ages, 41.5)
 above_index = sorted_ages[index:]
 len(above_index)
 
 
-# %%
+
 def binary_search1(arr, x, y):
     low = 0
     high = len(arr) - 1
@@ -1060,29 +1060,29 @@ def binary_search1(arr, x, y):
         return high_index - low_index + 1
     else: return 0
 
-# %%
+
 fake_data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
-# %%
+
 result = binary_search1(fake_data, 5, 8)
 print(result)
 
-# %%
+
 print(binary_search1(fake_data, 2, 4))
 
-# %%
+
 sorted_ages[0]
 
-# %%
+
 reverse_sorted_ages[0]
 
-# %%
+
 binary_search1(sorted_ages, 0.00010629282758800596, 84.99855742449432)
 
-# %%
+
 len(sorted_ages)
 
-# %%
+
 patient_list = []
 for patient in patients_bs:
     name = patient.get('name')
@@ -1092,34 +1092,34 @@ for patient in patients_bs:
 
 sorted_patient_list = sorted(patient_list, key=lambda x: x['age'])
 
-# %%
+
 sorted_gender_list = [patient['gender'] for patient in sorted_patient_list]
 sorted_ages_list = [patient['age'] for patient in sorted_patient_list]
 
-# %%
+
 print(sorted_patient_list[1])
 print(sorted_gender_list[1])
 print(sorted_ages_list[1])
 
-# %%
+
 print(sorted_patient_list[2])
 print(sorted_gender_list[2])
 print(sorted_ages_list[2])
 
-# %%
+
 print(sorted_patient_list[0])
 print(sorted_gender_list[0])
 print(sorted_ages_list[0])
 
-# %%
+
 oldest_pt = Bs_data.find('patient', {'age':reverse_sorted_ages[0]})
 print(oldest_pt)
 
-# %%
+
 oldest_pt = Bs_data.find('patient', {'age':reverse_sorted_ages[1]})
 print(oldest_pt)
 
-# %%
+
 male_prefix_sum = []
 count = 0
 for gender in sorted_gender_list:
@@ -1128,7 +1128,7 @@ for gender in sorted_gender_list:
     male_prefix_sum.append(count)
 
 
-# %%
+
 def binary_search2(arr, male_prefix_sum, x, y):
     low = 0
     high = len(arr) - 1
@@ -1161,78 +1161,78 @@ def binary_search2(arr, male_prefix_sum, x, y):
         males_in_range = 0
     return (f"Number of patients between these ages: {total_in_range}, Number of males: {males_in_range}")
 
-# %%
+
 binary_search2(sorted_ages_list, male_prefix_sum, 0.00010629282758800596, 0.0011937231038899876)
 
-# %%
+
 binary_search2(sorted_ages_list, male_prefix_sum, 20, 30)
 
-# %%
+
 binary_search2(sorted_ages_list, male_prefix_sum, 84.9982928781625, 84.99855742449432)
 
 
-Problem 2:
-# %%
+**Problem 2:**
+
 def administer_meds(delta_t, tstop):
     t = 0
     while t < tstop: 
         print(f"Administering meds at t={t}")
         t += delta_t
 
-# %%
+
 administer_meds(6, 24)
 
-# %%
+
 administer_meds(2, 10)
 
-# %%
+
 administer_meds(1, 2)
 
-# %%
+
 administer_meds(1000, 5000)
 
-# %%
+
 administer_meds(2, 9)
 
-# %%
+
 administer_meds(0.25,1)
 
-# %%
+
 administer_meds(0.1,1)
 
-# %%
+
 administer_meds(0.1,2)
 
-# %%
+
 administer_meds(0.1,3)
 
-# %%
+
 def administer_meds1(delta_t, tstop):
     t = 0
     while t < tstop: 
         print(f"Administering meds at t={t:.2f}")
         t += delta_t
 
-# %%
+
 administer_meds1(0.1,1)
 
-# %%
+
 administer_meds1(0.15, 3)
 
-# %%
+
 administer_meds(0.15, 3)
 
-# %%
+
 administer_meds1(0.1, 2)
 
 
-Problem 3:
-# %%
+**Problem 3:**
+
 import time
 import matplotlib.pyplot as plt
 import numpy as np
 
-# %%
+
 def alg1(data):
   data = list(data)
   changes = True
@@ -1244,7 +1244,6 @@ def alg1(data):
         changes = True
   return data
 
-# %%
 def alg2(data):
   if len(data) <= 1:
     return data
@@ -1272,7 +1271,6 @@ def alg2(data):
           # nothing remains on the right; add the left + return
           return result + [left_top] + list(left)
 
-# %%
 def data1(n, sigma=10, rho=28, beta=8/3, dt=0.01, x=1, y=1, z=1):
     import numpy
     state = numpy.array([x, y, z], dtype=float)
@@ -1287,203 +1285,166 @@ def data1(n, sigma=10, rho=28, beta=8/3, dt=0.01, x=1, y=1, z=1):
         result.append(float(state[0] + 30))
     return result
 
-# %%
 def data2(n):
     return list(range(n))
 
-# %%
 def data3(n):
     return list(range(n, 0, -1))
 
-# %%
 alg1(data1(100))
 
-# %%
 alg1(data2(100))
 
-# %%
 alg1(data3(100))
 
-# %%
 alg2(data1(100))
 
-# %%
 alg2(data2(100))
 
-# %%
 alg2(data3(100))
 
-# %%
 alg1(data1(10))
 
-# %%
+
 alg1(data1(1))
 
-# %%
 alg2(data1(10))
 
-# %%
 alg2(data1(1))
 
-# %%
 alg1(data2(10))
 
-# %%
+
 alg2(data2(10))
 
-# %%
 alg2(data2(1))
 
-# %%
 time.perf_counter()
 from time import perf_counter
 t1start = perf_counter()
 t1stop = perf_counter()
 print("Elapsed time during the whole program in seconds:", t1stop - t1start)    
 
-# %%
 t1start = perf_counter()
 alg1(data1(100))
 t1stop = perf_counter()
 print("Elapsed time during the whole program in seconds:", t1stop - t1start)
 
-# %%
 t1start = perf_counter()
 alg2(data1(100))
 t1stop = perf_counter()
 print("Elapsed time during the whole program in seconds:", t1stop - t1start)
 
-# %%
 t1start = perf_counter()
 alg1(data1(1))
 t1stop = perf_counter()
 print("Elapsed time during the whole program in seconds:", t1stop - t1start)    
 
-# %%
 t1start = perf_counter()
 alg2(data1(1))
 t1stop = perf_counter()
 print("Elapsed time during the whole program in seconds:", t1stop - t1start)
 
-# %%
 t1start = perf_counter()
 alg1(data1(1000))
 t1stop = perf_counter()
 print("Elapsed time during the whole program in seconds:", t1stop - t1start)
 
-# %%
 t1start = perf_counter()
 alg2(data1(1000))
 t1stop = perf_counter()
 print("Elapsed time during the whole program in seconds:", t1stop - t1start)
 
-# %%
 t1start = perf_counter()
 alg1(data1(5000))
 t1stop = perf_counter()
 print("Elapsed time during the whole program in seconds:", t1stop - t1start)
 
-# %%
 t1start = perf_counter()
 alg2(data1(5000))
 t1stop = perf_counter()
 print("Elapsed time during the whole program in seconds:", t1stop - t1start)
 
-# %%
 t1start = perf_counter()
 alg1(data2(100))
 t1stop = perf_counter()
 print("Elapsed time during the whole program in seconds:", t1stop - t1start)
 
-# %%
 t1start = perf_counter()
 alg2(data2(100))
 t1stop = perf_counter()
 print("Elapsed time during the whole program in seconds:", t1stop - t1start)
 
-# %%
 t1start = perf_counter()
 alg1(data2(1))
 t1stop = perf_counter()
 print("Elapsed time during the whole program in seconds:", t1stop - t1start)
 
-# %%
 t1start = perf_counter()
 alg2(data2(1))
 t1stop = perf_counter()
 print("Elapsed time during the whole program in seconds:", t1stop - t1start)
 
-# %%
 t1start = perf_counter()
 alg1(data2(1000))
 t1stop = perf_counter()
 print("Elapsed time during the whole program in seconds:", t1stop - t1start)
 
-# %%
 t1start = perf_counter()
 alg2(data2(1000))
 t1stop = perf_counter()
 print("Elapsed time during the whole program in seconds:", t1stop - t1start)
 
-# %%
 t1start = perf_counter()
 alg1(data2(5000))
 t1stop = perf_counter()
 print("Elapsed time during the whole program in seconds:", t1stop - t1start)
 
-# %%
 t1start = perf_counter()
 alg2(data2(5000))
 t1stop = perf_counter()
 print("Elapsed time during the whole program in seconds:", t1stop - t1start)
 
-# %%
 t1start = perf_counter()
 alg1(data3(1))
 t1stop = perf_counter()
 print("Elapsed time during the whole program in seconds:", t1stop - t1start)
 
-# %%
 t1start = perf_counter()
 alg2(data3(1))
 t1stop = perf_counter()
 print("Elapsed time during the whole program in seconds:", t1stop - t1start)
 
-# %%
 t1start = perf_counter()
 alg1(data3(100))
 t1stop = perf_counter()
 print("Elapsed time during the whole program in seconds:", t1stop - t1start)
 
-# %%
 t1start = perf_counter()
 alg2(data3(100))
 t1stop = perf_counter()
 print("Elapsed time during the whole program in seconds:", t1stop - t1start)
 
-# %%
 t1start = perf_counter()
 alg1(data3(1000))
 t1stop = perf_counter()
 print("Elapsed time during the whole program in seconds:", t1stop - t1start)
 
-# %%
+
 t1start = perf_counter()
 alg2(data3(1000))
 t1stop = perf_counter()
 print("Elapsed time during the whole program in seconds:", t1stop - t1start)
 
-# %%
 
 #3c creating data frames of times to plot
 
-# %%
+
 t1start = perf_counter()
 alg2(data3(5000))
 t1stop = perf_counter()
 print("Elapsed time during the whole program in seconds:", t1stop - t1start)
 
-# %%
 data1_time_alg1 = []
 n_values = [10, 50, 100, 500, 1000, 5000]
 for n in n_values:
@@ -1495,10 +1456,8 @@ for n in n_values:
     print("Elapsed time during the whole program in seconds:", total_time)
 
 
-# %%
 data1_time_alg1
 
-# %%
 data1_time_alg2 = []
 n_values = [10, 50, 100, 500, 1000, 5000]
 for n in n_values:
@@ -1510,7 +1469,6 @@ for n in n_values:
     print("Elapsed time during the whole program in seconds:", total_time)
 
 
-# %%
 x_values = [10, 50, 100, 500, 1000, 5000]
 
 plt.figure()
@@ -1528,8 +1486,6 @@ h = plt.savefig('data1_algs.png')
 plt.show()
 
 
-
-# %%
 data2_time_alg1 = []
 n_values = [10, 50, 100, 500, 1000, 5000]
 for n in n_values:
@@ -1540,8 +1496,6 @@ for n in n_values:
     data2_time_alg1.append(total_time)
     print("Elapsed time during the whole program in seconds:", total_time)
 
-
-# %%
 data2_time_alg2 = []
 n_values = [10, 50, 100, 500, 1000, 5000]
 for n in n_values:
@@ -1553,7 +1507,6 @@ for n in n_values:
     print("Elapsed time during the whole program in seconds:", total_time)
 
 
-# %%
 plt.figure()
 plt.loglog(n_values, data2_time_alg1, label='alg1 on data2', marker='o', linestyle='-', color='blue')
 plt.loglog(n_values, data2_time_alg2, label='alg2 on data2', marker='o', linestyle='-', color ='red')
@@ -1568,7 +1521,6 @@ j = plt.savefig('data2_algs.png')
 plt.show()
 
 
-# %%
 data3_time_alg1 = []
 n_values = [10, 50, 100, 500, 1000, 5000]
 for n in n_values:
@@ -1579,8 +1531,6 @@ for n in n_values:
     data3_time_alg1.append(total_time)
     print("Elapsed time during the whole program in seconds:", total_time)
 
-
-# %%
 data3_time_alg2 = []
 n_values = [10, 50, 100, 500, 1000, 5000]
 for n in n_values:
@@ -1591,8 +1541,6 @@ for n in n_values:
     data3_time_alg2.append(total_time)
     print("Elapsed time during the whole program in seconds:", total_time)
 
-
-# %%
 plt.figure()
 plt.loglog(n_values, data3_time_alg1, label='alg1 on data3', marker='o', linestyle='-', color='blue')
 plt.loglog(n_values, data3_time_alg2, label='alg2 on data3', marker='o', linestyle='-', color ='red')
@@ -1606,4 +1554,486 @@ plt.grid(True, which="both", ls="--")
 k = plt.savefig('data3_algs.png')
 plt.show()
 
-Problem 4:
+**Problem 4:**
+
+import time
+from time import perf_counter
+import plotnine as p9
+from plotnine import geom_bar, ggplot, aes, geom_histogram, geom_smooth, theme_bw, labs
+import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter
+import numpy as np
+import statistics
+from statistics import mean
+import random
+import string
+import math
+
+
+class Tree:
+    def __init__(self):
+        self._value = None
+        self._data = None
+        self.left = None
+        self.right = None
+
+    def add(self, key, data):
+        if self._value is None:
+            self._value = key
+            self._data = data
+            self.left = Tree()
+            self.right = Tree()
+            return self
+
+        if self._value == key:
+            return self
+
+        if self._value < key:
+            self.right.add(key, data)
+        else:
+            self.left.add(key, data)
+        return self
+    
+    def __contains__(self, patient_id):
+        if self._value == patient_id:
+           return True
+        elif self.left and patient_id < self._value:
+            return patient_id in self.left
+        elif self.right and patient_id > self._value:
+            return patient_id in self.right
+        else:
+            return False
+
+
+ my_tree = Tree()
+ for patient_id, initials in [(24601, "JV"), (42, "DA"), (7, "JB"), (143, "FR"), (8675309, "JNY")]:
+     my_tree.add(patient_id, initials)
+
+
+for pid in [24601, 42, 7, 143, 8675309]:
+    assert pid in my_tree, f"Patient ID {pid} not found in tree!"
+print("All inserted patient IDs found.")
+
+
+print(144 in my_tree)
+
+
+print(24601 in my_tree)
+
+
+print(14921234 in my_tree)
+
+
+print(7 in my_tree)
+
+
+print(8675309 in my_tree)
+
+
+def has_data(node, data):
+    if node is None or node._value is None:
+        return False
+    if node._data == data:
+        return True
+    left_result = has_data(node.left, data) if node.left else False
+    right_result = has_data(node.right, data) if node.right else False
+    return left_result or right_result
+
+
+has_data(my_tree, 'JV')
+
+
+has_data(my_tree, 24601)
+
+
+has_data(my_tree, 'CG')
+
+
+has_data(my_tree, 'JNY')
+
+
+has_data(my_tree, 'BIS')
+
+
+has_data(my_tree, 'J')
+
+
+def generate_one_digit_number():
+    return random.randint(1, 10)
+def generate_two_digit_number():
+    return random.randint(10, 99)
+def generate_three_digit_number():
+    return random.randint(100, 999)
+def generate_four_digit_number():
+    return random.randint(1000, 9999)
+def generate_five_digit_number():
+    return random.randint(10000, 999999)
+def generate_six_digit_number():
+    return random.randint(100000, 9999999)
+
+def generate_initials():
+    return ''.join(random.choices(string.ascii_uppercase, k=2))
+
+
+
+def generate_patient_data(num_patients_per_group=100):
+    fake_data = []
+
+    for _ in range(num_patients_per_group):
+        fake_data.append((generate_one_digit_number(), generate_initials()))
+    return fake_data
+
+fake_one_digit = generate_patient_data()
+for patient_id, initials in fake_one_digit:
+    print(f"Patient ID: {patient_id}, Initials: {initials}")
+
+
+def generate_patient_data(num_patients_per_group=100):
+    fake_data = []
+
+    for _ in range(num_patients_per_group):
+        fake_data.append((generate_two_digit_number(), generate_initials()))
+    return fake_data
+
+fake_two_digit = generate_patient_data()
+for patient_id, initials in fake_two_digit:
+    print(f"Patient ID: {patient_id}, Initials: {initials}")
+
+
+def generate_patient_data(num_patients_per_group=100):
+    fake_data = []
+
+    for _ in range(num_patients_per_group):
+        fake_data.append((generate_three_digit_number(), generate_initials()))
+    return fake_data
+
+fake_three_digit = generate_patient_data()
+for patient_id, initials in fake_three_digit:
+    print(f"Patient ID: {patient_id}, Initials: {initials}")
+
+
+def generate_patient_data(num_patients_per_group=100):
+    fake_data = []
+
+    for _ in range(num_patients_per_group):
+        fake_data.append((generate_four_digit_number(), generate_initials()))
+    return fake_data
+
+fake_four_digit = generate_patient_data()
+for patient_id, initials in fake_four_digit:
+    print(f"Patient ID: {patient_id}, Initials: {initials}")
+
+
+def generate_patient_data(num_patients_per_group=100):
+    fake_data = []
+
+    for _ in range(num_patients_per_group):
+        fake_data.append((generate_five_digit_number(), generate_initials()))
+    return fake_data
+
+fake_five_digit = generate_patient_data()
+for patient_id, initials in fake_five_digit:
+    print(f"Patient ID: {patient_id}, Initials: {initials}")
+
+
+def generate_patient_data(num_patients_per_group=100):
+    fake_data = []
+
+    for _ in range(num_patients_per_group):
+        fake_data.append((generate_six_digit_number(), generate_initials()))
+    return fake_data
+
+fake_six_digit = generate_patient_data()
+for patient_id, initials in fake_six_digit:
+    print(f"Patient ID: {patient_id}, Initials: {initials}")
+
+
+all_digit_fake_data = [item for sublist in [fake_one_digit, fake_two_digit, fake_three_digit, fake_four_digit, fake_five_digit, fake_six_digit] for item in sublist]
+print(all_digit_fake_data)
+
+
+
+ my_tree = Tree()
+ for patient_id, initials in all_digit_fake_data:
+     my_tree.add(patient_id, initials)
+
+
+one_digit_time = []
+
+for patient_id, _ in fake_one_digit:
+    t1start = perf_counter()
+    result = patient_id in my_tree
+    t1stop = perf_counter()
+    total_time = t1stop - t1start
+    one_digit_time.append(total_time)
+    print("Elapsed time during the whole program in seconds:", total_time)
+
+
+two_digit_time = []
+
+for patient_id, _ in fake_two_digit:
+    t1start = perf_counter()
+    result = patient_id in my_tree
+    t1stop = perf_counter()
+    total_time = t1stop - t1start
+    two_digit_time.append(total_time)
+    print("Elapsed time during the whole program in seconds:", total_time)
+
+
+three_digit_time = []
+
+for patient_id, _ in fake_three_digit:
+    t1start = perf_counter()
+    result = patient_id in my_tree
+    t1stop = perf_counter()
+    total_time = t1stop - t1start
+    three_digit_time.append(total_time)
+    print("Elapsed time during the whole program in seconds:", total_time)
+
+
+four_digit_time = []
+
+for patient_id, _ in fake_four_digit:
+    t1start = perf_counter()
+    result = patient_id in my_tree
+    t1stop = perf_counter()
+    total_time = t1stop - t1start
+    four_digit_time.append(total_time)
+    print("Elapsed time during the whole program in seconds:", total_time)
+
+
+five_digit_time = []
+
+for patient_id, _ in fake_five_digit:
+    t1start = perf_counter()
+    result = patient_id in my_tree
+    t1stop = perf_counter()
+    total_time = t1stop - t1start
+    five_digit_time.append(total_time)
+    print("Elapsed time during the whole program in seconds:", total_time)
+
+
+six_digit_time = []
+
+for patient_id, _ in fake_six_digit:
+    t1start = perf_counter()
+    result = patient_id in my_tree
+    t1stop = perf_counter()
+    total_time = t1stop - t1start
+    six_digit_time.append(total_time)
+    print("Elapsed time during the whole program in seconds:", total_time)
+    print(result)
+
+
+mean_times = [mean(one_digit_time),
+    mean(two_digit_time),
+    mean(three_digit_time),
+    mean(four_digit_time),
+    mean(five_digit_time),
+    mean(six_digit_time)]
+
+digit_levels = [1, 2, 3, 4, 5, 6]
+
+
+def has_data_pid(node, data):
+    if node is None or node._value is None:
+        return False
+    if node._value == data:
+        return True
+    left_result = has_data_pid(node.left, data) if node.left else False
+    right_result = has_data_pid(node.right, data) if node.right else False
+    return left_result or right_result
+
+
+has_data_pid(my_tree, 6451434)
+
+
+hs_one_digit_time = []
+
+for patient_id, _ in fake_one_digit:
+    t1start = perf_counter()
+    result = has_data_pid(my_tree, patient_id)
+    t1stop = perf_counter()
+    total_time = t1stop - t1start
+    hs_one_digit_time.append(total_time)
+    print("Elapsed time during the whole program in seconds:", total_time)
+    print(result)
+
+
+hs_two_digit_time = []
+
+for patient_id, _ in fake_two_digit:
+    t1start = perf_counter()
+    has_data_pid(my_tree, patient_id)
+    t1stop = perf_counter()
+    total_time = t1stop - t1start
+    hs_two_digit_time.append(total_time)
+    print("Elapsed time during the whole program in seconds:", total_time)
+
+
+hs_three_digit_time = []
+
+for patient_id, _ in fake_three_digit:
+    t1start = perf_counter()
+    has_data_pid(my_tree, patient_id)
+    t1stop = perf_counter()
+    total_time = t1stop - t1start
+    hs_three_digit_time.append(total_time)
+    print("Elapsed time during the whole program in seconds:", total_time)
+
+
+hs_four_digit_time = []
+
+for patient_id, _ in fake_four_digit:
+    t1start = perf_counter()
+    has_data_pid(my_tree, patient_id)
+    t1stop = perf_counter()
+    total_time = t1stop - t1start
+    hs_four_digit_time.append(total_time)
+    print("Elapsed time during the whole program in seconds:", total_time)
+
+
+hs_five_digit_time = []
+
+for patient_id, _ in fake_five_digit:
+    t1start = perf_counter()
+    has_data_pid(my_tree, patient_id)
+    t1stop = perf_counter()
+    total_time = t1stop - t1start
+    hs_five_digit_time.append(total_time)
+    print("Elapsed time during the whole program in seconds:", total_time)
+
+
+hs_six_digit_time = []
+
+for patient_id, _ in fake_six_digit:
+    t1start = perf_counter()
+    result = has_data_pid(my_tree, patient_id)
+    t1stop = perf_counter()
+    total_time = t1stop - t1start
+    hs_six_digit_time.append(total_time)
+    print("Elapsed time during the whole program in seconds:", total_time)
+print(result)
+
+
+mean_hs_times = [mean(hs_one_digit_time),
+    mean(hs_two_digit_time),
+    mean(hs_three_digit_time),
+    mean(hs_four_digit_time),
+    mean(hs_five_digit_time),
+    mean(hs_six_digit_time)]
+
+digit_levels = [1, 2, 3, 4, 5, 6]
+
+
+plt.figure()
+plt.loglog(digit_levels, mean_times, label='time elapsed using __contains__', marker='o', linestyle='-', color='blue')
+plt.loglog(digit_levels, mean_hs_times, label='time elapsed using has_data', marker='o', linestyle='-', color ='red')
+
+plt.xlabel('Values')
+plt.ylabel('Time Elapsed (seconds)')
+plt.title('Timing of __contains__ and has_data')
+
+plt.grid(True, which='both', ls='--')
+plt.legend()
+plt.savefig('in_and_has_graph.png')
+plt.show()
+
+
+
+total_tree = []
+t1start = perf_counter()
+my_tree = Tree()
+for patient_id, initials in fake_one_digit:
+    my_tree.add(patient_id, initials)
+t1stop = perf_counter()
+total_time = t1stop - t1start
+total_tree.append(total_time)
+print("Elapsed time during the whole program in seconds:", total_time)
+
+
+t1start = perf_counter()
+my_tree = Tree()
+for patient_id, initials in fake_two_digit:
+    my_tree.add(patient_id, initials)
+t1stop = perf_counter()
+total_time = t1stop - t1start
+total_tree.append(total_time)
+print("Elapsed time during the whole program in seconds:", total_time)
+
+
+t1start = perf_counter()
+my_tree = Tree()
+for patient_id, initials in fake_three_digit:
+    my_tree.add(patient_id, initials)
+t1stop = perf_counter()
+total_time = t1stop - t1start
+total_tree.append(total_time)
+print("Elapsed time during the whole program in seconds:", total_time)
+
+
+t1start = perf_counter()
+my_tree = Tree()
+for patient_id, initials in fake_four_digit:
+    my_tree.add(patient_id, initials)
+t1stop = perf_counter()
+total_time = t1stop - t1start
+total_tree.append(total_time)
+print("Elapsed time during the whole program in seconds:", total_time)
+
+
+t1start = perf_counter()
+my_tree = Tree()
+for patient_id, initials in fake_five_digit:
+    my_tree.add(patient_id, initials)
+t1stop = perf_counter()
+total_time = t1stop - t1start
+total_tree.append(total_time)
+print("Elapsed time during the whole program in seconds:", total_time)
+
+
+t1start = perf_counter()
+my_tree = Tree()
+for patient_id, initials in fake_six_digit:
+    my_tree.add(patient_id, initials)
+t1stop = perf_counter()
+total_time = t1stop - t1start
+total_tree.append(total_time)
+print("Elapsed time during the whole program in seconds:", total_time)
+
+
+total_tree
+
+
+digit_levels = [1, 2, 3, 4, 5, 6]
+
+n_values = [10**d for d in digit_levels]
+
+a = total_tree[0] / n_values[0] 
+b = total_tree[-1] / n_values[-1]**2     
+
+lower_bound = [a * n for n in n_values]  
+upper_bound = [b * (n ** 2) for n in n_values]  
+
+plt.figure()
+plt.loglog(digit_levels, total_tree, label='Time to Construct Tree', marker='o', linestyle='-', color='blue')
+
+plt.loglog(digit_levels, lower_bound, label='O(log n) Lower Bound', linestyle='--', color='green')
+plt.loglog(digit_levels, upper_bound, label='O(n) Upper Bound', linestyle='--', color='red')
+
+def log_format(x, pos):
+    return r'$10^{{{}}}$'.format(int(np.log10(x))) if x != 0 else "0"
+
+plt.gca().yaxis.set_major_formatter(FuncFormatter(log_format))
+
+plt.xlabel('N in Patient ID')
+plt.ylabel('Time Elapsed (seconds)')
+plt.title('Time to Construct Tree')
+
+plt.grid(True, which='both', ls='--')
+plt.legend()
+plt.savefig('time_construct_tree.png')
+plt.show()
+
+
+
