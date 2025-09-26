@@ -1,9 +1,23 @@
-Problem Set #1
+# Problem Set #1 #
 cg2288 - Caroline Gheen
 
-Problem 1
+# Problem 1 #
 
-a. No patients share the same age. We can ensure this by finding the duplicates of the age tag, which returns with there are no duplicates [3,4]. 
+### a.
+
+No patients share the same age. We can ensure this by finding the duplicates of the age tag, which returns 'there are no duplicates' [3,4]. 
+
+```python
+element_counts = Counter(ages_list)
+
+duplicate_ages= [(age, count) for age, count in element_counts.items() if count > 1]
+
+print("Duplicate Child Elements:")
+for age, count in duplicate_ages:
+    print(f"Age: {age}, Count: {count}")
+```
+Extra Credit: A binary search is not possible with duplicate items [0]. So, another method would need to be chosen at 1.e and after. 
+
 ![histogram of age distribution of patients](age_distribution.png)
 
 ```python
@@ -19,13 +33,17 @@ Duplicate Child Elements:
 ```
 Extra Credit: If there were multiple patients with the same age, it would change the way they are retrieved and sorted along the rest of the problem. 
 
-b. Each gender is encoded as a full word; either 'male,' 'female,' or 'unknown.'
+### b. 1b. Plot Gender Distribution (3 points) Plot the distribution of genders from the dataset. Identify how gender is encoded in the data and list the categories used.
+
+Each gender is encoded as a full word; either 'male,' 'female,' or 'unknown.' While the scale of the bar graph makes it appear that there are no items in the unknown category, we can see from a printed dataframe that there are 72 patients with unknown gender. 
+#Comment on lack of unknown. Add dataframe to readme
 
 ![bar chart of counts of gender in patients](gender_graph.png)
 
 [6,7]
 
-c. Oldest patient is 84.99855742449432 years old.  
+### c.
+The second oldest patient is 84.9982928781625.  
 ```
 sorted_ages = sorted(ages_list, reverse=True)
 sorted_ages
@@ -64,11 +82,19 @@ sorted_ages
 Output is truncated.
 ```
 
-d. It would be better to arrange the data in a set, which is O(n). Using a set allows for more overhead as it functions at a constant time and is just looking at the hash and placing. 
+### d.
+ It would be better to arrange the data in a set, which is O(n). Using a set allows for more overhead as it functions at a constant time and is just looking at the hash and placing. 
 Lists, while they take longer with larger data sets, are ordered. Therefore, if wanting to do something with ordered meaning, a list would be better. If wanting to do something with large data in which you want to minimize overhead, use a set. 
 
-e. 
-Sources: 
+### e.
+
+### f.
+
+### g.
+
+
+### Sources:
+[0] https://thelinuxcode.com/mastering-binary-search-in-python-a-complete-visual-walkthrough/
 
 [1] https://pythonguides.com/read-xml-files-in-python/
 loading xml data
@@ -89,11 +115,15 @@ visualizing data and finding attributable tags
 
 [9] Asked Yale Clarity how to round sorted list to 1 decimal place. 
 
-#Problem 2
+[10] Asked Yale Clarity why my fake data was not returning a non sorted list right of the median. 
 
-a. This function is administering medicine in increments. So, if you tell the function you want to administer medicine in 6 units, it will give 6 units until it hits the amount that is tstop. Tstop is the amount of full medicine needed to be given; delta_t is the difference between what has already been administered + what was just administered; and the number of doses administered is the amount needed to get to tstop in the incremental amounts that is t.
+# Problem 2 #
 
-b. When you call 0.25, 1 you get, as expected it took four rounds of administering 0.25 doses amounts to reach full dosage of 1. 
+### a.
+This function is administering medicine in increments. So, if you tell the function you want to administer medicine in 6 units, it will give 6 units until it hits the amount that is tstop. Tstop is the amount of full medicine needed to be given; delta_t is the difference between what has already been administered + what was just administered; and the number of doses administered is the amount needed to get to tstop in the incremental amounts that is t.
+
+### b.
+ When you call 0.25, 1 you get, as expected it took four rounds of administering 0.25 doses amounts to reach full dosage of 1. 
 ```python
 administer_meds(0.25,1)
 Administering meds at t=0
@@ -102,7 +132,8 @@ Administering meds at t=0.5
 Administering meds at t=0.75
 ```
 
-c. When you call 0.1, 1 you start getting wonky decimal numbers. The dose of 3 is displayed as 3.0000000000000004. This goes awry after the 0.7 dosage. The next dose, which should be 0.8 is 0.7999999999999999. Then the dosage is 0.8999999999999999 then 0.9999999999999999. 
+### c.
+ When you call 0.1, 1 you start getting wonky decimal numbers. The dose of 3 is displayed as 3.0000000000000004. This goes awry after the 0.7 dosage. The next dose, which should be 0.8 is 0.7999999999999999. Then the dosage is 0.8999999999999999 then 0.9999999999999999. 
 
 ```python
 administer_meds(0.1,1)
@@ -120,11 +151,14 @@ Administering meds at t=0.8999999999999999
 Administering meds at t=0.9999999999999999
 ```
 
-d. The dosage is not as expected and this could lead to a compounding effect of delivering too much medicine. The times are also not as expected because with the trailing decimals, the function is not realizing it has hit t-stop.  
+### d.
+The dosage is not as expected and this could lead to a compounding effect of delivering too much medicine. The times are also not as expected because with the trailing decimals, the function is not realizing it has hit t-stop.  
 
-e. These trailing decimals will compound into an issue, which is not great when delivering medicine. Insulin, for example, is delivered in units because it is so potent - too much insulin or too little insulin for a diabetic can have profound impacts.
+### e.
+ These trailing decimals will compound into an issue, which is not great when delivering medicine. Insulin, for example, is delivered in units because it is so potent - too much insulin or too little insulin for a diabetic can have profound impacts.
 
-f. To fix, I coded the function so that it only return 2 decimal places [1]. This will help the calculations stay aligned. I tested it with (0.1, 1), (0.1, 2), and (0.15, 3).
+### f.
+ To fix, I coded the function so that it only return 2 decimal places [1]. This will help the calculations stay aligned. I tested it with (0.1, 1), (0.1, 2), and (0.15, 3).
 ```python
 def administer_meds1(delta_t, tstop):
     t = 0
@@ -194,17 +228,20 @@ Administering meds at t=2.999999999999999
 ```
 
 
-Sources used:
+## Sources used:
 
 [1] Asked ChatGPT how to code so that only 2 decimal places were returned  
 
-#Problem 3
+# Problem 3 # 
 
-a. algorithm 1 and 2 - data 1 is making little increments between range. for 100, only goes 20-50.
+### a.
+ algorithm 1 and 2 - data 1 is making little increments between range. for 100, only goes 20-50.
 algorithm 1 and 2 -data 2 runs a list easily for 100. Starts at 0 goes to 99
 algorithm 1 and 2- data 3 runs a list easily for every number in 100. Starts at 1 ends at 100.
 
-I hypothesize that Algorithm 1 is running a bubble sort. Algorithm 2 is running a merge sort.
+I hypothesize that Algorithm 1 is running a bubble sort. Algorithm 2 is running a merge sort. 
+#cite slides
+#go further on graph x axis.
 
 ```python
  alg1(data1(100))
@@ -410,10 +447,11 @@ alg2(data2(100))
  *Outputs are truncated
  ```
 
-b. Algorithm 1 is cycling through a list that if the index + 1 is less than the index it places it places it before in the list, otherwise it returns the value. 
+### b.
+ Algorithm 1 is cycling through a list that if the index + 1 is less than the index it places it places it before in the list, otherwise it returns the value. 
 Algorithm 2 divides the data in half then splits it among a left branch and a right branch. It then proceeds down each branch and if the left branch is less than the right branch it adds the number to the left branch and moves to the next value until nothing remains. 
 
-c. 
+### c.
 The Big O of algorithm 1 is n^2.
 The Big O of algorithm 2 is n log n.
 
@@ -429,14 +467,503 @@ Data 3 tested on both algorithms:
  
 ![time elapsed using alg1 and alg2 on data 3](data3_algs.png) [2]
 
-d. At all numbers using data 1, algorithm 1 is slower than algorithm 2. Both slow down at data bigger than 100.
+### d.
+At all numbers using data 1, algorithm 1 is slower than algorithm 2. Both slow down at data bigger than 100.
 
 For data 2, algorithm 1 preforms better at all n values. Algorithm 1 is very fast until 100 then begins slowing down.
 
 Using data 3, the algorithms perform similarly at small numbers but eventually algorithm 2 preforms faster. Both increase at similar increments as data increases. 
 
-Algorithm 2 is perferable for super small n's and data well over 10^2. Between those points algorithm 1 is faster.
+Algorithm 2 is perferable for super small n's and data well over 10^2. Between those points algorithm 1 is faster. 
+#Mathematical, specific data sets 
 
 Sources Used: 
 [1] https://www.geeksforgeeks.org/python/time-perf_counter-function-in-python/
+
 [2]Asked Yale Clarity how to plot so axises are log-log and how to save photo of graph generated in matplot. 
+
+# Problem 4 #
+### a. 
+
+[1] Yale Clarity to build binary search tree without a node and ensure self._value being used correctly
+[2] Yale Clarity to understand syntax of in 
+# Problem 5 #
+
+# Imagine you work at a cancer hospital and are responsible for making internal research data discoverable and interoperable. The dataset includes gene sequence metadata, imaging metadata (radiology / pathology), medication records, and free-text clinician notes. Your task is to recommend a small set of ontologies that together provide good coverage across these data types without excessive overlap or unnecessary breadth. Prefer ontologies that are applicable to more than one data modality (e.g., anatomy terms usable for both imaging and notes). Where licensing or access restrictions exist, suggest workable alternatives and justify your preference
+
+### a.
+
+I recommend the following 4 ontologies:
+    SNOMEDCT - to be used with clincian free-text and data entry, medications,specimans/pathologies, symptoms, and more. SNOMEDCT is a widely accepted ontology that provides many core concepts, schemes, and guidelines so it is a good baseline ontology, especially for use by clinicians and for patient data. It is rated as widely accpeted (99.2), not very specialized(18.5), and fairly detailed (50) for a cancer ontology. It makes sense for multiple data types because it has extenive concepts, defintions,, and links/relationships.
+
+    GO - Gene Ontology - provides vocabulary for gene products, functions, components and roles. GO will give ontology for the molecular, gene, and protein componets of the cancer research not covered in SNOMEDCT or EDAMBIO. It is very detailed (62.1), gives fair coverage (50), isn't very specific (12.7), but is widely accepted (88.2) for a gene ontology. It will give great depth to the molecular and biological processes needed for cancer research, although it does have some potential overlap with NCIT. 
+
+    NCIT - National Cancer Institute Thesarus - semantics for basic clinical care, translational and basic reasearch, and administration. This ontology allows for specific cancer needed ontologies, including drug concepts, biomarkers, and cancer-specific molecular and celluar components. NCIT is pretty specialized (45.8) but gives great coverage (100) and deep detail (88.2) and is widely accepted (87.9) for a cancer ontology. It provides a good baseline for all other ontologies/data to be cancer specific as it provides an intersection for mediciation and genes but gives a needed cancer depth to all elements that is not given through the other ontologies. 
+
+    EDAMBIO - EDAM Bioimaging Ontology - bioimaging topics including format and analysis. EDAMBIO provides imaging ontologies and metadata not present in the others mentioned. It is very detailed (100) and provides amazing coverage(100), while also being well specialized (60.5) and widely accpeted (86.7) for an imaging ontology.
+
+    If the clincial/research staff feels overwhelmed due to these ontologies being broader, one could recommend a mapping ontology that aid in reconciling overlapping concepts. 
+    Or, if the research hospital is interested in creating cancer drugs, I would recommend MedDRA as a fifth ontology.
+
+* all numbers are the numbers reported with the biorecommender on bioportal when searched with the associated term; higher is better in that category. 
+
+### b. 
+ EDAM Bioimaging Ontology  is shared under the Creative Commons Attribution-ShareAlike 4.0 International Public License in which it is open to share and edit with some stipulations. One is able to use it for their own use or distribution and modify it, but they must cite the authors if publishing and any modification must fit community standards. Additionally, the license does not carry liability, trademark, patent or warranty.
+
+ Gene Ontology is licensed under the Creative Commons Attribution 4.0. This allows free use of the ontology with proper documentation.
+
+SNOMEDCT is available free of charge to those with a license for the UMLS Metathesarus but it cannot be distributed to those without. It is updated biannually, but by the US government, not world wide. 
+
+NCIT is licensed under the Creative Commons Attribution 4.0 but produced by the National Cancer Institute (under NIH) so also is available for free use with proper documentation. It is updated monthly.
+
+There is a benefit to the ontologies maintained by federal entities because they are updated frequently and typically interacts well with other common ontologies. They do lack, however, the benefit of community input and fast updates. These ontologies developed in the community, however, are not guarenteed to be maintained and my have tricky licensing agreements. 
+
+### c. 
+
+1. I entered "Imagine you work at a cancer hospital and are responsible for making internal research data discoverable and interoperable. The dataset includes gene sequence metadata, imaging metadata (radiology / pathology), medication records, and free-text clinician notes" into the search of bio portal. This generated a good list of ontologies that I first parsed thorugh. 
+2. I specifically searched medical imaging metadata, gene sequencing, pathology, cancer research into bioportal to ensure I was meeting all ontologies aspects needed. 
+3. I considered the scores given to the ontologies from Bio portal for most wanted input. This gave me an idea of if they would be too broad and overwhelming or if they would be too specific and detailed.
+4. Once I had 5 ontologies I liked, I pasted the Bioportal page and homepage of each ontology into ChatGPT to ensure ontologies did not have substantial overlap and touched all wanted scopes.
+6. My initial stopping point was that I had 5 ontologies and that was the maximum for this assignment. But once I considered the ranges of the Bio portal scales and the feedback considering overlap from ChatGPT, I considered different combinations of ontologies. Once I had an ontology that primarily focused on one specific facet of the cancer hospital (research, clinical, imaging, genes) that also interacted well with the other ontologies, I stopped. 
+
+Sources:
+[1] Used ChatGPT to ensure written answers fully answer every aspect of questions. 
+# Appendix of Code #
+Problem 1: 
+
+Problem 2:
+# %%
+def administer_meds(delta_t, tstop):
+    t = 0
+    while t < tstop: 
+        print(f"Administering meds at t={t}")
+        t += delta_t
+
+# %%
+administer_meds(6, 24)
+
+# %%
+administer_meds(2, 10)
+
+# %%
+administer_meds(1, 2)
+
+# %%
+administer_meds(1000, 5000)
+
+# %%
+administer_meds(2, 9)
+
+# %%
+administer_meds(0.25,1)
+
+# %%
+administer_meds(0.1,1)
+
+# %%
+administer_meds(0.1,2)
+
+# %%
+administer_meds(0.1,3)
+
+# %%
+def administer_meds1(delta_t, tstop):
+    t = 0
+    while t < tstop: 
+        print(f"Administering meds at t={t:.2f}")
+        t += delta_t
+
+# %%
+administer_meds1(0.1,1)
+
+# %%
+administer_meds1(0.15, 3)
+
+# %%
+administer_meds(0.15, 3)
+
+# %%
+administer_meds1(0.1, 2)
+
+
+Problem 3:
+# %%
+import time
+import matplotlib.pyplot as plt
+import numpy as np
+
+# %%
+def alg1(data):
+  data = list(data)
+  changes = True
+  while changes:
+    changes = False
+    for i in range(len(data) - 1):
+      if data[i + 1] < data[i]:
+        data[i], data[i + 1] = data[i + 1], data[i]
+        changes = True
+  return data
+
+# %%
+def alg2(data):
+  if len(data) <= 1:
+    return data
+  else:
+    split = len(data) // 2
+    left = iter(alg2(data[:split]))
+    right = iter(alg2(data[split:]))
+    result = []
+    # note: this takes the top items off the left and right piles
+    left_top = next(left)
+    right_top = next(right)
+    while True:
+      if left_top < right_top:
+        result.append(left_top)
+        try:
+          left_top = next(left)
+        except StopIteration:
+          # nothing remains on the left; add the right + return
+          return result + [right_top] + list(right)
+      else:
+        result.append(right_top)
+        try:
+          right_top = next(right)
+        except StopIteration:
+          # nothing remains on the right; add the left + return
+          return result + [left_top] + list(left)
+
+# %%
+def data1(n, sigma=10, rho=28, beta=8/3, dt=0.01, x=1, y=1, z=1):
+    import numpy
+    state = numpy.array([x, y, z], dtype=float)
+    result = []
+    for _ in range(n):
+        x, y, z = state
+        state += dt * numpy.array([
+            sigma * (y - x),
+            x * (rho - z) - y,
+            x * y - beta * z
+        ])
+        result.append(float(state[0] + 30))
+    return result
+
+# %%
+def data2(n):
+    return list(range(n))
+
+# %%
+def data3(n):
+    return list(range(n, 0, -1))
+
+# %%
+alg1(data1(100))
+
+# %%
+alg1(data2(100))
+
+# %%
+alg1(data3(100))
+
+# %%
+alg2(data1(100))
+
+# %%
+alg2(data2(100))
+
+# %%
+alg2(data3(100))
+
+# %%
+alg1(data1(10))
+
+# %%
+alg1(data1(1))
+
+# %%
+alg2(data1(10))
+
+# %%
+alg2(data1(1))
+
+# %%
+alg1(data2(10))
+
+# %%
+alg2(data2(10))
+
+# %%
+alg2(data2(1))
+
+# %%
+time.perf_counter()
+from time import perf_counter
+t1start = perf_counter()
+t1stop = perf_counter()
+print("Elapsed time during the whole program in seconds:", t1stop - t1start)    
+
+# %%
+t1start = perf_counter()
+alg1(data1(100))
+t1stop = perf_counter()
+print("Elapsed time during the whole program in seconds:", t1stop - t1start)
+
+# %%
+t1start = perf_counter()
+alg2(data1(100))
+t1stop = perf_counter()
+print("Elapsed time during the whole program in seconds:", t1stop - t1start)
+
+# %%
+t1start = perf_counter()
+alg1(data1(1))
+t1stop = perf_counter()
+print("Elapsed time during the whole program in seconds:", t1stop - t1start)    
+
+# %%
+t1start = perf_counter()
+alg2(data1(1))
+t1stop = perf_counter()
+print("Elapsed time during the whole program in seconds:", t1stop - t1start)
+
+# %%
+t1start = perf_counter()
+alg1(data1(1000))
+t1stop = perf_counter()
+print("Elapsed time during the whole program in seconds:", t1stop - t1start)
+
+# %%
+t1start = perf_counter()
+alg2(data1(1000))
+t1stop = perf_counter()
+print("Elapsed time during the whole program in seconds:", t1stop - t1start)
+
+# %%
+t1start = perf_counter()
+alg1(data1(5000))
+t1stop = perf_counter()
+print("Elapsed time during the whole program in seconds:", t1stop - t1start)
+
+# %%
+t1start = perf_counter()
+alg2(data1(5000))
+t1stop = perf_counter()
+print("Elapsed time during the whole program in seconds:", t1stop - t1start)
+
+# %%
+t1start = perf_counter()
+alg1(data2(100))
+t1stop = perf_counter()
+print("Elapsed time during the whole program in seconds:", t1stop - t1start)
+
+# %%
+t1start = perf_counter()
+alg2(data2(100))
+t1stop = perf_counter()
+print("Elapsed time during the whole program in seconds:", t1stop - t1start)
+
+# %%
+t1start = perf_counter()
+alg1(data2(1))
+t1stop = perf_counter()
+print("Elapsed time during the whole program in seconds:", t1stop - t1start)
+
+# %%
+t1start = perf_counter()
+alg2(data2(1))
+t1stop = perf_counter()
+print("Elapsed time during the whole program in seconds:", t1stop - t1start)
+
+# %%
+t1start = perf_counter()
+alg1(data2(1000))
+t1stop = perf_counter()
+print("Elapsed time during the whole program in seconds:", t1stop - t1start)
+
+# %%
+t1start = perf_counter()
+alg2(data2(1000))
+t1stop = perf_counter()
+print("Elapsed time during the whole program in seconds:", t1stop - t1start)
+
+# %%
+t1start = perf_counter()
+alg1(data2(5000))
+t1stop = perf_counter()
+print("Elapsed time during the whole program in seconds:", t1stop - t1start)
+
+# %%
+t1start = perf_counter()
+alg2(data2(5000))
+t1stop = perf_counter()
+print("Elapsed time during the whole program in seconds:", t1stop - t1start)
+
+# %%
+t1start = perf_counter()
+alg1(data3(1))
+t1stop = perf_counter()
+print("Elapsed time during the whole program in seconds:", t1stop - t1start)
+
+# %%
+t1start = perf_counter()
+alg2(data3(1))
+t1stop = perf_counter()
+print("Elapsed time during the whole program in seconds:", t1stop - t1start)
+
+# %%
+t1start = perf_counter()
+alg1(data3(100))
+t1stop = perf_counter()
+print("Elapsed time during the whole program in seconds:", t1stop - t1start)
+
+# %%
+t1start = perf_counter()
+alg2(data3(100))
+t1stop = perf_counter()
+print("Elapsed time during the whole program in seconds:", t1stop - t1start)
+
+# %%
+t1start = perf_counter()
+alg1(data3(1000))
+t1stop = perf_counter()
+print("Elapsed time during the whole program in seconds:", t1stop - t1start)
+
+# %%
+t1start = perf_counter()
+alg2(data3(1000))
+t1stop = perf_counter()
+print("Elapsed time during the whole program in seconds:", t1stop - t1start)
+
+# %%
+
+#3c creating data frames of times to plot
+
+# %%
+t1start = perf_counter()
+alg2(data3(5000))
+t1stop = perf_counter()
+print("Elapsed time during the whole program in seconds:", t1stop - t1start)
+
+# %%
+data1_time_alg1 = []
+n_values = [10, 50, 100, 500, 1000, 5000]
+for n in n_values:
+    t1start = perf_counter()
+    alg1(data1(n))
+    t1stop = perf_counter()
+    total_time = t1stop - t1start
+    data1_time_alg1.append(total_time)
+    print("Elapsed time during the whole program in seconds:", total_time)
+
+
+# %%
+data1_time_alg1
+
+# %%
+data1_time_alg2 = []
+n_values = [10, 50, 100, 500, 1000, 5000]
+for n in n_values:
+    t1start = perf_counter()
+    alg2(data1(n))
+    t1stop = perf_counter()
+    total_time = t1stop - t1start
+    data1_time_alg2.append(total_time)
+    print("Elapsed time during the whole program in seconds:", total_time)
+
+
+# %%
+x_values = [10, 50, 100, 500, 1000, 5000]
+
+plt.figure()
+plt.loglog(x_values, data1_time_alg1, label='alg1 on data1', marker='o', linestyle='-', color='blue')
+plt.loglog(x_values, data1_time_alg2, label='alg2 on data1', marker='o', linestyle='-', color ='red')
+
+plt.xlabel('Values')
+plt.ylabel('Time Elapsed (seconds)')
+plt.title('Time Elapsed Using alg1 and alg2 on data1')
+plt.legend()
+
+plt.grid(True, which="both", ls="--")
+
+h = plt.savefig('data1_algs.png')
+plt.show()
+
+
+
+# %%
+data2_time_alg1 = []
+n_values = [10, 50, 100, 500, 1000, 5000]
+for n in n_values:
+    t1start = perf_counter()
+    alg1(data2(n))
+    t1stop = perf_counter()
+    total_time = t1stop - t1start
+    data2_time_alg1.append(total_time)
+    print("Elapsed time during the whole program in seconds:", total_time)
+
+
+# %%
+data2_time_alg2 = []
+n_values = [10, 50, 100, 500, 1000, 5000]
+for n in n_values:
+    t1start = perf_counter()
+    alg2(data2(n))
+    t1stop = perf_counter()
+    total_time = t1stop - t1start
+    data2_time_alg2.append(total_time)
+    print("Elapsed time during the whole program in seconds:", total_time)
+
+
+# %%
+plt.figure()
+plt.loglog(n_values, data2_time_alg1, label='alg1 on data2', marker='o', linestyle='-', color='blue')
+plt.loglog(n_values, data2_time_alg2, label='alg2 on data2', marker='o', linestyle='-', color ='red')
+
+plt.xlabel('Values')
+plt.ylabel('Time Elapsed (seconds)')
+plt.title('Time Elapsed Using alg1 and alg2 on data2')
+plt.legend()
+
+plt.grid(True, which="both", ls="--")
+j = plt.savefig('data2_algs.png')
+plt.show()
+
+
+# %%
+data3_time_alg1 = []
+n_values = [10, 50, 100, 500, 1000, 5000]
+for n in n_values:
+    t1start = perf_counter()
+    alg1(data3(n))
+    t1stop = perf_counter()
+    total_time = t1stop - t1start
+    data3_time_alg1.append(total_time)
+    print("Elapsed time during the whole program in seconds:", total_time)
+
+
+# %%
+data3_time_alg2 = []
+n_values = [10, 50, 100, 500, 1000, 5000]
+for n in n_values:
+    t1start = perf_counter()
+    alg2(data3(n))
+    t1stop = perf_counter()
+    total_time = t1stop - t1start
+    data3_time_alg2.append(total_time)
+    print("Elapsed time during the whole program in seconds:", total_time)
+
+
+# %%
+plt.figure()
+plt.loglog(n_values, data3_time_alg1, label='alg1 on data3', marker='o', linestyle='-', color='blue')
+plt.loglog(n_values, data3_time_alg2, label='alg2 on data3', marker='o', linestyle='-', color ='red')
+
+plt.xlabel('Values')
+plt.ylabel('Time Elapsed (seconds)')
+plt.title('Time Elapsed Using alg1 and alg2 on data3')
+plt.legend()
+
+plt.grid(True, which="both", ls="--")
+k = plt.savefig('data3_algs.png')
+plt.show()
+
+Problem 4:
