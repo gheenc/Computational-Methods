@@ -18,79 +18,134 @@ for age, count in duplicate_ages:
 ```
 Extra Credit: A binary search is not possible with duplicate items [0]. So, another method would need to be chosen at 1.e and after. 
 
-![histogram of age distribution of patients](age_distribution.png)
+![histogram of age distribution of patients](age_distribution.png) 
 
-```python
-element_counts = Counter(ages_list)
-
-duplicate_ages= [(age, count) for age, count in element_counts.items() if count > 1]
-
-print("Duplicate Child Elements:")
-for age, count in duplicate_ages:
-    print(f"Age: {age}, Count: {count}")
-
-Duplicate Child Elements:
-```
-Extra Credit: If there were multiple patients with the same age, it would change the way they are retrieved and sorted along the rest of the problem. 
-
-### b. 1b. Plot Gender Distribution (3 points) Plot the distribution of genders from the dataset. Identify how gender is encoded in the data and list the categories used.
+### b.
 
 Each gender is encoded as a full word; either 'male,' 'female,' or 'unknown.' While the scale of the bar graph makes it appear that there are no items in the unknown category, we can see from a printed dataframe that there are 72 patients with unknown gender. 
-#Comment on lack of unknown. Add dataframe to readme
+
+```python
+unique_genders = set(genders_list)
+for tag in unique_genders:
+    print(tag)
+```
 
 ![bar chart of counts of gender in patients](gender_graph.png)
 
 [6,7]
 
 ### c.
-The second oldest patient is 84.9982928781625.  
-```
-sorted_ages = sorted(ages_list, reverse=True)
-sorted_ages
+I created a list of ages to plot the histogram, so I just sorted this existing list. 
 
-[84.99855742449432,
- 84.9982928781625,
- 84.99820162144917,
- 84.99794285222339,
- 84.99723990226988,
- 84.99653633733828,
- 84.99641667282472,
- 84.99619681756418,
- 84.99616424705508,
- 84.99581057797228,
- 84.99520133249439,
- 84.99518045537798,
- 84.99482936296276,
- 84.99481316244473,
- 84.9946352369426,
- 84.99420273952046,
- 84.99405027835297,
- 84.9928674957938,
- 84.99222782900651,
- 84.99219574178792,
- 84.99212933829894,
- 84.99208819918721,
- 84.99103779613714,
- 84.99102296716515,
- 84.99039601734279,
-...
- 84.60864216053271,
- 84.60862996617146,
- 84.60819876170447,
- 84.6071120339206,
- ...]
-Output is truncated.
+```python
+sorted_ages = sorted(ages_list)
 ```
+I then reverse sorted this list and found the patient whos age matched index position 0. 
 
-### d.
- It would be better to arrange the data in a set, which is O(n). Using a set allows for more overhead as it functions at a constant time and is just looking at the hash and placing. 
+```python 
+reverse_sorted_ages = sorted(ages_list, reverse=True)
+reverse_sorted_ages[0]
+
+oldest_pt = Bs_data.find('patient', {'age':reverse_sorted_ages[0]})
+print(oldest_pt)
+
+<patient age="84.99855742449432" gender="female" name="Monica Caponera">
+<diagnosis>Hypertension</diagnosis>
+</patient>
+```
+The oldest patient is 84.9982928781625, she is female and her name is Monica Caponera.  
+
+**d.**
+It would be better to arrange the data in a set, which is O(n). Using a set allows for more overhead as it functions at a constant time and is just looking at the hash and placing. 
+ **HOW COULD YOU USE A SET TO FIND THE SECOND OLDEST PATIENT**
 Lists, while they take longer with larger data sets, are ordered. Therefore, if wanting to do something with ordered meaning, a list would be better. If wanting to do something with large data in which you want to minimize overhead, use a set. 
 
-### e.
+**e.** <patient age="41.5" gender="male" name="John Braswell">
+</patient>
 
-### f.
+```python
+def binary_search(arr, x):
+    low = 0
+    high = len(arr) - 1
 
-### g.
+    while low <= high:
+        mid = (high + low) // 2
+        if arr[mid] < x:
+            low = mid + 1
+        elif arr[mid] > x:
+            high = mid - 1
+        else:
+            mid == x
+            return mid
+    return None
+
+    index = binary_search(sorted_ages, 41.5)
+forty_pt = Bs_data.find('patient', {'age':sorted_ages[index]})
+print(forty_pt)
+```
+
+**f.** 150471 patients are at least 41.5 years old
+
+```python
+index = binary_search(sorted_ages, 41.5)
+above_index = sorted_ages[index:]
+len(above_index)
+```
+
+**g**
+```python
+def binary_search1(arr, x, y):
+    low = 0
+    high = len(arr) - 1
+
+    while low <= high:
+        mid = (high + low) // 2
+        if arr[mid] <= x:
+            low = mid + 1
+        else: 
+            high = mid - 1
+    low_index = low
+    high = len(arr) - 1
+    while low <= high:
+        mid = (high + low) // 2
+        if arr[mid] > y:
+            high = mid - 1
+        else: 
+            low = mid + 1
+    high_index = high 
+    if low_index <= high_index:
+        return high_index - low_index + 1
+    else: return 0
+```
+
+    I tested this function with both fake data and xml data.
+
+```python
+ fake_data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+ print(binary_search1(fake_data, 2, 4))
+
+ returns 2
+
+ binary_search1(fake_data, 5, 8)
+
+ returns 3
+```
+
+I can index into sorted_ages and reverse_sorted_ages to see the youngest patient is 0.00010629282758800596 and the oldest patient is 84.99855742449432. Therefore a binary search of the entire patient list should return the number of patients - 1, which is does. 
+
+```python
+binary_search1(sorted_ages, 0.00010629282758800596, 84.99855742449432)
+
+returns 324356
+
+len(sorted_ages)
+
+returns  324357
+```
+
+**h.**
+
 
 
 ### Sources:
@@ -107,15 +162,16 @@ visualizing data and finding attributable tags
 [4] Asked Yale Clarity how to add a title to a graph in ggplot.
 
 [5] Asked Yale Clarity how to see all unique entires in my list of child tags. 
+
 [6] Asked Yale Clarity to troubleshoot errors when coding for bar plot and saving the image. 
 
 [7] https://www.geeksforgeeks.org/pandas/bar-plot-in-matplotlib/
 
-[8] https://www.geeksforgeeks.org/python/python-sorted-function/
-
-[9] Asked Yale Clarity how to round sorted list to 1 decimal place. 
+[8] https://www.geeksforgeeks.org/python/python-sorted-function/ 
 
 [10] Asked Yale Clarity why my fake data was not returning a non sorted list right of the median. 
+
+[11] Asked Yale Clarity GPT how to find everything above my index value. Also checked after that my length included the patient who is 41.5. 
 
 # Problem 2 #
 
