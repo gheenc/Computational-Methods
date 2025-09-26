@@ -3,7 +3,7 @@ cg2288 - Caroline Gheen
 
 # Problem 1 #
 
-### a.
+**a.** I loaded and parsed the data using Beautiful Soup then visualized it. 
 
 No patients share the same age. We can ensure this by finding the duplicates of the age tag, which returns 'there are no duplicates' [3,4]. 
 
@@ -20,24 +20,31 @@ Extra Credit: A binary search is not possible with duplicate items [0]. So, anot
 
 ![histogram of age distribution of patients](age_distribution.png) 
 
-### b.
-
-Each gender is encoded as a full word; either 'male,' 'female,' or 'unknown.' While the scale of the bar graph makes it appear that there are no items in the unknown category, we can see from a printed dataframe that there are 72 patients with unknown gender. 
+**b.** Each gender is encoded as a full word; either 'male,' 'female,' or 'unknown.' While the scale of the bar graph makes it appear that there are no items in the unknown category, we can see from a printed dataframe that there are 72 patients with unknown gender. 
 
 ```python
 unique_genders = set(genders_list)
 for tag in unique_genders:
     print(tag)
+
+returns 
+unknown
+male
+female
 ```
 
 ![bar chart of counts of gender in patients](gender_graph.png)
 
 [6,7]
 
-### c.
-I created a list of ages to plot the histogram, so I just sorted this existing list. 
+**c.**I created a list of ages to plot the histogram, so I just sorted this existing list. 
 
 ```python
+ages_list = []
+for patient in patients_bs:
+    ages = float(patient.get('age'))
+    ages_list.append(ages)
+
 sorted_ages = sorted(ages_list)
 ```
 I then reverse sorted this list and found the patient whos age matched index position 0. 
@@ -49,6 +56,7 @@ reverse_sorted_ages[0]
 oldest_pt = Bs_data.find('patient', {'age':reverse_sorted_ages[0]})
 print(oldest_pt)
 
+returns
 <patient age="84.99855742449432" gender="female" name="Monica Caponera">
 <diagnosis>Hypertension</diagnosis>
 </patient>
@@ -56,11 +64,12 @@ print(oldest_pt)
 The oldest patient is 84.9982928781625, she is female and her name is Monica Caponera.  
 
 **d.**
-It would be better to arrange the data in a set, which is O(n). Using a set allows for more overhead as it functions at a constant time and is just looking at the hash and placing. 
- **HOW COULD YOU USE A SET TO FIND THE SECOND OLDEST PATIENT**
-Lists, while they take longer with larger data sets, are ordered. Therefore, if wanting to do something with ordered meaning, a list would be better. If wanting to do something with large data in which you want to minimize overhead, use a set. 
+To achieve this in O(n) time, you would need to use a set. Using a set allows for more overhead as it functions at a constant time and is just looking at the hash and placing. 
+Lists, while they take longer with larger data sets, are ordered. A set would also be a more difficult way to look for the second oldest patient because of this lack of order. To look for the second oldest patient in a set, you could take the max, then subtract out that value then take the max again.
+If wanting to do something with ordered meaning, a list would be better.So, for example, things with age or ranking of pain severity might be adventageous to use a list. 
 
-**e.** <patient age="41.5" gender="male" name="John Braswell">
+**e.** 
+<patient age="41.5" gender="male" name="John Braswell">
 </patient>
 
 ```python
@@ -93,6 +102,7 @@ len(above_index)
 ```
 
 **g**
+
 ```python
 def binary_search1(arr, x, y):
     low = 0
@@ -132,7 +142,7 @@ def binary_search1(arr, x, y):
  returns 3
 ```
 
-I can index into sorted_ages and reverse_sorted_ages to see the youngest patient is 0.00010629282758800596 and the oldest patient is 84.99855742449432. Therefore a binary search of the entire patient list should return the number of patients - 1, which is does. 
+I can index into sorted_ages and reverse_sorted_ages to see the youngest patient is 0.00010629282758800596 and the oldest patient is 84.99855742449432. Therefore this binary search of the entire patient list should return the number of patients - 1, which is does. 
 
 ```python
 binary_search1(sorted_ages, 0.00010629282758800596, 84.99855742449432)
@@ -145,7 +155,71 @@ returns  324357
 ```
 
 **h.**
+```python
+male_prefix_sum = []
+count = 0
+for gender in sorted_gender_list:
+    if gender == 'male':
+        count += 1
+    male_prefix_sum.append(count)
 
+def binary_search2(arr, male_prefix_sum, x, y):
+    low = 0
+    high = len(arr) - 1
+
+    while low <= high:
+        mid = (high + low) // 2
+        if arr[mid] < x:
+            low = mid + 1
+        else: 
+            high = mid - 1
+    low_index = low
+
+    low = 0
+    high = len(arr) - 1
+    while low <= high:
+        mid = (high + low) // 2
+        if arr[mid] < y:
+            low = mid + 1
+        else: 
+            high = mid - 1
+    high_index = low 
+
+    if low_index < high_index:
+        total_in_range = high_index - low_index
+        males_in_range = male_prefix_sum[high_index-1]
+        if low_index > 0:
+            males_in_range -= male_prefix_sum[low_index -1]
+    else:
+        total_in_range = 0
+        males_in_range = 0
+    return (f"Number of patients between these ages: {total_in_range}, Number of males: {males_in_range}")
+```
+I created a patient list with name, age, and gender attributes of the patients sorted by age. I also created a list with just the genders and the ages sorted to use for testing. 
+I indexed into the 0, 1, and 2 positions of the sorted patient list, sorted age list, and sorted gender list to confirm all returned as expected for the first three patients. I knew from previous tests that Timothy Larson was the youngest patient in the data file. I then tested the range of these first 3 patients in the binary search using the ages returned and it returned as expected .  
+
+```python
+binary_search2(sorted_ages_list, male_prefix_sum, 0.00010629282758800596, 0.0011937231038899876)
+
+returned 'Number of patients between these ages: 2, Number of males: 1'
+```
+
+I also knew from earlier tests that Monica was the oldest patient. I indexed into the sorted list in the same way and retrieved the second oldest patient, who was a male. I then tested the function on this end of the list and it returned as expected. 
+
+```python
+binary_search2(sorted_ages_list, male_prefix_sum, 84.9982928781625, 84.99855742449432)
+
+returned
+'Number of patients between these ages: 1, Number of males: 1'
+```
+
+Lastly, I tested for a long range of ages to ensure it would run on more data.
+```python
+binary_search2(sorted_ages_list, male_prefix_sum, 20, 30)
+
+returned
+'Number of patients between these ages: 42335, Number of males: 21137'
+```
 
 
 ### Sources:
@@ -169,17 +243,15 @@ visualizing data and finding attributable tags
 
 [8] https://www.geeksforgeeks.org/python/python-sorted-function/ 
 
-[10] Asked Yale Clarity why my fake data was not returning a non sorted list right of the median. 
+[10] Asked Yale Clarity why my fake data was not returning a non sorted list right of the median. Asked Yale Clarity GPT how to find everything above my index value. 
 
-[11] Asked Yale Clarity GPT how to find everything above my index value. Also checked after that my length included the patient who is 41.5. 
+[12] I used ChatGPT to ensure that my functions were correctly inclusive or exclusive to the wanted range. Also asked how to sort list with multiple attributes by the age and how to match the ages of the index found with the gender of that same child. 
 
 # Problem 2 #
 
-### a.
-This function is administering medicine in increments. So, if you tell the function you want to administer medicine in 6 units, it will give 6 units until it hits the amount that is tstop. Tstop is the amount of full medicine needed to be given; delta_t is the difference between what has already been administered + what was just administered; and the number of doses administered is the amount needed to get to tstop in the incremental amounts that is t.
+**a.**This function is administering medicine in increments. So, if you tell the function you want to administer medicine in 6 units, it will give 6 units until it hits the amount that is tstop. Tstop is the amount of full medicine needed to be given; delta_t is the difference between what has already been administered + what was just administered; and the number of doses administered is the amount needed to get to tstop in the incremental amounts that is t.
 
-### b.
- When you call 0.25, 1 you get, as expected it took four rounds of administering 0.25 doses amounts to reach full dosage of 1. 
+**b.** When you call 0.25, 1 you get, as expected it took four rounds of administering 0.25 doses amounts to reach full dosage of 1. 
 ```python
 administer_meds(0.25,1)
 Administering meds at t=0
@@ -188,8 +260,7 @@ Administering meds at t=0.5
 Administering meds at t=0.75
 ```
 
-### c.
- When you call 0.1, 1 you start getting wonky decimal numbers. The dose of 3 is displayed as 3.0000000000000004. This goes awry after the 0.7 dosage. The next dose, which should be 0.8 is 0.7999999999999999. Then the dosage is 0.8999999999999999 then 0.9999999999999999. 
+**c.** When you call 0.1, 1 you start getting wonky decimal numbers. The dose of 3 is displayed as 3.0000000000000004. This goes awry after the 0.7 dosage. The next dose, which should be 0.8 is 0.7999999999999999. Then the dosage is 0.8999999999999999 then 0.9999999999999999. 
 
 ```python
 administer_meds(0.1,1)
@@ -207,14 +278,11 @@ Administering meds at t=0.8999999999999999
 Administering meds at t=0.9999999999999999
 ```
 
-### d.
-The dosage is not as expected and this could lead to a compounding effect of delivering too much medicine. The times are also not as expected because with the trailing decimals, the function is not realizing it has hit t-stop.  
+**d.** The dosage is not as expected and this could lead to a compounding effect of delivering too much medicine. The times are also not as expected because with the trailing decimals, the function is not realizing it has hit t-stop.  
 
-### e.
- These trailing decimals will compound into an issue, which is not great when delivering medicine. Insulin, for example, is delivered in units because it is so potent - too much insulin or too little insulin for a diabetic can have profound impacts.
+**e.** These trailing decimals will compound into an issue, which is not great when delivering medicine. Insulin, for example, is delivered in units because it is so potent - too much insulin or too little insulin for a diabetic can have profound impacts.
 
-### f.
- To fix, I coded the function so that it only return 2 decimal places [1]. This will help the calculations stay aligned. I tested it with (0.1, 1), (0.1, 2), and (0.15, 3).
+**f.** To fix, I coded the function so that it only return 2 decimal places [1]. This will help the calculations stay aligned. I tested it with (0.1, 1), (0.1, 2), and (0.15, 3).
 ```python
 def administer_meds1(delta_t, tstop):
     t = 0
@@ -290,8 +358,7 @@ Administering meds at t=2.999999999999999
 
 # Problem 3 # 
 
-### a.
- algorithm 1 and 2 - data 1 is making little increments between range. for 100, only goes 20-50.
+**a.** algorithm 1 and 2 - data 1 is making little increments between range. for 100, only goes 20-50.
 algorithm 1 and 2 -data 2 runs a list easily for 100. Starts at 0 goes to 99
 algorithm 1 and 2- data 3 runs a list easily for every number in 100. Starts at 1 ends at 100.
 
@@ -503,12 +570,10 @@ alg2(data2(100))
  *Outputs are truncated
  ```
 
-### b.
- Algorithm 1 is cycling through a list that if the index + 1 is less than the index it places it places it before in the list, otherwise it returns the value. 
+**b.** Algorithm 1 is cycling through a list that if the index + 1 is less than the index it places it places it before in the list, otherwise it returns the value. 
 Algorithm 2 divides the data in half then splits it among a left branch and a right branch. It then proceeds down each branch and if the left branch is less than the right branch it adds the number to the left branch and moves to the next value until nothing remains. 
 
-### c.
-The Big O of algorithm 1 is n^2.
+**c.** The Big O of algorithm 1 is n^2.
 The Big O of algorithm 2 is n log n.
 
 Data 1 tested on both algorithms [1]:  
@@ -523,8 +588,7 @@ Data 3 tested on both algorithms:
  
 ![time elapsed using alg1 and alg2 on data 3](data3_algs.png) [2]
 
-### d.
-At all numbers using data 1, algorithm 1 is slower than algorithm 2. Both slow down at data bigger than 100.
+**d.** At all numbers using data 1, algorithm 1 is slower than algorithm 2. Both slow down at data bigger than 100.
 
 For data 2, algorithm 1 preforms better at all n values. Algorithm 1 is very fast until 100 then begins slowing down.
 
@@ -539,17 +603,292 @@ Sources Used:
 [2]Asked Yale Clarity how to plot so axises are log-log and how to save photo of graph generated in matplot. 
 
 # Problem 4 #
-### a. 
+**a.** 
+``` python 
+class Tree:
+    def __init__(self):
+        self._value = None
+        self._data = None
+        self.left = None
+        self.right = None
 
-[1] Yale Clarity to build binary search tree without a node and ensure self._value being used correctly
-[2] Yale Clarity to understand syntax of in 
+    def add(self, key, data):
+        if self._value is None:
+            self._value = key
+            self._data = data
+            self.left = Tree()
+            self.right = Tree()
+            return self
+
+        if self._value == key:
+            return self
+
+        if self._value < key:
+            self.right.add(key, data)
+        else:
+            self.left.add(key, data)
+        return self
+```
+Added given data to the tree and tested to ensure it was added correctly [2]. 
+
+```python
+ my_tree = Tree()
+ for patient_id, initials in [(24601, "JV"), (42, "DA"), (7, "JB"), (143, "FR"), (8675309, "JNY")]:
+     my_tree.add(patient_id, initials)
+
+for pid in [24601, 42, 7, 143, 8675309]:
+    assert pid in my_tree, f"Patient ID {pid} not found in tree!"
+print("All inserted patient IDs found.")
+
+```
+**b.** After adding contains, my tree looked like this*. 
+```python
+class Tree:
+    def __init__(self):
+        self._value = None
+        self._data = None
+        self.left = None
+        self.right = None
+
+    def add(self, key, data):
+        if self._value is None:
+            self._value = key
+            self._data = data
+            self.left = Tree()
+            self.right = Tree()
+            return self
+
+        if self._value == key:
+            return self
+
+        if self._value < key:
+            self.right.add(key, data)
+        else:
+            self.left.add(key, data)
+        return self
+    
+    def __contains__(self, patient_id):
+        if self._value == patient_id:
+           return True
+        elif self.left and patient_id < self._value:
+            return patient_id in self.left
+        elif self.right and patient_id > self._value:
+            return patient_id in self.right
+        else:
+            return False
+```
+Tested this on multiple cases including known trues of varying length and the node and known falses that were close to trues or exceeded the digit count of what was in the tree (eg. 14921234 is longer than any other number in the tree).
+```python
+print(144 in my_tree)
+returned False
+
+print(24601 in my_tree)
+returned True
+
+print(14921234 in my_tree)
+returned False
+
+print(7 in my_tree)
+returned True
+
+print(8675309 in my_tree)
+returned True
+```
+**c.**
+```python
+def has_data(node, data):
+    if node is None or node._value is None:
+        return False
+    if node._data == data:
+        return True
+    left_result = has_data(node.left, data) if node.left else False
+    right_result = has_data(node.right, data) if node.right else False
+    return left_result or right_result
+```
+Tested this on known true and false cases of varying lengths.
+```python
+has_data(my_tree, 'JV')
+returns True
+
+has_data(my_tree, 24601)
+returns False
+
+has_data(my_tree, 'CG')
+returns False
+
+has_data(my_tree, 'JNY')
+returns True
+
+has_data(my_tree, 'BIS')
+returns False
+
+has_data(my_tree, 'J')
+returns False
+```
+
+**d.** To populate the tree, I created functions to make random 1-6 digit numbers and random 2 letter initials. 
+```python
+def generate_one_digit_number():
+    return random.randint(1, 10)
+def generate_two_digit_number():
+    return random.randint(10, 99)
+def generate_three_digit_number():
+    return random.randint(100, 999)
+def generate_four_digit_number():
+    return random.randint(1000, 9999)
+def generate_five_digit_number():
+    return random.randint(10000, 999999)
+def generate_six_digit_number():
+    return random.randint(100000, 9999999)
+
+def generate_initials():
+    return ''.join(random.choices(string.ascii_uppercase, k=2))
+```
+I then invoked the another function to generate 100 fake patients with different n length of patient ids varying from 1-6 using the appropraite digits' random number generator. Both the patient id and initials were stored in that n digits' list, creating 6 different lists each consisting of 100 patients of fake data.
+
+```python
+def generate_patient_data(num_patients_per_group=100):
+    fake_data = []
+
+    for _ in range(num_patients_per_group):
+        fake_data.append((generate_one_digit_number(), generate_initials()))
+    return fake_data
+
+fake_one_digit = generate_patient_data()
+for patient_id, initials in fake_one_digit:
+    print(f"Patient ID: {patient_id}, Initials: {initials}")
+
+def generate_patient_data(num_patients_per_group=100):
+    fake_data = []
+
+    for _ in range(num_patients_per_group):
+        fake_data.append((generate_two_digit_number(), generate_initials()))
+    return fake_data
+
+fake_two_digit = generate_patient_data()
+for patient_id, initials in fake_two_digit:
+    print(f"Patient ID: {patient_id}, Initials: {initials}")
+
+def generate_patient_data(num_patients_per_group=100):
+    fake_data = []
+
+    for _ in range(num_patients_per_group):
+        fake_data.append((generate_three_digit_number(), generate_initials()))
+    return fake_data
+
+fake_three_digit = generate_patient_data()
+for patient_id, initials in fake_three_digit:
+    print(f"Patient ID: {patient_id}, Initials: {initials}")
+
+def generate_patient_data(num_patients_per_group=100):
+    fake_data = []
+
+    for _ in range(num_patients_per_group):
+        fake_data.append((generate_four_digit_number(), generate_initials()))
+    return fake_data
+
+fake_four_digit = generate_patient_data()
+for patient_id, initials in fake_four_digit:
+    print(f"Patient ID: {patient_id}, Initials: {initials}")
+
+def generate_patient_data(num_patients_per_group=100):
+    fake_data = []
+
+    for _ in range(num_patients_per_group):
+        fake_data.append((generate_five_digit_number(), generate_initials()))
+    return fake_data
+
+fake_five_digit = generate_patient_data()
+for patient_id, initials in fake_five_digit:
+    print(f"Patient ID: {patient_id}, Initials: {initials}")
+
+def generate_patient_data(num_patients_per_group=100):
+    fake_data = []
+
+    for _ in range(num_patients_per_group):
+        fake_data.append((generate_six_digit_number(), generate_initials()))
+    return fake_data
+
+fake_six_digit = generate_patient_data()
+for patient_id, initials in fake_six_digit:
+    print(f"Patient ID: {patient_id}, Initials: {initials}")
+```
+I then combined all 6 digit lists into one list to add all the fake data to the tree. 
+```python
+all_digit_fake_data = [item for sublist in [fake_two_digit, fake_three_digit, fake_four_digit, fake_five_digit, fake_six_digit] for item in sublist]
+print(all_digit_fake_data)
+
+ my_tree = Tree()
+ for patient_id, initials in all_digit_fake_data:
+     my_tree.add(patient_id, initials)
+```
+Once the tree was populated, I measured the time for 'in' using the different n digit lists created earlier. 
+
+This is an example of how I measured time for patient id with 1 digit. This was repeated for all id lengths. To fully test the ability and timing of the function, it would be ideal to vary the lenghts of patient initials to be longer than 2 as well.
+
+```python
+one_digit_time = []
+
+for patient_id, _ in fake_one_digit:
+    t1start = perf_counter()
+    result = patient_id in my_tree
+    t1stop = perf_counter()
+    total_time = t1stop - t1start
+    one_digit_time.append(total_time)
+    print("Elapsed time during the whole program in seconds:", total_time)
+```
+
+This method was repeated for the same randomly generated patient ids and initials using the has_data. 
+
+```python
+hs_one_digit_time = []
+
+for patient_id, _ in fake_one_digit:
+    t1start = perf_counter()
+    result = has_data_pid(my_tree, patient_id)
+    t1stop = perf_counter()
+    total_time = t1stop - t1start
+    hs_one_digit_time.append(total_time)
+    print("Elapsed time during the whole program in seconds:", total_time)
+```
+
+Both timings of the time elapsed during the running of in/contains and has_data are displayed in the graph below. 
+
+![line graph displaying time elapsed during in and has operations in a binary search tree]('in_and_has_graph.png')
+
+Based on this graph, the has_data method consistently performed slower than the in/contains method. We can see better from the in method that as the n of patient id increases, so does the time elapsed. This line look more like the O(log n) line that we would expect. 
+The timing of the has_data method is very close to O(1), so there may be an error in the measuring of the times. 
+
+![line graph displaying time elapsed to construct a tree with varying n sizes]('time_construct_tree.png')
+
+I repeated a similar process to time elapsed time during the construction of a tree of various n's. Again, I only varied the n size of patient id, but a more thorough test would also vary the patient id n size. 
+
+```python
+total_tree = []
+t1start = perf_counter()
+my_tree = Tree()
+for patient_id, initials in fake_one_digit:
+    my_tree.add(patient_id, initials)
+t1stop = perf_counter()
+total_time = t1stop - t1start
+total_tree.append(total_time)
+print("Elapsed time during the whole program in seconds:", total_time)
+```
+
+I added bounds for O(n) and O(n^2), as we would expect this line to be between them and curving upwards as the n increases. Instead, we see a line approaching O(1), so there is likely an error in the method used to time contruction of the tree. The test might also benefit from going higher than 6 digit n's. 
+
+**e.** A beneficial tests uses varying data of varying sizes to ensure it can withstand many requests. Continually using the same value or only one test point does not accurately assess the performance of the function - it would assess the functions ability to do that one request. Using a varied set of values allows the function to be more real-world ready and ensure that any edge cases or accidental human errors have been eliminated. It also gives more validity that the well-tested function will be reliable in different circumstances. 
+
+
+[1] Yale Clarity to build binary search tree without a node and ensure self._value being used correctly.
+[2] Asked ChatGPT for a way to test that all data was added to tree correctly. 
+*My code would not work unless I edited the tree within one code block. 
+[3] Ask Yale Clarity how to create a n digit fake number generator and fake initial generator. 
+[4]With ChatGPT, trouble shooted why has_data would not work for patient ids in part d. Ensured timings were running correctly. Asked how to graph meanings on log-log scale and add curve bounds on time to construct graph. 
+
 # Problem 5 #
 
-# Imagine you work at a cancer hospital and are responsible for making internal research data discoverable and interoperable. The dataset includes gene sequence metadata, imaging metadata (radiology / pathology), medication records, and free-text clinician notes. Your task is to recommend a small set of ontologies that together provide good coverage across these data types without excessive overlap or unnecessary breadth. Prefer ontologies that are applicable to more than one data modality (e.g., anatomy terms usable for both imaging and notes). Where licensing or access restrictions exist, suggest workable alternatives and justify your preference
-
-### a.
-
-I recommend the following 4 ontologies:
+**a.** I recommend the following 4 ontologies:
     SNOMEDCT - to be used with clincian free-text and data entry, medications,specimans/pathologies, symptoms, and more. SNOMEDCT is a widely accepted ontology that provides many core concepts, schemes, and guidelines so it is a good baseline ontology, especially for use by clinicians and for patient data. It is rated as widely accpeted (99.2), not very specialized(18.5), and fairly detailed (50) for a cancer ontology. It makes sense for multiple data types because it has extenive concepts, defintions,, and links/relationships.
 
     GO - Gene Ontology - provides vocabulary for gene products, functions, components and roles. GO will give ontology for the molecular, gene, and protein componets of the cancer research not covered in SNOMEDCT or EDAMBIO. It is very detailed (62.1), gives fair coverage (50), isn't very specific (12.7), but is widely accepted (88.2) for a gene ontology. It will give great depth to the molecular and biological processes needed for cancer research, although it does have some potential overlap with NCIT. 
@@ -563,10 +902,9 @@ I recommend the following 4 ontologies:
 
 * all numbers are the numbers reported with the biorecommender on bioportal when searched with the associated term; higher is better in that category. 
 
-### b. 
- EDAM Bioimaging Ontology  is shared under the Creative Commons Attribution-ShareAlike 4.0 International Public License in which it is open to share and edit with some stipulations. One is able to use it for their own use or distribution and modify it, but they must cite the authors if publishing and any modification must fit community standards. Additionally, the license does not carry liability, trademark, patent or warranty.
+**b.** EDAM Bioimaging Ontology  is shared under the Creative Commons Attribution-ShareAlike 4.0 International Public License in which it is open to share and edit with some stipulations. One is able to use it for their own use or distribution and modify it, but they must cite the authors if publishing and any modification must fit community standards. Additionally, the license does not carry liability, trademark, patent or warranty.
 
- Gene Ontology is licensed under the Creative Commons Attribution 4.0. This allows free use of the ontology with proper documentation.
+Gene Ontology is licensed under the Creative Commons Attribution 4.0. This allows free use of the ontology with proper documentation.
 
 SNOMEDCT is available free of charge to those with a license for the UMLS Metathesarus but it cannot be distributed to those without. It is updated biannually, but by the US government, not world wide. 
 
@@ -574,8 +912,7 @@ NCIT is licensed under the Creative Commons Attribution 4.0 but produced by the 
 
 There is a benefit to the ontologies maintained by federal entities because they are updated frequently and typically interacts well with other common ontologies. They do lack, however, the benefit of community input and fast updates. These ontologies developed in the community, however, are not guarenteed to be maintained and my have tricky licensing agreements. 
 
-### c. 
-
+**c.**
 1. I entered "Imagine you work at a cancer hospital and are responsible for making internal research data discoverable and interoperable. The dataset includes gene sequence metadata, imaging metadata (radiology / pathology), medication records, and free-text clinician notes" into the search of bio portal. This generated a good list of ontologies that I first parsed thorugh. 
 2. I specifically searched medical imaging metadata, gene sequencing, pathology, cancer research into bioportal to ensure I was meeting all ontologies aspects needed. 
 3. I considered the scores given to the ontologies from Bio portal for most wanted input. This gave me an idea of if they would be too broad and overwhelming or if they would be too specific and detailed.
@@ -584,8 +921,255 @@ There is a benefit to the ontologies maintained by federal entities because they
 
 Sources:
 [1] Used ChatGPT to ensure written answers fully answer every aspect of questions. 
+
+
 # Appendix of Code #
 Problem 1: 
+# %%
+!pip install BeautifulSoup4
+import plotnine as p9
+from plotnine import geom_bar, ggplot, aes, geom_histogram, geom_smooth, theme_bw, labs
+from collections import Counter
+from bs4 import BeautifulSoup
+import pandas as pd
+import matplotlib.pyplot as plt
+from matplotlib.ticker import MultipleLocator
+import random
+
+# %%
+with open('pset1-patients.xml', 'r') as file:
+    data = file.read()
+print(data)
+
+# %%
+Bs_data = BeautifulSoup(data, 'xml')
+
+# %%
+patients_bs = Bs_data.find_all('patient')
+
+# %%
+ages_list = []
+for patient in patients_bs:
+    ages = float(patient.get('age'))
+    ages_list.append(ages)
+
+# %%
+ages_df = pd.DataFrame({'age':ages_list})
+
+# %%
+a = ggplot(ages_df, aes(x='age'))+ geom_histogram(bins=50, color = 'black') + labs(title='Distribution of Patient Ages') + theme_bw()
+a
+a.save("age_distribution.png")
+
+# %%
+element_counts = Counter(ages_list)
+
+duplicate_ages= [(age, count) for age, count in element_counts.items() if count > 1]
+
+print("Duplicate Child Elements:")
+for age, count in duplicate_ages:
+    print(f"Age: {age}, Count: {count}")
+
+# %%
+genders_list = []
+for patient in patients_bs:
+    genders = patient.get('gender')
+    genders_list.append(genders)
+genders_list
+
+# %%
+unique_genders = set(genders_list)
+for tag in unique_genders:
+    print(tag)
+
+# %%
+genders_df = pd.DataFrame({'gender':genders_list})
+gender_counts = genders_df['gender'].value_counts().reset_index()
+gender_counts.columns = ['gender', 'count']
+
+gender_counts
+
+# %%
+plt.bar(gender_counts['gender'], gender_counts['count'], color=['pink', 'blue', 'gray'])
+plt.title('Distribution of Gender')
+plt.xlabel('Genders')
+plt.ylabel('Counts')
+plt.savefig("gender_graph.png")
+plt.show()
+
+# %%
+sorted_ages = sorted(ages_list)
+
+# %%
+reverse_sorted_ages = sorted(ages_list, reverse=True)
+reverse_sorted_ages[0]
+
+
+# %%
+oldest_pt = Bs_data.find('patient', {'age':reverse_sorted_ages[0]})
+print(oldest_pt)
+
+# %%
+def binary_search(arr, x):
+    low = 0
+    high = len(arr) - 1
+
+    while low <= high:
+        mid = (high + low) // 2
+        if arr[mid] < x:
+            low = mid + 1
+        elif arr[mid] > x:
+            high = mid - 1
+        else:
+            mid == x
+            return mid
+    return None
+
+# %%
+index = binary_search(sorted_ages, 41.5)
+forty_pt = Bs_data.find('patient', {'age':sorted_ages[index]})
+print(forty_pt)
+
+# %%
+index = binary_search(sorted_ages, 41.5)
+above_index = sorted_ages[index:]
+len(above_index)
+
+
+# %%
+def binary_search1(arr, x, y):
+    low = 0
+    high = len(arr) - 1
+
+    while low <= high:
+        mid = (high + low) // 2
+        if arr[mid] < x:
+            low = mid + 1
+        else: 
+            high = mid - 1
+    low_index = low
+    high = len(arr) - 1
+    while low <= high:
+        mid = (high + low) // 2
+        if arr[mid] >= y:
+            high = mid - 1
+        else: 
+            low = mid + 1
+    high_index = high 
+    if low_index <= high_index:
+        return high_index - low_index + 1
+    else: return 0
+
+# %%
+fake_data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+# %%
+result = binary_search1(fake_data, 5, 8)
+print(result)
+
+# %%
+print(binary_search1(fake_data, 2, 4))
+
+# %%
+sorted_ages[0]
+
+# %%
+reverse_sorted_ages[0]
+
+# %%
+binary_search1(sorted_ages, 0.00010629282758800596, 84.99855742449432)
+
+# %%
+len(sorted_ages)
+
+# %%
+patient_list = []
+for patient in patients_bs:
+    name = patient.get('name')
+    gender = patient.get('gender')
+    age = float(patient.get('age'))
+    patient_list.append({'name': name, 'gender': gender, 'age': age})
+
+sorted_patient_list = sorted(patient_list, key=lambda x: x['age'])
+
+# %%
+sorted_gender_list = [patient['gender'] for patient in sorted_patient_list]
+sorted_ages_list = [patient['age'] for patient in sorted_patient_list]
+
+# %%
+print(sorted_patient_list[1])
+print(sorted_gender_list[1])
+print(sorted_ages_list[1])
+
+# %%
+print(sorted_patient_list[2])
+print(sorted_gender_list[2])
+print(sorted_ages_list[2])
+
+# %%
+print(sorted_patient_list[0])
+print(sorted_gender_list[0])
+print(sorted_ages_list[0])
+
+# %%
+oldest_pt = Bs_data.find('patient', {'age':reverse_sorted_ages[0]})
+print(oldest_pt)
+
+# %%
+oldest_pt = Bs_data.find('patient', {'age':reverse_sorted_ages[1]})
+print(oldest_pt)
+
+# %%
+male_prefix_sum = []
+count = 0
+for gender in sorted_gender_list:
+    if gender == 'male':
+        count += 1
+    male_prefix_sum.append(count)
+
+
+# %%
+def binary_search2(arr, male_prefix_sum, x, y):
+    low = 0
+    high = len(arr) - 1
+
+    while low <= high:
+        mid = (high + low) // 2
+        if arr[mid] < x:
+            low = mid + 1
+        else: 
+            high = mid - 1
+    low_index = low
+
+    low = 0
+    high = len(arr) - 1
+    while low <= high:
+        mid = (high + low) // 2
+        if arr[mid] < y:
+            low = mid + 1
+        else: 
+            high = mid - 1
+    high_index = low 
+
+    if low_index < high_index:
+        total_in_range = high_index - low_index
+        males_in_range = male_prefix_sum[high_index-1]
+        if low_index > 0:
+            males_in_range -= male_prefix_sum[low_index -1]
+    else:
+        total_in_range = 0
+        males_in_range = 0
+    return (f"Number of patients between these ages: {total_in_range}, Number of males: {males_in_range}")
+
+# %%
+binary_search2(sorted_ages_list, male_prefix_sum, 0.00010629282758800596, 0.0011937231038899876)
+
+# %%
+binary_search2(sorted_ages_list, male_prefix_sum, 20, 30)
+
+# %%
+binary_search2(sorted_ages_list, male_prefix_sum, 84.9982928781625, 84.99855742449432)
+
 
 Problem 2:
 # %%
