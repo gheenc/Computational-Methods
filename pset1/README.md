@@ -568,8 +568,8 @@ alg2(data2(100))
  *Outputs are truncated
  ```
 
-**b.** Algorithm 1 is cycling through a list that if the index + 1 is less than the index it places the value before in the list, otherwise it returns the value. 
-Algorithm 2 divides the data in half then splits it into a left and right. It then proceeds down each side and if the left side is less than the right side it adds the number to the left side and moves to the next value until nothing remains. 
+**b.** Algorithm 1 is cycling through a list that is the size of the data and if the index + 1 is less than the index, it swaps the places of the values until it is true and ordered correctly. 
+Algorithm 2 divides the data in half then splits it into a left and right. It then proceeds recursively down each side, splitting it again and again until nothing remains. It then puts all values back together.  
 
 **c.** The Big O of algorithm 1 is n^2.
 The Big O of algorithm 2 is n log n.
