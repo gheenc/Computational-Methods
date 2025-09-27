@@ -5,7 +5,7 @@ cg2288 - Caroline Gheen
 
 **a.** I loaded and parsed the data using Beautiful Soup then visualized it. 
 
-No patients share the same age. We can ensure this by finding the duplicates of the age tag, which returns 'there are no duplicates' [3,4]. 
+No patients share the same age. We can ensure this by finding the duplicates of the age tag, which returns 'there are no duplicates'
 
 ```python
 element_counts = Counter(ages_list)
@@ -16,7 +16,7 @@ print("Duplicate Child Elements:")
 for age, count in duplicate_ages:
     print(f"Age: {age}, Count: {count}")
 ```
-Extra Credit: A binary search is not possible with duplicate items [0]. So, another method would need to be chosen at 1.e and after. 
+Extra Credit: A binary search is not possible with duplicate items. So, another method would need to be chosen at 1.e and after. 
 
 ![histogram of age distribution of patients](age_distribution.png) 
 
