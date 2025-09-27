@@ -35,9 +35,7 @@ female
 
 ![bar chart of counts of gender in patients](gender_graph.png)
 
-[6,7]
-
-**c.**I created a list of ages to plot the histogram, so I just sorted this existing list. 
+**c.** I created a list of ages to plot the histogram, so I just sorted this existing list. 
 
 ```python
 ages_list = []
@@ -68,9 +66,7 @@ To achieve this in O(n) time, you would need to use a set. Using a set allows fo
 Lists, while they take longer with larger data sets, are ordered. A set would also be a more difficult way to look for the second oldest patient because of this lack of order. To look for the second oldest patient in a set, you could take the max, then subtract out that value then take the max again.
 If wanting to do something with ordered meaning, a list would be better.So, for example, things with age or ranking of pain severity might be adventageous to use a list. 
 
-**e.** 
-<patient age="41.5" gender="male" name="John Braswell">
-</patient>
+**e.** The patient is John Braswell. 
 
 ```python
 def binary_search(arr, x):
@@ -91,6 +87,10 @@ def binary_search(arr, x):
     index = binary_search(sorted_ages, 41.5)
 forty_pt = Bs_data.find('patient', {'age':sorted_ages[index]})
 print(forty_pt)
+
+returns 
+<patient age="41.5" gender="male" name="John Braswell">
+</patient>
 ```
 
 **f.** 150471 patients are at least 41.5 years old
@@ -142,7 +142,7 @@ def binary_search1(arr, x, y):
  returns 3
 ```
 
-I can index into sorted_ages and reverse_sorted_ages to see the youngest patient is 0.00010629282758800596 and the oldest patient is 84.99855742449432. Therefore this binary search of the entire patient list should return the number of patients - 1, which is does. 
+I can index into sorted_ages and reverse_sorted_ages to see the youngest patient is 0.00010629282758800596 and the oldest patient is 84.99855742449432. Therefore this binary search of the entire patient list should return the number of patients - 1, which it does. 
 
 ```python
 binary_search1(sorted_ages, 0.00010629282758800596, 84.99855742449432)
@@ -249,7 +249,7 @@ visualizing data and finding attributable tags
 
 # Problem 2 #
 
-**a.**This function is administering medicine in increments. So, if you tell the function you want to administer medicine in 6 units, it will give 6 units until it hits the amount that is tstop. Tstop is the amount of full medicine needed to be given; delta_t is the difference between what has already been administered + what was just administered; and the number of doses administered is the amount needed to get to tstop in the incremental amounts that is t.
+**a.** This function is administering medicine in increments. So, if you tell the function you want to administer medicine in 6 units, it will give 6 units until it hits the amount that is tstop. Tstop is the amount of full medicine needed to be given; delta_t is the difference between what has already been administered + what was just administered; and the number of doses administered is the amount needed to get to tstop in the incremental amounts that is t.
 
 **b.** When you call 0.25, 1 you get, as expected it took four rounds of administering 0.25 doses amounts to reach full dosage of 1. 
 ```python
@@ -282,7 +282,7 @@ Administering meds at t=0.9999999999999999
 
 **e.** These trailing decimals will compound into an issue, which is not great when delivering medicine. Insulin, for example, is delivered in units because it is so potent - too much insulin or too little insulin for a diabetic can have profound impacts.
 
-**f.** To fix, I coded the function so that it only return 2 decimal places [1]. This will help the calculations stay aligned. I tested it with (0.1, 1), (0.1, 2), and (0.15, 3).
+**f.** To fix, I coded the function so that it only return 2 decimal places [1]. This will help the calculations stay aligned. I tested it with (0.1, 1), (0.1, 2), and (0.15, 3). This assumes, however, that 2 decimal places is all that is needed and might not be appropriate in all contexts. 
 ```python
 def administer_meds1(delta_t, tstop):
     t = 0
@@ -362,9 +362,7 @@ Administering meds at t=2.999999999999999
 algorithm 1 and 2 -data 2 runs a list easily for 100. Starts at 0 goes to 99
 algorithm 1 and 2- data 3 runs a list easily for every number in 100. Starts at 1 ends at 100.
 
-I hypothesize that Algorithm 1 is running a bubble sort. Algorithm 2 is running a merge sort. 
-#cite slides
-#go further on graph x axis.
+After comparing to the lecture slides, I hypothesize that Algorithm 1 is running a bubble sort. Algorithm 2 is running a merge sort. 
 
 ```python
  alg1(data1(100))
@@ -570,8 +568,8 @@ alg2(data2(100))
  *Outputs are truncated
  ```
 
-**b.** Algorithm 1 is cycling through a list that if the index + 1 is less than the index it places it places it before in the list, otherwise it returns the value. 
-Algorithm 2 divides the data in half then splits it among a left branch and a right branch. It then proceeds down each branch and if the left branch is less than the right branch it adds the number to the left branch and moves to the next value until nothing remains. 
+**b.** Algorithm 1 is cycling through a list that if the index + 1 is less than the index it places the value before in the list, otherwise it returns the value. 
+Algorithm 2 divides the data in half then splits it into a left and right. It then proceeds down each side and if the left side is less than the right side it adds the number to the left side and moves to the next value until nothing remains. 
 
 **c.** The Big O of algorithm 1 is n^2.
 The Big O of algorithm 2 is n log n.
@@ -594,10 +592,12 @@ For data 2, algorithm 1 preforms better at all n values. Algorithm 1 is very fas
 
 Using data 3, the algorithms perform similarly at small numbers but eventually algorithm 2 preforms faster. Both increase at similar increments as data increases. 
 
-Algorithm 2 is perferable for super small n's and data well over 10^2. Between those points algorithm 1 is faster. 
-#Mathematical, specific data sets 
+In recommending an algorithm, 
+algorithm 1 is faster for simple, ordered datasets (as  exemplified by performance on dataset 2). 
+algorithm 2 is faster when the dataset is more complex and involes logs and floats (as exemplified by performance on dataset 1). For some ordered datasets, like dataset 3, both perform similarly at low n values, but algorithm 2 is generally faster especially for data with higher n.
 
 Sources Used: 
+
 [1] https://www.geeksforgeeks.org/python/time-perf_counter-function-in-python/
 
 [2]Asked Yale Clarity how to plot so axises are log-log and how to save photo of graph generated in matplot. 
@@ -677,7 +677,7 @@ class Tree:
         else:
             return False
 ```
-Tested this on multiple cases including known trues of varying length and the node and known falses that were close to trues or exceeded the digit count of what was in the tree (eg. 14921234 is longer than any other number in the tree).
+Tested this on multiple cases including known trues of varying length, the node, and known falses that were close to trues or exceeded the digit count of what was in the tree (eg. 14921234 is longer than any other number in the tree).
 ```python
 print(144 in my_tree)
 returned False
@@ -693,6 +693,9 @@ returned True
 
 print(8675309 in my_tree)
 returned True
+
+print(1492 in my_tree)
+returned False
 ```
 **c.**
 ```python
@@ -744,7 +747,7 @@ def generate_six_digit_number():
 def generate_initials():
     return ''.join(random.choices(string.ascii_uppercase, k=2))
 ```
-I then invoked the another function to generate 100 fake patients with different n length of patient ids varying from 1-6 using the appropraite digits' random number generator. Both the patient id and initials were stored in that n digits' list, creating 6 different lists each consisting of 100 patients of fake data.
+I then invoked another function to generate 100 fake patients with different n length of patient ids varying from 1-6 using the appropraite digits' random number generator. Both the patient id and initials were stored in that n digits' list, creating 6 different lists each consisting of 100 patients of fake data.
 
 ```python
 def generate_patient_data(num_patients_per_group=100):
@@ -861,7 +864,7 @@ The timing of the has_data method is very close to O(1), so there may be an erro
 
 ![line graph displaying time elapsed to construct a tree with varying n sizes](time_construct_tree.png)
 
-I repeated a similar process to time elapsed time during the construction of a tree of various n's. Again, I only varied the n size of patient id, but a more thorough test would also vary the patient id n size. 
+I repeated a similar process to capture time elapsed during the construction of a tree of various n's. Again, I only varied the n size of patient id, but a more thorough test would also vary the patient id n size. 
 
 ```python
 total_tree = []
@@ -875,9 +878,9 @@ total_tree.append(total_time)
 print("Elapsed time during the whole program in seconds:", total_time)
 ```
 
-I added bounds for O(n) and O(n^2), as we would expect this line to be between them and curving upwards as the n increases. Instead, we see a line approaching O(1), so there is likely an error in the method used to time contruction of the tree. The test might also benefit from going higher than 6 digit n's. 
+I added bounds for O(n) and O(n^2), as we would expect this line to be between them and curving upwards as the n increases. Instead, we see a line approaching O(1), so there may be an error in the method used to evaluate time contruction of the tree. However, it does stay between the bounds of O(n) and O(n^2). The test might also benefit from going higher than 6 digit n's. 
 
-**e.** A beneficial tests uses varying data of varying sizes to ensure it can withstand many requests. Continually using the same value or only one test point does not accurately assess the performance of the function - it would assess the functions ability to do that one request. Using a varied set of values allows the function to be more real-world ready and ensure that any edge cases or accidental human errors have been eliminated. It also gives more validity that the well-tested function will be reliable in different circumstances. 
+**e.** A beneficial test uses varying data of varying sizes to ensure whatever is being tested can withstand many different requests. In the case of a function, continually using the same value or only one test point does not accurately assess the performance of the function - it would assess the functions' ability to do that one request. Using a varied set of values allows the function to be more real-world ready and ensure that any edge cases or accidental human errors have been eliminated. It also gives more validity that the well-tested function will be reliable in different circumstances. 
 
 
 [1] Yale Clarity to build binary search tree without a node and ensure self._value being used correctly.
@@ -889,18 +892,19 @@ I added bounds for O(n) and O(n^2), as we would expect this line to be between t
 # Problem 5 #
 
 **a.** I recommend the following 4 ontologies:
-    SNOMEDCT - to be used with clincian free-text and data entry, medications,specimans/pathologies, symptoms, and more. SNOMEDCT is a widely accepted ontology that provides many core concepts, schemes, and guidelines so it is a good baseline ontology, especially for use by clinicians and for patient data. It is rated as widely accpeted (99.2), not very specialized(18.5), and fairly detailed (50) for a cancer ontology. It makes sense for multiple data types because it has extenive concepts, defintions,, and links/relationships.
 
-    GO - Gene Ontology - provides vocabulary for gene products, functions, components and roles. GO will give ontology for the molecular, gene, and protein componets of the cancer research not covered in SNOMEDCT or EDAMBIO. It is very detailed (62.1), gives fair coverage (50), isn't very specific (12.7), but is widely accepted (88.2) for a gene ontology. It will give great depth to the molecular and biological processes needed for cancer research, although it does have some potential overlap with NCIT. 
+(1) SNOMEDCT - to be used with clincian free-text and data entry, medications, specimans/pathologies, symptoms, and more. SNOMEDCT is a widely accepted ontology that provides many core concepts, schemes, and guidelines so it is a good baseline ontology, especially for use by clinicians and for patient data. It is rated as widely accpeted (99.2), not very specialized(18.5), and fairly detailed (50) for a cancer ontology. It makes sense for multiple data types because it has extenive concepts, defintions, and links/relationships.
+ 
+(2) GO - Gene Ontology - provides vocabulary for gene products, functions, components and roles. GO will give ontology for the molecular, gene, and protein componets of the cancer research not covered in SNOMEDCT or EDAMBIO. It is very detailed (62.1), gives fair coverage (50), isn't very specific (12.7), but is widely accepted (88.2) for a gene ontology. It will give great depth to the molecular and biological processes needed for cancer research, although it does have some potential overlap with NCIT. 
 
-    NCIT - National Cancer Institute Thesarus - semantics for basic clinical care, translational and basic reasearch, and administration. This ontology allows for specific cancer needed ontologies, including drug concepts, biomarkers, and cancer-specific molecular and celluar components. NCIT is pretty specialized (45.8) but gives great coverage (100) and deep detail (88.2) and is widely accepted (87.9) for a cancer ontology. It provides a good baseline for all other ontologies/data to be cancer specific as it provides an intersection for mediciation and genes but gives a needed cancer depth to all elements that is not given through the other ontologies. 
+(3) NCIT - National Cancer Institute Thesarus - semantics for basic clinical care, translational and basic reasearch, and administration. This ontology allows for specific cancer needed ontologies, including drug concepts, biomarkers, and cancer-specific molecular and celluar components. NCIT is pretty specialized (45.8) but gives great coverage (100) and deep detail (88.2) and is widely accepted (87.9) for a cancer ontology. It provides a good baseline for all other ontologies/data to be cancer specific as it provides an intersection for mediciation and genes but gives a needed cancer depth to all elements that is not given through the other ontologies. 
 
-    EDAMBIO - EDAM Bioimaging Ontology - bioimaging topics including format and analysis. EDAMBIO provides imaging ontologies and metadata not present in the others mentioned. It is very detailed (100) and provides amazing coverage(100), while also being well specialized (60.5) and widely accpeted (86.7) for an imaging ontology.
+(4) EDAMBIO - EDAM Bioimaging Ontology - bioimaging topics including format and analysis. EDAMBIO provides imaging ontologies and metadata not present in the others mentioned. It is very detailed (100) and provides amazing coverage(100), while also being well specialized (60.5) and widely accpeted (86.7) for an imaging ontology.
 
-    If the clincial/research staff feels overwhelmed due to these ontologies being broader, one could recommend a mapping ontology that aid in reconciling overlapping concepts. 
-    Or, if the research hospital is interested in creating cancer drugs, I would recommend MedDRA as a fifth ontology.
+If the clincial/research staff feels overwhelmed due to these ontologies being broader, one could recommend a mapping ontology that aid in reconciling overlapping concepts. 
+Or, if the research hospital is interested in creating cancer drugs, I would recommend MedDRA as a fifth ontology.
 
-* all numbers are the numbers reported with the biorecommender on bioportal when searched with the associated term; higher is better in that category. 
+-all numbers are the numbers reported with the biorecommender on bioportal when searched with the associated term; higher is better in that category. 
 
 **b.** EDAM Bioimaging Ontology  is shared under the Creative Commons Attribution-ShareAlike 4.0 International Public License in which it is open to share and edit with some stipulations. One is able to use it for their own use or distribution and modify it, but they must cite the authors if publishing and any modification must fit community standards. Additionally, the license does not carry liability, trademark, patent or warranty.
 
@@ -908,16 +912,16 @@ Gene Ontology is licensed under the Creative Commons Attribution 4.0. This allow
 
 SNOMEDCT is available free of charge to those with a license for the UMLS Metathesarus but it cannot be distributed to those without. It is updated biannually, but by the US government, not world wide. 
 
-NCIT is licensed under the Creative Commons Attribution 4.0 but produced by the National Cancer Institute (under NIH) so also is available for free use with proper documentation. It is updated monthly.
+NCIT is licensed under the Creative Commons Attribution 4.0 but produced by the National Cancer Institute (under NIH) so it also is available for free use with proper documentation. It is updated monthly.
 
 There is a benefit to the ontologies maintained by federal entities because they are updated frequently and typically interacts well with other common ontologies. They do lack, however, the benefit of community input and fast updates. These ontologies developed in the community, however, are not guarenteed to be maintained and my have tricky licensing agreements. 
 
 **c.**
 1. I entered "Imagine you work at a cancer hospital and are responsible for making internal research data discoverable and interoperable. The dataset includes gene sequence metadata, imaging metadata (radiology / pathology), medication records, and free-text clinician notes" into the search of bio portal. This generated a good list of ontologies that I first parsed thorugh. 
-2. I specifically searched medical imaging metadata, gene sequencing, pathology, cancer research into bioportal to ensure I was meeting all ontologies aspects needed. 
+2. I specifically searched medical imaging metadata, gene sequencing, pathology, cancer research into bioportal to ensure I was meeting all ontological aspects needed. 
 3. I considered the scores given to the ontologies from Bio portal for most wanted input. This gave me an idea of if they would be too broad and overwhelming or if they would be too specific and detailed.
 4. Once I had 5 ontologies I liked, I pasted the Bioportal page and homepage of each ontology into ChatGPT to ensure ontologies did not have substantial overlap and touched all wanted scopes.
-6. My initial stopping point was that I had 5 ontologies and that was the maximum for this assignment. But once I considered the ranges of the Bio portal scales and the feedback considering overlap from ChatGPT, I considered different combinations of ontologies. Once I had an ontology that primarily focused on one specific facet of the cancer hospital (research, clinical, imaging, genes) that also interacted well with the other ontologies, I stopped. 
+6. My initial stopping point was that I had 5 ontologies and that was the maximum for this assignment. But once I considered the ranges of the Bio portal scales and the feedback considering overlap from ChatGPT, I considered different combinations of ontologies. Once I had an ontology set that focused on each specific facet of the cancer hospital (research, clinical, imaging, genes) that also interacted well with the other ontologies, I stopped. 
 
 Sources:
 [1] Used ChatGPT to ensure written answers fully answer every aspect of questions. 
@@ -1629,6 +1633,7 @@ print(7 in my_tree)
 
 print(8675309 in my_tree)
 
+print(1492 in my_tree)
 
 def has_data(node, data):
     if node is None or node._value is None:
