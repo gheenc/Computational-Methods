@@ -51,6 +51,7 @@ def alg_provided(data):
 
 # alg mashed
 def alg_new(data, key=lambda x: x):
+    tupled_data = tuple(sorted(data)) #sorts data and creates tuple
   if len(data) <= 1:
     return data
   else:
