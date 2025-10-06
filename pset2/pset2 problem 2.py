@@ -6,6 +6,9 @@
 #created individual data
 #https://www.geeksforgeeks.org/python/python-create-a-list-of-tuples/
 #Asked ChatGPT how to retain type as tuple
+import multiprocessing
+from multiprocessing import Process
+import time
 
 patient_ids = [123, 456, 798, 234, 567, 891]
 patient_names = ["John Smith", "Jane Doe", "Taylor Swift", "Harry Styles", "Mallory Swanson"]
@@ -23,7 +26,7 @@ def alg_provided(data):
     return data
   else:
     split = len(data) // 2
-    left = iteralg2(data[:split]))
+    left = iteralg2(data[:split])
     right = iter(alg2(data[split:]))
     result = []
     # note: this takes the top items off the left and right piles
@@ -52,21 +55,21 @@ def alg_provided(data):
 # alg mashed
 def alg_new(data, key=lambda x: x):
     tupled_data = tuple(sorted(data)) #sorts data and creates tuple
-  if len(data) <= 1:
-    return data
-  else:
-    split = len(data) // 2
-    left = alg_new(data[:split], key)
-    right = alg_new(data[split:], key)
-    result = []
-    i=j=0
+    if len(tupled_data) <= 1: #continues to use tupled data rest of function
+        return tupled_data
+    else:
+        split = len(tupled_data) // 2
+        left = alg_new(tupled_data[:split], key)
+        right = alg_new(tupled_data[split:], key)
+        result = []
+        i=j=0
     while i < len(left) and j < len(right):
-      if key(left[i]) < key(right[j]):
-        result.append(left[i])
-        i += 1
-      else:
-        result.append(right[j])
-        j +=1
+        if key(left[i]) < key(right[j]):
+            result.append(left[i])
+            i += 1
+        else:
+            result.append(right[j])
+            j +=1
     result.extend(left[i:])
     result.extend(right[j:])
     return result
@@ -75,3 +78,58 @@ alg_new(tuple_patient_data, key=lambda x:x[0])
 #Need to add so that it sorts tuple in the merge sort?
 # Provide examples demonstrating that your code works. Be clear how you know that it works.
 
+# Implement a parallel version of your modified merge sort algorithm, 
+# splitting the workload across multiple processing cores
+# Used ChatGPT to ensure full understading of question
+# Asked ChatGPT where to imput multiprocessor.pool in current function and how to choose between .ap or .async
+# https://www.geeksforgeeks.org/python/parallel-processing-in-python/
+
+def alg_parallel(data, key=lambda x: x):
+    tupled_data = tuple(sorted(data)) #sorts data and creates tuple
+    if len(tupled_data) <= 1: #continues to use tupled data rest of function
+        return tupled_data
+    else:
+        split = len(tupled_data) // 2
+        left_half = tupled_data[:split]
+        right_half = tupled_data[split:]
+    with multiprocessing.Pool(processes=2) as pool: #creates two processes
+       left_sorted = pool.apply_async(alg_parallel, (left_half, key)) #apply_async becuase recursively calling and splitting different data 
+       right_sorted = pool.apply_async(alg_parallel, (right_half, key))
+       left = left_sorted.get()
+       right = right_sorted.get()
+    result = []
+    i = j = 0
+    while i <len(left) and j < len(right):
+       if key(left[i]) < key(right[j]):
+          result.append(left[i])
+          i += 1
+
+    result.extend(left[i:])
+    result.extend(right[j:])
+    return result
+
+if __name__ == '__main__': #guards against repeat recursion
+    start_time = time.perf_counter()
+    alg_parallel(patient_data, key=lambda x:x[0])
+    stop_time = time.perf_counter()
+    parallel_time = []
+    print(f"Calculation took {stop_time - start_time} seconds") #times paralellization 
+   
+
+# Measure and compare the performance of your parallel algorithm with the original serial version.
+if __name__ == '__main__': #guards against repeat recursion
+    start_time = time.perf_counter()
+    alg_parallel(patient_data, key=lambda x:x[0])
+    stop_time = time.perf_counter()
+    parallel_time = []
+    print(f"Calculation took {stop_time - start_time} seconds") #times paralellization 
+
+start_time = time.perf_counter()
+alg_new(patient_data, [0])
+stop_time = time.perf_counter()
+
+
+
+#Visualize the results: Use a log-log plot to compare the time complexity of the parallel and serial versions, 
+# focusing on how the parallel implementation scales with larger datasets.
+# For full credit, demonstrate that your parallel algorithm runs in no more than 70% of the time of the serial algorithm on sufficient large datasets. 
