@@ -145,12 +145,12 @@ spell_check('cat')
 # Used ChatGPT to clean up errors
 def alg_new(data, key=lambda x: x):
     tupled_data = tuple(sorted(data)) #sorts data and creates tuple
-  if len(data) <= 1:
-    return data
+  if len(tupled_data) <= 1:
+    return tupled_data
   else:
-    split = len(data) // 2
-    left = alg_new(data[:split], key)
-    right = alg_new(data[split:], key)
+    split = len(tupled_data) // 2
+    left = alg_new(tupled_data[:split], key)
+    right = alg_new(tupled_data[split:], key)
     result = []
     i=j=0
     while i < len(left) and j < len(right):
@@ -178,6 +178,59 @@ alg_new(patient_data, key=lambda x:x[0])
 ```
 
 ## Problem 3##
+I downloaded the file and called in only the first chromosome.
+```python
+with open(fasta_file, "rb") as f:
+    print(f.read(2))
+
+fasta_file = r"C:\Users\carol\Downloads\human_g1k_v37.fasta.gz"
+
+with gzip.open(fasta_file, "rt") as f:
+    print(f.readline())  # Read just the first line
+```
+**1a.** I then extracted the overlapping 15mers from chromosome 1.
+
+```python
+#Troubleshooted with ChatGPT gzip file error. Used their suggested way of only parsing out the chromosome
+def extract_15mers_from_chr1(fasta_path):
+    fifteen_mers = []
+
+    with gzip.open(fasta_path, "rt") as handle:
+        for record in SeqIO.parse(handle, "fasta"):
+            if record.id.strip().lower() in ["1", "chr1"]:
+                sequence = str(record.seq)
+                for i in range(len(sequence) - 14):  # 15-mers
+                    fifteen_mers.append(sequence[i:i+15])
+                return fifteen_mers
+
+# File path
+fasta_file = r"C:\Users\carol\Downloads\human_g1k_v37.fasta.gz"
+
+# Run the extraction
+kmers = extract_15mers_from_chr1(fasta_file)
+
+# Check a few
+print(kmers[:5])
+```
+I then used length to see how many nucelotides were in chromosome 1.
+```python
+len(kmers)
+```
+I excluded all kmers that had a count of 3 N.
+```python 
+#asked ChatGPT how to create a for loop that would drop any kmers that meet given criteria
+
+filtered_kmers = []
+for kmer in kmers:
+    if kmer.count('N') <= 2:
+        filtered_kmers.append(kmer)
+
+len(filtered_kmers)
+```
+The new number of valie 15-mers for me was 225280241.
+
+**b.**
+
 
 ## Problem 4 ##
 **a. Discuss some of the challenges with making more and more health care resources available over the internet.**
@@ -189,6 +242,7 @@ References:
 [1] Saeed, S. A., & Masters, R. M. (2021). Disparities in health care and the digital divide. Current Psychiatry Reports, 23(9), 61. https://doi.org/10.1007/s11920-021-01274-4
 [2] U.S. Government Accountability Office. (2023, May 16). Why health care is harder to access in rural America. GAO WatchBlog. https://www.gao.gov/blog/why-health-care-harder-access-rural-america
 [3] Kricorian K, Civen R, Equils O. COVID-19 vaccine hesitancy: misinformation and perceptions of vaccine safety. Hum Vaccin Immunother. 2022 Dec 31;18(1):1950504. doi: 10.1080/21645515.2021.1950504. Epub 2021 Jul 30. PMID: 34325612; PMCID: PMC8920251.
+[4] 
 
 **b. Reflect on your own experience with digital health care resources, OR the experience of someone you know.**
 -clinical burnout and lack of in person symptoms
