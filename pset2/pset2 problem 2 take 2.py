@@ -30,7 +30,7 @@ patient_names = ["John Smith", "Jane Doe", "Taylor Swift", "Harry Styles", "Mall
 
 #zipped data into list
 patient_data = list(zip(patient_ids, patient_names))
-print(patient_data)
+# print(patient_data)
 
 # %%
     
@@ -62,7 +62,8 @@ def alg_new(data, key):
 
 
 # %%
-alg_new(patient_data, key=itemgetter(0))
+# print(alg_new(patient_data, key=itemgetter(0)))
+
 #Need to add so that it sorts tuple in the merge sort?
 # Provide examples demonstrating that your code works. Be clear how you know that it works.
 
@@ -73,118 +74,102 @@ alg_new(patient_data, key=itemgetter(0))
 # Asked ChatGPT where to imput multiprocessor.pool in current function and how to choose between .ap or .async
 # https://www.geeksforgeeks.org/python/parallel-processing-in-python/
 
-def alg_parallel(data, key):
+def alg_parallel(data, key, cutoff=1000):
     if len(data) <= 1: 
         return data
+
+    split = len(data) // 2
+    left_half = data[:split]
+    right_half = data[split:]
+
+    if len(data) > cutoff:
+        with multiprocessing.Pool(processes=6) as pool:
+            left_sorted = pool.apply_async(alg_new, (left_half, key))
+            right_sorted = pool.apply_async(alg_new, (right_half, key))
+            left = left_sorted.get()
+            right = right_sorted.get()
     else:
-        split = len(data) // 2
-        left_half = data[:split]
-        right_half = data[split:]
-    with multiprocessing.Pool(processes=2) as pool: #creates two processes #cput count and multiprocessing at top level suggested by ChatGPT
-       left_sorted = pool.apply_async(alg_new, (left_half, key)) #apply_async becuase recursively calling and splitting different data 
-       right_sorted = pool.apply_async(alg_new, (right_half, key))
-       left = left_sorted.get()
-       right = right_sorted.get()
+        left = alg_new(left_half, key)
+        right = alg_new(right_half, key)
+
     result = []
     i = j = 0
     while i <len(left) and j < len(right):
-       if key(left[i]) < key(right[j]):
+        if key(left[i]) < key(right[j]):
           result.append(left[i])
           i += 1
-
+        else:
+            result.append(right[j])
+            j += 1    
     result.extend(left[i:])
     result.extend(right[j:])
     return result
 
 # %%
-if __name__ == '__main__': #guards against repeat recursion
-    from operator import itemgetter
-    start_time = time.perf_counter()
-    alg_parallel(patient_data, key=itemgetter(0))
-    stop_time = time.perf_counter()
-    parallel_time = []
-    print(f"Calculation took {stop_time - start_time} seconds") #times paralellization 
-    main()
-
-# %%
-# Measure and compare the performance of your parallel algorithm with the original serial version.
-if __name__ == '__main__': #guards against repeat recursion
-    start_time = time.perf_counter()
-    alg_parallel(patient_data, key=itemgetter(o))
-    stop_time = time.perf_counter()
-    parallel_time = []
-    print(f"Parallel calculation took {stop_time - start_time} seconds") #times paralellization 
-
-start_time = time.perf_counter()
-alg_new(patient_data, [0])
-stop_time = time.perf_counter()
-serial_time = []
-print(f"Serial calculation took {stop_time - start_time} seconds")
-
-
-# %%
-Faker.seed(900) #seed makes them the same everytime
-fake = Faker()
-
-# Dictionary to map digit length to its corresponding function
-digit_generators = {
-    1: lambda: random.randint(1, 9),
-    2: lambda: random.randint(10, 99),
-    3: lambda: random.randint(100, 999),
-    4: lambda: random.randint(1000, 9999),
-    5: lambda: random.randint(10000, 99999),
-    6: lambda: random.randint(100000, 999999),
-    7: lambda: random.randint(1000000, 9999999),
-    8: lambda: random.randint(10000000, 99999999),
-    9: lambda: random.randint(100000000, 999999999)
-}
-
-def generate_patient_data(num_patients_per_group, number_of_digits, target_list): #takes in wanted number of patients, how many digits in id and what list to save to 
-    if number_of_digits not in digit_generators:
-        raise ValueError("number_of_digits must be between 1 and 9")
-    if target_list is None:
-        target_list  = []
-    generate_number = digit_generators[number_of_digits] #generates number based on given digit
-    for _ in range(num_patients_per_group): 
-        patient_id = generate_number() #saves random number as patient id
-        name = fake.name() #creates fake name
-        target_list.append((patient_id, name)) #appends both to wanted list
-    return target_list
-
-# %%
 #generate fake data of varying n lengths. Store in data dictionary that can be sorted into later to retrieve wanted digit length codes
 
-digit_data = {}
-
-for digit in range(1, 10):
-    digit_data[digit] = []
-    generate_patient_data(100, digit, digit_data[digit])
-
-# %%
-#make lists of each varying id length for testing
-one_digit_patients = digit_data[1]
-two_digit_patients = digit_data[2]
-three_digit_patients = digit_data[3]
-four_digit_patients = digit_data[4]
-five_digit_patients = digit_data[5]
-six_digit_patients = digit_data[6]
-seven_digit_patients = digit_data[7]
-eight_digit_patients = digit_data[8]
-nine_digit_patients = digit_data[9]
-
-# %%
-def time_new(digit):
+#%%
+def time_algorithms_on_patients(dataset):
     start_time = time.perf_counter()
-    alg_new(digit_data[digit], [0])
+    alg_parallel(dataset, key=itemgetter(0), cutoff=10000)
     stop_time = time.perf_counter()
-    total_time = (stop_time - start_time)
-    serial_time_[digit] = []
-    serial_time_[digit].append(total_time)
-    print(f"Serial calculation took {stop_time - start_time} seconds")
+    total_time_p = stop_time - start_time
+    print(f"Parallel calculation took {total_time_p} seconds") #times paralellization
 
+    start_time = time.perf_counter()
+    alg_new(dataset, key=itemgetter(0))
+    stop_time = time.perf_counter()
+    total_time_s = stop_time - start_time
+    print(f"Serial calculation took {total_time_s} seconds")
+
+    return total_time_p, total_time_s
 
 # %%
+def plot_timings(n_values, all_parallel_times, all_serial_times):
+    plt.figure()
+    plt.loglog(n_values, all_parallel_times, label='Parallelized merge', marker='o', linestyle='-', color='blue')
+    plt.loglog(n_values, all_serial_times, label='Seriel merge', marker='o', linestyle='-', color ='red')
 
+    plt.xlabel('Values')
+    plt.ylabel('Time Elapsed (seconds)')
+    plt.title('Time Elapsed Using Parallel and Serial Merge Sorts')
+    plt.legend()
+
+    plt.grid(True, which="both", ls="--")
+    h = plt.savefig('parallelization.png')
+    plt.show()
+# %%
+if __name__ == '__main__': #guards against repeat recursion
+    import matplotlib.pyplot as plt
+    Faker.seed(900) #seed makes them the same everytime
+    fake = Faker()
+
+    dataset_sizes = [100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000]
+    length_based_data = []
+
+    def generate_patient_data(size, number_of_digits=6):
+        generate_number = lambda: random.randint(100000, 999999)  #generates number based on given digit
+        data = []
+        for _ in range(size): 
+            patient_id = generate_number() #saves random number as patient id
+            name = fake.name() #creates fake name
+            data.append((patient_id, name)) #appends both to wanted list
+        return data
+
+    for size in dataset_sizes:
+        length_based_data.append(generate_patient_data(size, 6))
+        
+    all_parallel_times = []
+    all_serial_times = []
+
+    for i, dataset in enumerate(length_based_data):
+        print(f"Running sort on dataset with {len(dataset)} patients")
+        p_time, s_time = time_algorithms_on_patients(dataset)
+        all_parallel_times.append(p_time)
+        all_serial_times.append(s_time)
+
+    plot_timings(dataset_sizes, all_parallel_times, all_serial_times)
+# %%
 #Visualize the results: Use a log-log plot to compare the time complexity of the parallel and serial versions, 
 # focusing on how the parallel implementation scales with larger datasets.
 # For full credit, demonstrate that your parallel algorithm runs in no more than 70% of the time of the serial algorithm on sufficient large datasets. 
@@ -193,21 +178,6 @@ def time_new(digit):
 #code to time each  WRONG
 
 #time serial and time parallel for each length of patient data
-if __name__ == '__main__': #guards against repeat recursion
-    start_time = time.perf_counter()
-    alg_parallel(one_digit_patients, key=itemgetter(0))
-    stop_time = time.perf_counter()
-    one_digit_parallel_time= []
-    total_time = (stop_time - start_time)
-    one_digit_parallel_time.append(total_time)
 
-def time_new(digit):
-    start_time = time.perf_counter()
-    alg_new(digit_data[digit], [0])
-    stop_time = time.perf_counter()
-    total_time = (stop_time - start_time)
-    serial_time_[digit] = []
-    serial_time_[digit].append(total_time)
-    print(f"Serial calculation took {stop_time - start_time} seconds")
 
 
