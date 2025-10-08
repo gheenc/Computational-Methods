@@ -82,7 +82,7 @@ def alg_parallel(data, key, cutoff=1000):
     left_half = data[:split]
     right_half = data[split:]
 
-    if len(data) > cutoff:
+    if len(data) >= cutoff:
         with multiprocessing.Pool(processes=6) as pool:
             left_sorted = pool.apply_async(alg_new, (left_half, key))
             right_sorted = pool.apply_async(alg_new, (right_half, key))
@@ -144,7 +144,7 @@ if __name__ == '__main__': #guards against repeat recursion
     Faker.seed(900) #seed makes them the same everytime
     fake = Faker()
 
-    dataset_sizes = [1000, 10000, 12500, 15000, 17500, 100000, 125000, 150000]
+    dataset_sizes = [1000, 10000, 25000, 50000, 75000, 100000, 250000]
     length_based_data = []
 
     def generate_patient_data(size, number_of_digits=6):
