@@ -1,4 +1,5 @@
-# %%
+# %% THIS ONE WORKS JUST NOT WELL
+
 # %%
 #adapt the alg2 merge sort to sort based on key value relationship
 #ex: dataset of patient_id corresponding to patient_data. Sort by patient_id with its respective patient_data aligned
@@ -74,7 +75,7 @@ def alg_new(data, key):
 # Asked ChatGPT where to imput multiprocessor.pool in current function and how to choose between .ap or .async
 # https://www.geeksforgeeks.org/python/parallel-processing-in-python/
 
-def alg_parallel(data, key, cutoff=1000):
+def alg_parallel(data, key, pool, cutoff=10000):
     if len(data) <= 1: 
         return data
 
@@ -82,12 +83,11 @@ def alg_parallel(data, key, cutoff=1000):
     left_half = data[:split]
     right_half = data[split:]
 
-    if len(data) > cutoff:
-        with multiprocessing.Pool(processes=6) as pool:
-            left_sorted = pool.apply_async(alg_new, (left_half, key))
-            right_sorted = pool.apply_async(alg_new, (right_half, key))
-            left = left_sorted.get()
-            right = right_sorted.get()
+    if len(data) >= cutoff:
+        left_future = pool.apply_async(alg_new, (left_half, key))
+        right_future = pool.apply_async(alg_new, (right_half, key))
+        left = left_future.get()
+        right = right_future.get()
     else:
         left = alg_new(left_half, key)
         right = alg_new(right_half, key)
@@ -109,9 +109,9 @@ def alg_parallel(data, key, cutoff=1000):
 #generate fake data of varying n lengths. Store in data dictionary that can be sorted into later to retrieve wanted digit length codes
 
 #%%
-def time_algorithms_on_patients(dataset):
+def time_algorithms_on_patients(dataset, pool):
     start_time = time.perf_counter()
-    alg_parallel(dataset, key=itemgetter(0), cutoff=10000)
+    alg_parallel(dataset, key=itemgetter(0), pool=pool, cutoff=10000)
     stop_time = time.perf_counter()
     total_time_p = stop_time - start_time
     print(f"Parallel calculation took {total_time_p} seconds") #times paralellization
@@ -128,7 +128,7 @@ def time_algorithms_on_patients(dataset):
 def plot_timings(n_values, all_parallel_times, all_serial_times):
     plt.figure()
     plt.loglog(n_values, all_parallel_times, label='Parallelized merge', marker='o', linestyle='-', color='blue')
-    plt.loglog(n_values, all_serial_times, label='Seriel merge', marker='o', linestyle='-', color ='red')
+    plt.loglog(n_values, all_serial_times, label='Serial merge', marker='o', linestyle='-', color ='red')
 
     plt.xlabel('Values')
     plt.ylabel('Time Elapsed (seconds)')
@@ -144,7 +144,7 @@ if __name__ == '__main__': #guards against repeat recursion
     Faker.seed(900) #seed makes them the same everytime
     fake = Faker()
 
-    dataset_sizes = [1000, 10000, 12500, 15000, 17500, 100000, 125000, 150000]
+    dataset_sizes = [100, 1000, 10000, 25000, 50000, 75000, 100000, 250000]
     length_based_data = []
 
     def generate_patient_data(size, number_of_digits=6):
@@ -157,16 +157,17 @@ if __name__ == '__main__': #guards against repeat recursion
         return data
 
     for size in dataset_sizes:
-        length_based_data.append(generate_patient_data(size, 6))
+        length_based_data.append(generate_patient_data(size))
         
     all_parallel_times = []
     all_serial_times = []
 
-    for i, dataset in enumerate(length_based_data):
-        print(f"Running sort on dataset with {len(dataset)} patients")
-        p_time, s_time = time_algorithms_on_patients(dataset)
-        all_parallel_times.append(p_time)
-        all_serial_times.append(s_time)
+    with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
+        for dataset in length_based_data:
+            print(f"Running sort on dataset with {len(dataset)} patients")
+            p_time, s_time = time_algorithms_on_patients(dataset, pool)
+            all_parallel_times.append(p_time)
+            all_serial_times.append(s_time)
 
     plot_timings(dataset_sizes, all_parallel_times, all_serial_times)
 # %%
