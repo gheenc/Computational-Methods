@@ -48,8 +48,8 @@ def sort_chunk_with_key(args):
 def parallel_merge_sort(data, key, num_workers=None):
     if len(data) <= 1:
         return data
-
-    num_workers = num_workers or multiprocessing.cpu_count()
+    
+    num_workers = num_workers or min(4, multiprocessing.cpu_count())
     chunks = chunkify(data, num_workers)
 
     # Bundle each chunk with key for processing
@@ -99,7 +99,7 @@ if __name__ == '__main__':
     Faker.seed(900)
     fake = Faker()
 
-    dataset_sizes = [100, 1000, 10000, 25000, 50000, 75000, 100000, 250000]
+    dataset_sizes = [100000, 250000, 500000, 1000000, 2000000, 5000000]
     length_based_data = []
 
     def generate_patient_data(size):
