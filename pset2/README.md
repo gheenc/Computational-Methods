@@ -1,3 +1,5 @@
+**The correct notebooks for these are 'pset2 problem1 take 3,' 'pset problem2 take4,' and 'pset2 problem3.'**
+
 ## Problem 1 ##
 **a.** 
 I began by reading in the words list and creating a list of individual words to be added to the bloom filter. 
@@ -580,6 +582,8 @@ I could explore if there have been decline in healthcare availability in rural a
 
 ## Code Appendix ##
 The correct notebooks for these are 'pset2 problem1 take 3,' 'pset problem2 take4,' and 'pset2 problem3.' I believe I have deleted all others from the GitHub. 
+
+```python
 **Problem 1**
 
 # %%
@@ -939,7 +943,8 @@ p
 p.save('bloom_filter.png')
 
 # %%
-
+```
+```python
 **Problem 2**
 # %%
 import time
@@ -1078,7 +1083,8 @@ if __name__ == '__main__':
         all_serial_times.append(s_time)
 
     plot_timings(dataset_sizes, all_parallel_times, all_serial_times)
-
+```
+```python
 **Problem 3**
 # %%
 # !pip install biopython
@@ -1230,7 +1236,7 @@ plt.show()
 
 
 # %%
-
+```
 
 
 
