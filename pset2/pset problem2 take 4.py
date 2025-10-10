@@ -49,6 +49,9 @@ def parallel_merge_sort(data, key, num_workers=None):
     if len(data) <= 1:
         return data
     
+    if len(data) < 500_00:
+        alg_new(data, key)
+    
     num_workers = num_workers or min(4, multiprocessing.cpu_count())
     chunks = chunkify(data, num_workers)
 
@@ -90,7 +93,7 @@ def plot_timings(n_values, all_parallel_times, all_serial_times):
     plt.legend()
     plt.grid(True, which="both", ls="--")
     plt.tight_layout()
-    plt.savefig('parallelization.png')
+    plt.savefig('parallelization_better.png')
     plt.show()
 
 # %% -----------------------------
