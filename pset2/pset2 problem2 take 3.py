@@ -30,7 +30,9 @@ patient_ids = [123, 456, 798, 234, 567, 891]
 patient_names = ["John Smith", "Jane Doe", "Taylor Swift", "Harry Styles", "Mallory Swanson", "Jane Goddall"]
 
 #zipped data into list
-patient_data = list(zip(patient_ids, patient_names))
+patient_data_zipped = zip(patient_ids, patient_names)
+# print(patient_data_zipped)
+patient_data = list(patient_data_zipped)
 # print(patient_data)
 
 # %%

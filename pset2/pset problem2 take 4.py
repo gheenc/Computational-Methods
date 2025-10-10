@@ -10,7 +10,7 @@ import heapq
 import multiprocessing
 
 # %% -----------------------------
-# SERIAL MERGE SORT (unchanged)
+# SERIAL MERGE SORT
 def alg_new(data, key):
     if len(data) <= 1:
         return data
@@ -30,6 +30,19 @@ def alg_new(data, key):
         result.extend(left[i:])
         result.extend(right[j:])
         return result
+    
+# %%
+patient_ids = [123, 456, 798, 234, 567, 891]
+patient_names = ["John Smith", "Jane Doe", "Taylor Swift", "Harry Styles", "Mallory Swanson", "Jane Goddall"]
+
+#zipped data into list
+patient_data = list(zip(patient_ids, patient_names))
+# print(patient_data)
+
+#%%
+# print(alg_new(patient_data, key=itemgetter(0)))
+#%%
+# %%
 
 # %% -----------------------------
 # CHUNKIFY HELPER
@@ -93,7 +106,7 @@ def plot_timings(n_values, all_parallel_times, all_serial_times):
     plt.legend()
     plt.grid(True, which="both", ls="--")
     plt.tight_layout()
-    plt.savefig('parallelization_better.png')
+    plt.savefig('parallelization_better2.png')
     plt.show()
 
 # %% -----------------------------
