@@ -256,8 +256,8 @@ df_plot = pd.DataFrame(plot_data)
 ```
 !['performance of varying bit size in bloom filter using differing size hashes tracked using 'good suggestions' and 'misidentified' suggestions'](bloom_filter.png)
 
-**Approximately how many bits are necessary too achieve 85% good suggestions with each combination of 1, 2, or 3 hashes**
-When using 3 hashes, you can achieve 85% good suggestions with the smallest bit size of about 5,000,000. When using 2 hashes, your bit size needs to be slightly smaller than 100,000,000. When using 1 hash, you require the largest bit size of almost 1,000,000,000. 
+**Approximately how many bits are necessary to achieve 85% good suggestions with each combination of 1, 2, or 3 hashes**
+When using 3 hashes, you can achieve 85% good suggestions with the smallest bit size of a little less than 10,000,000. When using 2 hashes, your bit size needs to be about 50,000,000. When using 1 hash, you require the largest bit size of about 250,000,000. 
 
 
 Sources: 
@@ -379,7 +379,7 @@ I plotted the run times of both the parallel and seriel merge sorts on a log-log
 !['time elapsed to run a merge sort and parallelized merge sort on varying sizes of data'](parallelization.png)
 
 **Demonstrate parallel runs in no more than 70% of the time. For extra credit, show speeds up by 2x.**
-At the largest dataset evaluated, the parallel merge sort was running in about ~15 seconds, compared to the original sort which took about ~45 seconds to run. 
+At it's fastest, the parallel merge sort was running in about ~15 seconds, compared to the original sort which took about ~45 seconds to run. 
 
 Sources:
 [1] # https://stackoverflow.com/questions/60508591/sorting-list-of-tuples-using-merge-sort
@@ -500,7 +500,6 @@ I included the normalizing of minimum hash values, calculation of mean of minima
 
     return estimated_distinct, normalized_mins, min_hashes, mean_min
 ```
-I then implemented a for loop that applied each wanted base hash and produced the estimated distinct 15mer count.
 ```python
 hash_counts = [1, 2, 5, 10, 100]
 estimates = []
