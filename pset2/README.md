@@ -1,85 +1,83 @@
 ## Problem 1##
-**a.** I implemented the bitarray library and set the size of the bitarray to be large enough to accomodate the size of the English words repository and set all bits to 0. 
+**a.** **Implement bloom filter using bitarray and a fixed number of bits to store word data**
+**For each word in list, apply all three hash functions and set corresponding bits in bitarray**
+I began by reading in the words list and creating a list of individual words to be added to the bloom filter. 
 ```python
-#asked ChatGPT how large my bitarray needs to be to hold the large dataset
-#isn't this very large and will cause hash collisions?
+words = []
 
-size = 360000
-bits = bitarray(size)
-bits.setall(0)
-#bits n should be larger than data set size
+with open('words.txt') as f:
+    for line in f:
+        word = line.strip().lower()
+        words.append(word)
 ```
-I then implemented the bloom filter.
 
+I then set all the hashes to size 10,000,000 for testing and created three functions that were a combination of all 3 hashes, 2 hashs and 1 hash. 
 ```python 
-class BloomFilter(object):
-    #uses murmur3 hash function
-    def __init__(self, items_count, fp_prob):
-        #items_count number of items expected to be sotred in bloom filter
-        #fp_prob false positive probability in decimal
-        self.fp_prob = fp_prob #false positive in decimal; optional if size is fixed
-        self.size = 3600000 #set size of bitarray
-        self.hash_count = self.get_hash_count(self.size, items_count) #number of hash function
-        self.bit_array = bitarray(self.size) #bit array of given size
-        self.bit_array.setall(0) #initialize all bits as 0
-    def add(self, item):
-        #add an item in the filter
-        digests = []
-        for i in range(self.hash_count): #create digest for given item, i seed for mmh3.hash; with different seed digest created is different
-            digest = mmh3.hash(item, i) % self.size
-            digests.append(digest)
-            self.bit_array[digest] = True #set the bit True in bit_array
-    def check(self, item):
-        #check for item in filteer
-        for i in range(self.hash_count):
-            digest = mmh3.hash(item, i) % self.size
-            if self.bit_array[digest] == False:
-                #if any of bit is False, not present; else possibility it exists
-                return False
-        return True
-    def get_hash_count(self, m, n):
-        #return hash function for formula
-        #m integer size of array
-        #n integer number of items expected to be stored
-        k = (m/n) * math.log(2)
-        return int(k)
-
-
-# https://www.geeksforgeeks.org/python/bloom-filters-introduction-and-python-implementation/
-```
-For each word in the word list, I applied all three hash functions and set the corresponding hashes 
-TEST?
-
-```python
-#for each word in the list, apply all three hash functions and set the corresponding bits in the bitarray.
-#All return in [0, size] where size is some integer specified elsewhere
-
+size = 10_000_000
 def my_hash(s):
-    return int(sha256(s.lower().encode()).hexdigest(), 16) % size
+    return int(sha256(s.lower().encode()).hexdigest(), 16) % size # given
 def my_hash2(s):
     return int(blake2b(s.lower().encode()).hexdigest(), 16) % size
 def my_hash3(s):
     return int(sha3_256(s.lower().encode()).hexdigest(), 16) % size
 
-for word in words: 
-    index1 = my_hash(word)
-    index2 = my_hash2(word)
-    index3 = my_hash3(word)
-    bits[index1] = 1
-    bits[index2] = 1
-    bits[index3] = 1
-    
-#Asked ChatGPT is I answered all parts of the question and modified code (define size) 
+three_hash_functions = [my_hash, my_hash2, my_hash3] # set functions that will later dictate how many hashes are used
+two_hash_functions = [my_hash, my_hash2]
+one_hash_function = [my_hash]
 ```
 
-**b.** I first created a function that replaced single characters in a word and tested it with cat. There are 75 combinations of single-character substitutions for cat which I checked with length. 
+I was then able to create the bloom filter whose bitarray size would be specified when called.
 ```python
-#b. Create a function that checks all possible single-character substitutions for a given word using the Bloom filter. 
-# Return words flagged by the filter as potential matches. 
+class BloomFilter:
+    def __init__(self, size, hash_functions):
+        self.size = size
+        self.hash_functions = hash_functions
+        self.bit_array = bitarray(self.size)
+        self.bit_array.setall(0)
 
-#I need the function to take in each word, replace a single character, compare to the rest of list and return if it is a match. Repeat for all letter combinations
+    def add(self, item):
+        for func in self.hash_functions:
+            index = func(item)
+            if index >= self.size: # sanity check for index and hash size
+                raise ValueError(f"Index {index} out of bounds for size {self.size}")
+            self.bit_array[index] = 1
 
-#Asked ChatGPT how to make a function that replces single character in given word
+    def check(self, item):
+        for func in self.hash_functions:
+            index = func(item)
+            if self.bit_array[index] == 0:
+                return False
+        return True
+```
+
+I was then able to add the words to three different bloom filters with different hash combinations. I also created a test bloom filter with "apple" and "banana" only in it for testing. All these bloom filters used size 10,000,000 set when making the hash functions. 
+```python
+bloomf_3 = BloomFilter(size,three_hash_functions) # added words to bloom filter using size given and all three hashed
+bloomf_2 = BloomFilter(size, two_hash_functions) # two hashes used
+bloomf_1 = BloomFilter(size, one_hash_function) # one hash used
+bloom_test = BloomFilter(size, three_hash_functions)
+
+for word in words: # added words to each type of bloom filter
+    bloomf_3.add(word)
+    bloomf_2.add(word)
+    bloomf_1.add(word)
+
+bloom_test.add("apple")
+bloom_test.add("banana")
+```
+
+I checked that the word were added correctly to the bloom filter by checking my test one, a word I knew was in the large word list, and a word I knew was not in the large word list. 
+```python
+print(bloom_test.check("apple"))
+print(bloomf_3.check('abandoner'))
+print(bloomf_3.check('carolinejkerwe'))
+```
+
+**b.** **Create function that checks all possible single chracter substitutions for a given word using bloom filter, return as potential matches**
+**Evalue performance with floeer here**
+**Use typos and implement function to test how well bloom filter suggestions are correct. Good is if len <3 and has correct word**
+I then created a function that would implement single character changes on a given word and store all possibilites as replaced_words. I tested it on the word 'cat,' which with 3 letters, should have 75 possibilities and confirmed it does.
+```python
 def single_char_changes(word): 
     replaced_words = []
     for i in range(len(word)):
@@ -89,54 +87,14 @@ def single_char_changes(word):
                 replaced_words.append(changed)
     return replaced_words
 
-#Tested that the function does single character substitution for word given
-print(single_char_changes('cat'))
 len(single_char_changes('cat'))
 ```
-I then added all the words to the bloom filter and checked that they were added correctly by printing a word I knew was in the set and a word I knew was not. 
-```python
-#BloomFilter(number of items, false positive)
-#https://www.geeksforgeeks.org/python/bloom-filters-introduction-and-python-implementation/
-bloomf = BloomFilter(3600000, 0.05)
-
-#add words to BloomFilter
-for word in words:
-    bloomf.add(word)
-
-#create the function to check if word against bloom filter
-def test_in_filter(test):
-    return test in words if bloomf.check(test) else False
-
-#test with words known in filter and known not in filter
-print(test_in_filter('abandoner'))
-print(test_in_filter('carolinejk'))
-```
-
-I then combined the single character function and comparing the words produced to the words in the Bloom into a new function.
-```python
-#create full function
-#Asked ChatGPT 
-def spell_check(word):
-    def single_char_changes(word): 
-        replaced_words = []
-        for i in range(len(word)):
-            for letter in string.ascii_lowercase:
-                if word[i] != letter:
-                    changed = word[:i] + letter + word[i+1:]
-                    replaced_words.append(changed)
-        return replaced_words
-    candidates = single_char_changes(word)
-    for candidate in candidates:
-        if candidate in words:
-            print(f"{candidate} is a Match!")
-```
-Tested the function again with cat and got 10 words that matched. 
-```python
-#test function
-spell_check('cat')
-```
 
 
+**c.** **Experiment with different Bloom filter sizes and combinations of 1, 2, 3 hashes. track rate of misidentified and good suggestions and plot results**
+**How many bits are necessary to achieve 85% good suggestions with each combination of 1, 2, 3 hash functions**
+
+Sources: 
 ## Problem 2##
 **a.** I edited the merge sort given in Problem set 1 to sort by a wanted value (key) in a tuple and retain the relationship.
 
@@ -230,9 +188,9 @@ for kmer in kmers:
 
 len(filtered_kmers)
 ```
-The new number of valid 15-mers was 225280241.
+The new number of valid 15-mers was 225,280,241.
 
-**There were 3738759105
+**There were 3,738,759,105
 nucleotides in Chromosome 1. I excluded any 15-mers that contained more than two N. After excluding those, there are 225280241 valid 15-mers.**
 
 **b.**
