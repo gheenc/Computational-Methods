@@ -182,7 +182,7 @@ print(f"Preformance at 1 hash 10,000,000 bits was {(total_good_suggestions/total
 
 **c.** 
 
-I initially did this cycling through for each seperate bloom filter, but to optimize the process of making many bloom filters of varying bit size and amount of hashes used, I created a hash factory function that would create hashes of the imputted size and cycle through a desired list of sizes and create bloom filters of 1, 2, and 3 hashes of that respective size. I then added words into these new bloom filters. I did 9 different sizes so there were 27 bloom filters total. i confirmed these loaded correctly by calling 'floeer' and 'flower' again and getting the same results. 
+I initially did this cycling through for each seperate bloom filter, but to optimize the process of making many bloom filters of varying bit size and amount of hashes used, I created a hash factory function that would create hashes of the imputted size and cycle through a desired list of sizes and create bloom filters of 1, 2, and 3 hashes of that respective size. I then added words into these new bloom filters. I did 9 different sizes so there were 27 bloom filters total. I confirmed these loaded correctly by calling 'floeer' and 'flower' again and getting the same results. 
 ```python
 sizes = [100_000, 500_000, 1_000_000, 1_500_00, 10_000_000, 50_000_000, 100_000_000, 500_000_000, 1_000_000_000] 
 bloom_filters = {}
@@ -201,6 +201,14 @@ print(len(bloom_filters))
 for bf in bloom_filters.values():
     for word in words:
         bf.add(word)
+
+print(good_bloom('floeer', 'flower', bloom_filters[(10_000_000, 1)]))
+
+print(good_bloom('floeer', 'flower', bloom_filters[(10_000_000, 2)]))
+
+print(good_bloom('floeer', 'flower', bloom_filters[(10_000_000, 3)]))
+
+print(good_bloom('flower', 'flower', bloom_filters[(10_000_000, 1)]))
 ```
 I then implemented a large for loop that would cycle through typos for each bloom filter and append the percentages of misidentified and good suggestion for each bloom filter to a results dictionary. I was then able to turn this dictionary into a pandas dataframe for easy plotting.
 ```python
@@ -246,7 +254,7 @@ for (size, num_hashes), data in results.items():
 
 df_plot = pd.DataFrame(plot_data)
 ```
-['performance of varying bit size in bloom filter using differing size hashes tracked using 'good suggestions' and 'misidentified' suggestions](bloom_filter.png)
+!['performance of varying bit size in bloom filter using differing size hashes tracked using 'good suggestions' and 'misidentified' suggestions'](bloom_filter.png)
 
 **Approximately how many bits are necessary too achieve 85% good suggestions with each combination of 1, 2, or 3 hashes**
 When using 3 hashes, you can achieve 85% good suggestions with the smallest bit size of about 5,000,000. When using 2 hashes, your bit size needs to be slightly smaller than 100,000,000. When using 1 hash, you require the largest bit size of almost 1,000,000,000. 
@@ -258,12 +266,13 @@ Sources:
 [3] Asked ChatGPT how to compare to the bloom filter in a for loop and ensured my spell check was answer the question fully
 [4] Asked ChatGPT how to format good_bloom so that it would keep track of misidentified, good suggestions, and total checked
 [5] Asked ChatGPT to clean up my for loop that cycled through typos 
-[6] I orignally had the hashes/blooms set up for me to hard code the size, implement number of hashes, add words, and cycle through typos for each one. This was very time inefficient when using varying bit sizes so I used suggestions from ChatGPT of how to create for loops that would load the hashes and bloom filters and cycle each through typos and output wanted numbers of misidentified, good suggestions and total checked. It also suggested storing them in a results dictionary that could be turned into a pandas dataset for easy graphing later. 
+[6] I orignally had the hashes/blooms set up for me to hard code the size, implement number of hashes, add words, and cycle through typos for each one. This was very time inefficient when using varying bit sizes so I used suggestions from ChatGPT of how to create for loops that would load the hashes and bloom filters and cycle each through typos and output wanted numbers of misidentified, good suggestions and total checked. It also suggested storing them in a results dictionary that could be turned into a pandas dataset for easy graphing later.
+[7] I also troubleshooted errors using ChatGPT. Of this, I implemented things like the sanity check for bit/hash size in the bloom filter and the debugging of floeer which originally presented as a 'true' in the bloom filter but was just a false positive. 
 
 ## Problem 2 ##
 
 
-**a.** **Adapt alg2 merge sort to sort based on key-value relationship. Provide examples demonstrating that your code words. Be clear how you know it works.**
+**a.**
 I edited the merge sort given in Problem set 1 to sort by a wanted value (key) in a tuple and retain the relationship.
 
 ```python
@@ -301,7 +310,7 @@ I then used the new merge sort to sort them numerically by patient id to confirm
 ```python
 print(alg_new(patient_data, key=itemgetter(0)))
 ```
-**b.** **Implement a parallel version of modified merge sort, splitting word across multiple processors.**
+**b.** 
 To create a faster, parallel version of the merge sort, I implemented chuncks and multiprocessing via ProcessPoolExecutor that chunked the data across 4 processors. I also implemented a cutoff that if the data was less than 500,000 the original, "serial," merge would be ran because I observed that below this threshold, the paralell merge actually took longer due to the added overhead of seperating out the work. 
 ```python
 
@@ -367,10 +376,10 @@ if __name__ == '__main__':
 Full execution of timing of merges and creation of fake data is in the code appendix below
 
 I plotted the run times of both the parallel and seriel merge sorts on a log-log graph. 
-['time elapsed to run a merge sort and parallelized merge sort on varying sizes of data'](parallelization.png)
+!['time elapsed to run a merge sort and parallelized merge sort on varying sizes of data'](parallelization.png)
 
-**Demonstrate parallel runs in no more than 70% of the time. For extra credit, show speeds up by 2x**
-At the largest dataset evalued, the parallel merge sort was running in about ~15 seconds, compared to the original sort which took about ~45 seconds to run. 
+**Demonstrate parallel runs in no more than 70% of the time. For extra credit, show speeds up by 2x.**
+At the largest dataset evaluated, the parallel merge sort was running in about ~15 seconds, compared to the original sort which took about ~45 seconds to run. 
 
 Sources:
 [1] # https://stackoverflow.com/questions/60508591/sorting-list-of-tuples-using-merge-sort
@@ -380,7 +389,7 @@ Sources:
 [5] I used ChatGPT to overcome any errors thrown and better understand what needed to be run in the if name == main line.
 
 ## Problem 3## 
-**a. Write code to parse FASTA file and extract all overlapping 15 mers from chromosome 1.**
+**a.**
 I opened the file as fasta_path then used BioPython to parse out the overlapping 15mers from chromosome 1 and visualized the first 5 to ensure they were correct.  
 ```python
 with open(fasta_file, "rb") as f:
@@ -389,7 +398,7 @@ with open(fasta_file, "rb") as f:
 fasta_file = r"C:\Users\carol\Downloads\human_g1k_v37.fasta.gz"
 
 with gzip.open(fasta_file, "rt") as f:
-    print(f.readline())  # Read just the first line
+    print(f.readline())
  
 def extract_15mers_from_chr1(fasta_path):
     fifteen_mers = []
@@ -398,7 +407,7 @@ def extract_15mers_from_chr1(fasta_path):
         for record in SeqIO.parse(handle, "fasta"):
             if record.id.strip().lower() in ["1", "chr1"]:
                 sequence = str(record.seq)
-                for i in range(len(sequence) - 14):  # 15-mers
+                for i in range(len(sequence) - 14):
                     fifteen_mers.append(sequence[i:i+15])
                 return fifteen_mers
 
@@ -436,21 +445,15 @@ The new number of valid 15-mers was 225,280,241.
 I implemented this code that utilized a rolling hash that breaks at chromosome 1 and returns the normalized minimum for each hash. My code also allows the varying of base a to generate multiple independent hash functions. 
 
 ```python
-import gzip
-from Bio import SeqIO
-
 def estimate_distinct_15mers_multihash(fasta_file, num_hashes=10, M=10**9 + 7):
-    bases = [101 + i*2 for i in range(num_hashes)]  # Ensure different odd bases
+    bases = [101 + i*2 for i in range(num_hashes)]  
     min_hashes = [None] * num_hashes
     window_size = 15
-
-    # Updated encoding: fixed character to integer mapping
-    char_to_int = {'A': 1, 'C': 2, 'G': 3, 'T': 4, 'N': 5, 'X': 6}
 
     with gzip.open(fasta_file, "rt") as handle:
         for record in SeqIO.parse(handle, "fasta"):
             if record.id.strip().lower() in ["1", "chr1"]:
-                seq = str(record.seq).upper()
+                seq = str(record.seq)
                 n = len(seq)
 
                 for h, base in enumerate(bases):
@@ -460,25 +463,23 @@ def estimate_distinct_15mers_multihash(fasta_file, num_hashes=10, M=10**9 + 7):
 
                     current_hash = 0
                     for i in range(window_size):
-                        c = char_to_int.get(seq[i], 0)  # fallback to 0 if unexpected char
-                        current_hash = (current_hash * base + c) % M
+                        current_hash = (current_hash * base + ord(seq[i])) % M
 
                     min_hash = current_hash
 
                     for i in range(1, n - window_size + 1):
-                        if 'N' in seq[i - 1:i + window_size]:  # Original behavior: skip if any 'N'
+                        if 'N' in seq[i - 1:i + window_size]:  
                             continue
-                        left_char = char_to_int.get(seq[i - 1], 0)
-                        right_char = char_to_int.get(seq[i + window_size - 1], 0)
-
-                        current_hash = (current_hash - power[window_size - 1] * left_char) % M
-                        current_hash = (current_hash * base + right_char) % M
+                        current_hash = (
+                            (current_hash - power[window_size - 1] * ord(seq[i - 1])) % M
+                        )
+                        current_hash = (current_hash * base + ord(seq[i + window_size - 1])) % M
                         if min_hash is None or current_hash < min_hash:
                             min_hash = current_hash
 
                     min_hashes[h] = min_hash
 
-                break  # Only process chromosome 1
+                break  # Only chromosome 1
 
     # Normalize and estimate
     normalized_mins = [h / M for h in min_hashes if h is not None]
@@ -486,12 +487,12 @@ def estimate_distinct_15mers_multihash(fasta_file, num_hashes=10, M=10**9 + 7):
     estimated_distinct = (1 / mean_min) - 1 if mean_min > 0 else 0
 
     return estimated_distinct, normalized_mins, min_hashes, mean_min
+
 ```
 **c.**
 I included the normalizing of minimum hash values, calculation of mean of minima, and estimating of distinct 15-mer count in my original rolling hash as it allowed me to store them without exceeding my computer memory. I then implemented a for loop that used the rolling hash for a base 1, 2, 5, 10, and 100 and stored the estimate for each in a list.  
 
 ```python
-
     # Normalize and estimate
     normalized_mins = [h / M for h in min_hashes if h is not None]
     mean_min = sum(normalized_mins) / len(normalized_mins)
@@ -499,7 +500,7 @@ I included the normalizing of minimum hash values, calculation of mean of minima
 
     return estimated_distinct, normalized_mins, min_hashes, mean_min
 ```
-For loop that applied each wanted base hash.
+I then implemented a for loop that applied each wanted base hash and produced the estimated distinct 15mer count.
 ```python
 hash_counts = [1, 2, 5, 10, 100]
 estimates = []
@@ -511,13 +512,14 @@ for n_hash in hash_counts:
 ```
 **d.**
 I plotted the estimates given by varying hashes used against the true number of distinct 15-mers.
-['Estimated Distinct Counts for Varying Hash Functions Compared to True Number of Distinct 15mers'](distinct_counts.png)
+
+!['Estimated Distinct Counts for Varying Hash Functions Compared to True Number of Distinct 15mers'](distint_counts.png)
 
 **Discuss how estimate improves as more hash functions are combined. How stable are the estimates? What happens if you only use a single hash?**
 
 As more hash functions are combined, the closer the estimated distinct count approaches the true distinct count. We can especially see this in the move to using 1, 2, and 5 rolling hashes. The estimates are not very stable, however. Using 10 and 100 hashes was slightly higher than using 2 or 5 rolling hashes. I believe this could be due to noise created during the long process of creating a calculating the rolling hashes (my computer took 8 hours to compute the estimated distinct count of 100 hashes). Using a long process of creating 100 hashes is still better, however, than using a single hash which was the most off from the true number of distinct elements. Using only a single hash overestimated the number of distinct elements by almost 200,000,000.
 
-**e.**
+**e.** **How did you select values for a? Any optimizations?**
 I used the example values given for varying base a. As explained in d, it took my machine a long time to compute an estimate using 100 rolling hashes. I would be interesting to repeat the experiment using 50 rolling hashes to see if it would continue to trend down toward the true distinct without the machine's noise impedding. 
 
 I did not make many optimizations (which is probably why it took so long). I only parsed the first chromosome out of the original data file which I think helped maintain some low eroverhead. I orignally completed the problem using 5 string of 5 nucleotides, so when I attempted to run the code on the full data set ending with returning all the hash values, I ran into memory load issues. This is when I implemented the rolling hash returning the mean, which I could then build on to complete part c. If I were to optimize more, I think there is something with numpy that I could use when storing hashes to minimize overhead even more. (This segment was written prior to the added comment by Prof. McDougal that encouraged the use of numpy.) (There was also a glitch in my viewing of the assignment for the problem set created by the comment on Oct 6 that put a yellow box over the encoding of ci in the rolling hash (A:1, C:2...). It was fixed by the comment on Oct 8 but I ran this problem prior to the full comment being viewable again, so my coding does not include the encoding of the characters as numbers.)
@@ -578,6 +580,7 @@ I think the data is interesting because I learned from researching the last ques
 I could explore if there have been decline in healthcare availability in rural areas in recent years. I could also explore the differences in providers based on counties that are rural vs areas that are metro. 
 
 ## Code Appendix ##
+The correct notebooks for these are 'pset2 problem1 take 3,' 'pset problem2 take4,' and 'pset2 problem3.' I believe I have deleted all others from the GitHub. 
 **Problem 1**
 
 # %%
