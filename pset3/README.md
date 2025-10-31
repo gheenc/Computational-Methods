@@ -36,7 +36,6 @@ cancer_ids = [id_elem.text for id_elem in root.findall(".//Id")]
 print(f"Found {len(cancer_ids)} cancer articles.")
 print(cancer_ids[:10])  # show first 10 IDs
 ```
-[1]
 
 **b.**
 I pulled the article title, the abstract text, journal title, Pubmed ID (PMID), and year of publication of each article. I made my code robust to be able to parse article titles that were in italics and bold and to pull all abstracts, even if they were structured. It runs on batches of 200 pulled PMIDs at a time with a 1 second sleep in between to respect pull rate limits. All the metadata stores in a list; any PMIDs that failed to be pulled are stored in a list; and all individual PMIDs are stored in a list for use in future problems. 
@@ -172,7 +171,6 @@ for i in range(0, len(cancer_ids), 200):  # batches of 200
 print(f"Retrieved metadata for {len(all_cancer_metadata)} Cancer articles.")
 print(f"Failed PMIDs in first pass: {len(failed_pmids)}")
 ```
-[2]
 
 I then saved the metadata for each set of papers in their own JSON dictionary and combined them all into one JSON dictionary
 
@@ -195,7 +193,6 @@ all_paper_metadata = all_alz_metadata + all_cancer_metadata
 json_all_metadata = json.dumps(all_paper_metadata, indent=2)
 print(json_all_metadata[:500])
 ```
-[3] 
 
 **c.**
 To identify if there are any overlapping papers, I utilized the PMID lists made in the original pull of the metadata. I combined them into one variable then checked that variable for only unique instance. 
@@ -211,7 +208,6 @@ all_pmids_unique = list(dict.fromkeys(all_pmids))
 print(f"Total combined PMIDs: {len(all_pmids)}")
 print(f"Unique PMIDs: {len(all_pmids_unique)}")
 ```
-[4]
 
 **d.**
 I have in my original implementation of pulling metadata that it will pull all of the abstract, even if it is broken down into labeled sections. It will also include and keep the label included in the abstract. 
@@ -399,10 +395,13 @@ for paper in all_cancer_metadata:
     paper["query"] = "cancer"
 ```
 
-I converted all elements of the metadata into a dictionary.
+I combined both lists of metadata into one big list and converted all elements of the metadata into a dictionary.
 ```python
-# convert list of all papers metadata into paper dictionary
+all_paper_metadata = all_alz_metadata + all_cancer_metadata
+print(all_paper_metadata[:500])
+print(type(all_paper_metadata))
 
+# convert list of all papers metadata into paper dictionary
 papers = {
     paper["PMID"]: {
         "ArticleTitle": paper.get("ArticleTitle", ""),
@@ -445,22 +444,93 @@ embeddings_pca = pd.DataFrame(
 embeddings_pca["query"] = [paper["query"] for paper in papers.values()]
 ```
 
-**Plot 2D scatter plots for PC0 vs PC 1 vs PC2 and PC1 vs PC2; color code these by the search query used (Alzheimers vs cancer).**
+I plotted scatterplots for  PC0 vs PC1, PC0 vs PC2, and PC1 vs PC2. Throughout all graphs, the Alzheimer's articles are blue and the cancer articles are red. 
+['Scatterplots of PCA analysis of papers'](PCA_analysis.png)
+
 
 **Comment on separation or lack thereof, and any takeaways from that**
-We can see in the first graph, that comparing the PC0 and PC1 there is pretty clear seperation between the two papers with minimal overlap. When comparing PC0 to PC2, there is less overlap at the lower end of PC2 but there is still good seperation at the top. In the comparison between PC1 and PC2 we see the most overlap
+We can see in the first graph, that comparing the PC0 and PC1 there is pretty clear seperation between the two papers with minimal overlap, meaning the first principal found differences in their embeddings. From this, we can infer that the words or structure were substantially different between the two groups. When comparing PC0 to PC2, there is less overlap at the lower end of PC2 but there is still good seperation at the top. In the comparison between PC1 and PC2 we see the most overlap, meaning the PCA did not find many differences in their embeddings. From this analysis, the words and structures did not have substantial variation between the groups. 
+
+**Sources**
+[1] I asked ChatGPT how to ensure that PyTorch was installed successfully and ran a test print based on that. [2] I used the same coding to pull the articles and metadata as problem 1, so any interactions with ChatGPT mentioned there are the same. [3] When I implemented the embedding given, query was not defined, so I used ChatGPT to add a query column to the metadata. Paper was not defined so I also used ChatGPT to pull the needed elements from the metadata into their own dictionary [4] Used to chart scatterplot: # https://plotly.com/python/pca-visualization/. The plot suggested returned a matrix, with more than needed analysis, so I used ChatGPT to refine to only the comparisons needed and create a more visually appealing graph. [5] Used ChatGPT to understand how to read and analyze a PCA scatterplot
 
 ## Problem 3 ##
 I plotted on a log-log graph the difference between the calcutating the derivative numerically and analytically. I labeled the x axis as h or steps and the y axis as the difference between the numerical and analytic approach.
 
 ['Line graph showing difference between derivative approaches'](derivative.png)
 
-Moving from right to left on the graph, you can see that as h (or the steps) decreases, the difference (or error) also decreases. This is good and expected in the calculus world. However, we begin to see how very small steps is bad in the computer world. While small steps is good for having small error, computers don't like small numbers, so we see the graph begin to look funky around 10^-8 and actually start to increase in error again. 
+Moving from right to left on the graph, you can see that as h (or the steps) decreases, the difference (or error) also decreases. This is good and expected in the calculus world - smaller the step, the smaller the error. 
 
-This is because computers don't like this super small steps and it is creating compounding error issues that are then seen on our graph. 
+However, we begin to see the effects of this calculation being done in the computer world in that computers don't like small numbers. We see the graph begin to look funky around 10^-8 and actually start to increase in error again despite the steps continuing to get smaller. 
+
+This is because computers don't like super small numbers. As h gets smaller, the functions are returning incredibly small numbers and it is creating compounding error issues that are then seen on our graph.
+
+**Sources**
+[1]Troubleshooted with ChatGPT to understand if code given in slides was useful for this problem and how to create what was needed. 
 
 ## Problem 4 ##
-**Write a python function that uses Explicit Euler method to plot I(t) given S(0), I(0), R(0), Beta, Gamma, and Tmax(last time point to compute)**
+I created a function of Euler's method that was fit for the SIR model. 
+```python
+def euler_SIR(S0, I0, R0, beta, gamma, Tmax, h):
+    t = np.arange(0, Tmax + h, h) # giving full length of time
+    n = len(t) # number of time steps
+
+    S = np.zeros(n) # dictating how many steps 
+    I = np.zeros(n)
+    R = np.zeros(n)
+
+    S[0] = S0 # setting beginning of S etc as 0
+    I[0] = I0
+    R[0] = R0
+
+    N = S0 + I0 + R0 # total population
+
+    for k in range(n - 1): # looping through time steps and calulating new derivates for each 
+        dS = -beta * S[k] * I[k] / N 
+        dI = beta * S[k] * I[k] / N - gamma * I[k]
+        dR = gamma * I[k]
+
+        S[k + 1] = S[k] + h*dS # updating S, I, R values for each step
+        I[k + 1] = I[k] + h*dI
+        R[k + 1] = R[k] + h*dR
+
+    return t, S, I, R # returns time traversed and complete variables
+```
+
+I ran the function with a population of 137,000, who on day 0 has one infected person (and thus 136,999 people who are sucsceptible) with a disease that has a beta of 2 and a gamma of 1. 
+```python
+if __name__ == "__main__":
+    # Parameters
+    S0 = 136_999     # initial susceptible
+    I0 = 1      # initial infected
+    R0 = 0       # initial recovered
+    beta = 2   # infection rate
+    gamma = 1  # recovery rate
+    Tmax = 30   # days
+    h = 1     # step size
+
+    t, S, I, R = euler_SIR(S0, I0, R0, beta, gamma, Tmax, h)
+
+results = pd.DataFrame({
+    'Time': t,
+    'Susceptible': S,
+    'Infected': I,
+    'Recovered': R
+})
+```
+
+To graph the time course of the disease, I first had to melt the data and determine when the number of infected people dropped below 1 to set my x-axis. 
+```python
+results_plot = results.melt(id_vars=['Time'],value_vars=['Susceptible', 'Infected', 'Recovered'], var_name='SIR', value_name='Population')
+print(results_plot.head())
+
+results.loc[results['Infected'] <1, 'Time'].min()
+# the Infected rate drops below 1 on Day 26 - this code is not robust to if the rate of infection falls to 1 then jumps back up
+```
+['Line graph showing SIR model'](SIR_model.png)
+
+I determined when the peak was and how many people were infected on that day.
+```python 
 
 **Plot the time course of the number of infected invdividuals until that number drops below 1**
 
@@ -480,3 +550,460 @@ This is because computers don't like this super small steps and it is creating c
 **Identify any data cleaning needs (including checking missing data) and write code to perform them.**
 
 ## Code Appendix ##
+**Problem 1**
+
+
+**Problem 2**
+```python
+# %%
+# ! pip install -U kaleido
+# !pip install -U plotly
+
+# %%
+import requests
+from xml.etree import ElementTree
+import json
+import pprint
+import time
+import aiohttp
+import asyncio
+import tqdm
+from sklearn import decomposition
+import pandas as pd
+import plotly.express as px
+from sklearn.decomposition import PCA
+
+# %%
+# installed PyTorch
+# ! pip install torch torchvision
+
+# %%
+# insured torch installed correctly
+# asked ChatGPT how to guarentee it worked
+import torch
+print(torch.__version__)
+print("CUDA available:", torch.cuda.is_available())
+
+
+# %%
+# installed huggingfacefrom transformers import AutoTokenizer, AutoModel
+
+# ! pip install transformers
+
+# %%
+# from McDougal
+
+from transformers import AutoTokenizer, AutoModel
+
+# load model and tokenizer
+tokenizer = AutoTokenizer.from_pretrained('allenai/specter')
+model = AutoModel.from_pretrained('allenai/specter')
+
+# %%
+# pull in 1000 alz articles
+base_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
+params = {
+    "db": "pubmed",
+    "term": "Alzheimers AND 2024[pdat]",
+    "retmax": "1000",
+    "retmode": "xml"
+}
+
+response = requests.get(base_url, params=params)
+root = ElementTree.fromstring(response.text)
+
+alz_ids = [id_elem.text for id_elem in root.findall(".//Id")]
+print(f"Found {len(alz_ids)} Alzheimers articles.")
+
+# %%
+# pull in 1000 cancer paper
+
+base_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
+params = {
+    "db": "pubmed", # from PubMed
+    "term": "cancer AND 2024[pdat]", #cancer
+    "retmax": "1000", # only send 1000 articles
+    "retmode": "xml" # sends in xml format
+}
+
+response = requests.get(base_url, params=params)
+root = ElementTree.fromstring(response.text)
+
+cancer_ids = [id_elem.text for id_elem in root.findall(".//Id")]
+print(f"Found {len(cancer_ids)} cancer articles.")
+
+# %%
+# asked ChatGPT how to now get metadata for each article ID fetched earlier
+# used ChatGPT to add the time.sleep portion, add article id title being pulled for metadata
+
+# fetch metadata for the 1000 alzheimers
+fetch_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
+all_alz_metadata = []
+failed_pmids = []
+alz_pmids =[]
+
+for i in range(0, len(alz_ids), 200):  # batches of 200
+    batch_ids = ",".join(alz_ids[i:i+200])
+    fetch_params = {
+        "db": "pubmed",
+        "id": batch_ids,
+        "retmode": "xml"
+    }
+    try:
+        fetch_response = requests.get(fetch_url, params=fetch_params, timeout=30)
+        fetch_response.raise_for_status()
+        root = ElementTree.fromstring(fetch_response.text)
+    except Exception as e:
+        print(f"Error fetching batch {i//200+1}: {e}")
+        continue
+
+    for article in root:
+        try:
+            title_elem = article.find(".//ArticleTitle")
+            abstract_elems = article.findall(".//Abstract/AbstractText")
+            journal_elem = article.find(".//Journal/Title")
+            pmid_elem = article.find(".//PMID")
+            date_elem = article.find(".//PubDate/Year")
+
+            title_text = (
+                ElementTree.tostring(title_elem, method="text", encoding="unicode").strip()
+                if title_elem is not None
+                else None
+            )
+            abstract_text = (
+                " ".join(
+                    ElementTree.tostring(elem, method="text", encoding="unicode").strip()
+                    if elem.get("Label") else ElementTree.tostring(elem, method="text", encoding="unicode").strip()
+                    for elem in abstract_elems
+            )
+            if abstract_elems
+            else None
+            )
+
+            metadata = {
+                "PMID": pmid_elem.text if pmid_elem is not None else None,
+                "ArticleTitle": title_text,
+                "AbstractText": abstract_text,
+                "Journal": journal_elem.text if journal_elem is not None else None,
+                "YearPublished": date_elem.text if date_elem is not None else None
+            }
+            all_alz_metadata.append(metadata)
+            alz_pmids.append(metadata['PMID'])
+        except Exception as e:
+            pmid_text = pmid_elem.text if pmid_elem is not None else "UNKNOWN"
+            print(f"Error parsing article PMID {pmid_text}: {e}")
+            failed_pmids.append(pmid_text)
+            continue
+
+    time.sleep(1)
+
+print(f"Retrieved metadata for {len(all_alz_metadata)} Alzheimers articles.")
+print(f"Failed PMIDs in first pass: {len(failed_pmids)}")
+
+
+# %%
+# asked ChatGPT how to now get metadata for each article ID fetched earlier
+# used ChatGPT to add the time.sleep portion, add article id title being pulled for metadata
+
+# fetch metadata for the 1000 cancer
+fetch_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
+all_cancer_metadata = []
+failed_pmids = []
+cancer_pmids =[]
+
+for i in range(0, len(cancer_ids), 200):  # batches of 200
+    batch_ids = ",".join(cancer_ids[i:i+200])
+    fetch_params = {
+        "db": "pubmed",
+        "id": batch_ids,
+        "retmode": "xml"
+    }
+    try:
+        fetch_response = requests.get(fetch_url, params=fetch_params, timeout=30)
+        fetch_response.raise_for_status()
+        root = ElementTree.fromstring(fetch_response.text)
+    except Exception as e:
+        print(f"Error fetching batch {i//200+1}: {e}")
+        continue
+
+    for article in root:
+        try:
+            title_elem = article.find(".//ArticleTitle")
+            abstract_elems = article.findall(".//Abstract/AbstractText")
+            journal_elem = article.find(".//Journal/Title")
+            pmid_elem = article.find(".//PMID")
+            date_elem = article.find(".//PubDate/Year")
+
+            title_text = (
+                ElementTree.tostring(title_elem, method="text", encoding="unicode").strip()
+                if title_elem is not None
+                else None
+            )
+            abstract_text = (
+                " ".join(
+                    ElementTree.tostring(elem, method="text", encoding="unicode").strip()
+                    if elem.get("Label") else ElementTree.tostring(elem, method="text", encoding="unicode").strip()
+                    for elem in abstract_elems
+            )
+            if abstract_elems
+            else None
+            )
+
+            metadata = {
+                "PMID": pmid_elem.text if pmid_elem is not None else None,
+                "ArticleTitle": title_text,
+                "AbstractText": abstract_text,
+                "Journal": journal_elem.text if journal_elem is not None else None,
+                "YearPublished": date_elem.text if date_elem is not None else None
+            }
+            all_cancer_metadata.append(metadata)
+            cancer_pmids.append(metadata['PMID'])
+        except Exception as e:
+            pmid_text = pmid_elem.text if pmid_elem is not None else "UNKNOWN"
+            print(f"Error parsing article PMID {pmid_text}: {e}")
+            failed_pmids.append(pmid_text)
+            continue
+
+    time.sleep(1)
+
+print(f"Retrieved metadata for {len(all_cancer_metadata)} Cancer articles.")
+print(f"Failed PMIDs in first pass: {len(failed_pmids)}")
+
+
+# %%
+for paper in all_alz_metadata:
+    paper["query"] = "alzheimers"
+
+for paper in all_cancer_metadata:
+    paper["query"] = "cancer"
+
+# %%
+# combine all metadata
+all_paper_metadata = all_alz_metadata + all_cancer_metadata
+print(all_paper_metadata[:500])
+print(type(all_paper_metadata))
+
+
+# %%
+# ensure none are missing and everything was pulled over correctly - helpful when troubleshooting
+# not needed if don't need to tuen into  json
+
+# Missing titles
+missing_titles = [p for p in all_paper_metadata if not p.get("ArticleTitle")]
+
+# Missing abstracts
+missing_abstracts = [p for p in all_paper_metadata if not p.get("AbstractText")]
+
+# Missing PMIDs
+missing_pmids = [p for p in all_paper_metadata if not p.get("PMID")]
+
+print(f"Missing titles: {len(missing_titles)}")
+print(f"Missing abstracts: {len(missing_abstracts)}")
+print(f"Missing PMIDs: {len(missing_pmids)}")
+
+
+# %%
+# convert list of all papers metadata into paper dictionary
+
+papers = {
+    paper["PMID"]: {
+        "ArticleTitle": paper.get("ArticleTitle", ""),
+        "AbstractText": paper.get("AbstractText", ""),
+        "query": paper.get('query', "")
+    }
+    for paper in all_paper_metadata
+    if paper.get("PMID")  # only include valid PMIDs
+}
+
+print(f"Prepared {len(papers)} papers for embedding generation.") # ensure all papers were processed
+
+# %%
+# technically not needed anymore, was helpful for troubleshooting when weren't all pulling
+
+missing_title = [p for p in papers.values() if not p.get("ArticleTitle")]
+missing_abs = [p for p in papers.values() if not p.get("AbstractText")]
+
+print(f"Missing titles: {len(missing_title)}")
+print(f"Missing abstracts: {len(missing_abs)}")
+
+# %%
+# used ChatGPT to add the get_abstract function because error threw first time
+
+# we can use a persistent dictionary (via shelve) so we can stop and restart if needed
+# alternatively, do the same but with embeddings starting as an empty dictionary
+def get_abstract(paper):
+    return paper.get("AbstractText", "") or ""
+
+embeddings = {}
+for pmid, paper in tqdm.tqdm(papers.items()):
+    data = [paper["ArticleTitle"] + tokenizer.sep_token + get_abstract(paper)]
+    inputs = tokenizer(
+        data, padding=True, truncation=True, return_tensors="pt", max_length=512
+    )
+    result = model(**inputs)
+    # take the first token in the batch as the embedding
+    embeddings[pmid] = result.last_hidden_state[:, 0, :].detach().numpy()[0]
+
+# turn our dictionary into a list
+embeddings = [embeddings[pmid] for pmid in papers.keys()]
+
+# %%
+pca = decomposition.PCA(n_components=3)
+embeddings_pca = pd.DataFrame(
+    pca.fit_transform(embeddings),
+    columns=['PC0', 'PC1', 'PC2']
+)
+embeddings_pca["query"] = [paper["query"] for paper in papers.values()]
+
+# %%
+# https://plotly.com/python/pca-visualization/
+
+labels = {
+    str(i): f"PC {i+1} ({var:.1f}%)"
+    for i, var in enumerate(pca.explained_variance_ratio_ * 100)
+}
+
+color_map = {
+    "alzheimers": "#1f77b4",
+    "cancer": "#d62728"
+}
+
+fig = px.scatter_matrix(
+    embeddings_pca,
+    labels=labels,
+    dimensions=['PC0', 'PC1', 'PC2'],
+    color='query',
+    color_discrete_map=color_map
+)
+
+fig.update_traces(diagonal_visible=False)
+fig.show()
+
+# %%
+# I did the above graphs and because they have extra comparisons, I asked ChatGPT to refine to only the needed analysis 
+
+import plotly.express as px
+from plotly.subplots import make_subplots
+import plotly.graph_objects as go
+
+# Define color map
+color_map = {
+    "alzheimers": "#1f77b4",
+    "cancer": "#d62728"
+}
+
+# Define variance labels for axes
+labels = {
+    f"PC{i}": f"PC{i} ({var:.1f}%)"
+    for i, var in enumerate(pca.explained_variance_ratio_ * 100)
+}
+
+# Create subplots — 1 row, 3 columns
+fig = make_subplots(rows=1, cols=3, subplot_titles=(
+    "PC0 vs PC1", "PC0 vs PC2", "PC1 vs PC2"
+))
+
+# --- Plot 1: PC0 vs PC1 ---
+for query, color in color_map.items():
+    df = embeddings_pca[embeddings_pca["query"] == query]
+    fig.add_trace(
+        go.Scatter(
+            x=df["PC0"], y=df["PC1"],
+            mode='markers',
+            name=query,
+            marker=dict(color=color, size=6, opacity=0.7)
+        ),
+        row=1, col=1
+    )
+
+# --- Plot 2: PC0 vs PC2 ---
+for query, color in color_map.items():
+    df = embeddings_pca[embeddings_pca["query"] == query]
+    fig.add_trace(
+        go.Scatter(
+            x=df["PC0"], y=df["PC2"],
+            mode='markers',
+            name=query,
+            marker=dict(color=color, size=6, opacity=0.7),
+            showlegend=False  # avoid duplicate legends
+        ),
+        row=1, col=2
+    )
+
+# --- Plot 3: PC1 vs PC2 ---
+for query, color in color_map.items():
+    df = embeddings_pca[embeddings_pca["query"] == query]
+    fig.add_trace(
+        go.Scatter(
+            x=df["PC1"], y=df["PC2"],
+            mode='markers',
+            name=query,
+            marker=dict(color=color, size=6, opacity=0.7),
+            showlegend=False
+        ),
+        row=1, col=3
+    )
+
+# Layout
+fig.update_layout(
+    height=500,
+    width=1200,
+    title_text="2D PCA Scatter Plots by Query Type",
+    template="plotly_white"
+)
+
+# Axis labels
+fig.update_xaxes(title_text=labels["PC0"], row=1, col=1)
+fig.update_yaxes(title_text=labels["PC1"], row=1, col=1)
+
+fig.update_xaxes(title_text=labels["PC0"], row=1, col=2)
+fig.update_yaxes(title_text=labels["PC2"], row=1, col=2)
+
+fig.update_xaxes(title_text=labels["PC1"], row=1, col=3)
+fig.update_yaxes(title_text=labels["PC2"], row=1, col=3)
+
+fig.write_image('PCA_analysis.png')
+fig.show()
+
+
+# %%
+```
+
+**Problem 3**
+```python
+# %%
+import numpy as np
+import plotnine 
+from plotnine import *
+import matplotlib.pyplot as plt
+
+
+# %%
+# troubleshooted with chatgpt to understand problem based off code given in the slides
+
+f = lambda x: x**3
+true_derivative = 27
+h = np.logspace(-10, 0, 100)
+error = (f(3 + h) - f(3)) / h
+difference = np.abs(error-true_derivative)
+
+
+# %%
+plt.loglog(h, difference)
+plt.xlabel("h")
+plt.ylabel("Difference between numerical and analytical derivative")
+plt.title("Error in numerical derivative vs h")
+
+plt.savefig('derivative.png')
+plt.show()
+
+
+# %%
+# h gets smaller and smaller because as you decrease step size you get error
+# we are seeing this as  approaches 10^-7 but then it begins to increase again because computers do not like small numbers. So, while the erorr decreases as steps decrease there is a threshold of the error becoming so small (which is good for calculus) but the computer does not like it and it leads to compounding error 
+```
+
+**Problem 4**
+
+
+**Problem 5**
