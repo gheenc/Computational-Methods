@@ -529,19 +529,33 @@ results.loc[results['Infected'] <1, 'Time'].min()
 ```
 ['Line graph showing SIR model'](SIR_model.png)
 
-I determined when the peak was and how many people were infected on that day.
+I determined when the peak was and how many people were infected on that day. **The peak was day 16 and 26,534 people were infected** I made my code so it it rounded up the number of people infected because you cannot have a decimal of a person. I also made it robust for if there are multiple peak days. 
+
 ```python 
+peak_day = results.loc[results['Infected'].idxmax(), 'Time']
+print(f"Peak date: Day {peak_day}")
 
-**Plot the time course of the number of infected invdividuals until that number drops below 1**
+max_infected = results['Infected'].max()
+peak_days = results.loc[results['Infected'] == max_infected, 'Time'].tolist()
 
-**When does number of infected people peak**
+print(f"Peak days: {peak_days}")
 
-**How many people are infected at the peak**
+number_peak = results.loc[peak_day, 'Infected']
+print(f"Number of infected individuals at peak:{number_peak: .2f}")
 
-**Vary Beta and Gamma over nearby values and plot on heat map how the time of the peak of the infection depends on two variables**
+whole_number_peak=math.ceil(number_peak)
+print(f"Rounding up, the number of individuals infected at the peak is {whole_number_peak}")
+```
+I varied beta and gamma: beta [0.5, 1.0, 1.5, 2.0, 1.5, 3.0, 3.5 ], gamma [0.25, 0.5, 0.75, 1.0, 1.25, 1.50, 1.75, 2.0]. Beta is the rate of infection and gamma is the rate of recovery. With a high beta, the infection is spreading fast so we see a relativley early infection peak but a lot of people getting infected. With a low beta, the infection is not spreading very fast and if this is combined with a high gamma meaning people are recovering fast, the disease will die out and peak on day 0 with that initial person. We see the highest number of infected inidividuals when the disease spreads fast (high beta) and the recovery rate is slow (low gamma). We see the longest disease course when the disease spreads slow (low gamma) and people recover slow (low gamma).
 
-**Do same for number of individuals infected at peak**
+['Heat map of Date of Peak Infection with varying betas and gammas'](peak_days_heatmap.png)
 
+
+['Heat map of number of infected individuals at Peak with varying betas and gammas'](peak_number_heatmap.png)
+
+**Sources**
+[1] Used ChatGPT and VSCode Copilot AI to create a function of Euler's method that was fit for the SIR model. [2] Used ChatGPT to ensure I melted my data correctly and correct errors [3] Used ChatGPT to fix numpy output of finding peak days and make it robust to if the peak occured twice. [4] Used ChatGPT to round up decimal places. [5] Used ChatGPT to ensure I was varying the beta and gammas and check they were all running. [6] Used ChatGPT to create a for loop that stored all combinations of beta and gamma varying with the date of peak and number infected at peak in their own dataframe. [7] https://enjoymachinelearning.com/blog/heatmap-python/. Uesd this to start heat map and refined with ChatGPT. 
+ 
 ## Problem 5 ##
 **Do data exploration on data set**
 
@@ -1004,6 +1018,267 @@ plt.show()
 ```
 
 **Problem 4**
+```python
+# %%
+import numpy as np
+import matplotlib.pyplot as plt
+import plotnine as p9 
+from plotnine import *
+import pandas as pd
+import math
+import itertools
 
 
+# %%
+# Used ChatGPT and VSCode copilot AI to create a function of Euler's method that was fit for the SIR model 
+
+def euler_SIR(S0, I0, R0, beta, gamma, Tmax, h):
+    t = np.arange(0, Tmax + h, h) # giving full length of time
+    n = len(t) # number of time steps
+
+    S = np.zeros(n) # dictating how many steps 
+    I = np.zeros(n)
+    R = np.zeros(n)
+
+    S[0] = S0 # setting beginning of S etc as 0
+    I[0] = I0
+    R[0] = R0
+
+    N = S0 + I0 + R0 # total population
+
+    for k in range(n - 1): # looping through time steps and calulating new derivates for each 
+        dS = -beta * S[k] * I[k] / N 
+        dI = beta * S[k] * I[k] / N - gamma * I[k]
+        dR = gamma * I[k]
+
+        S[k + 1] = S[k] + h*dS # updating S, I, R values for each step
+        I[k + 1] = I[k] + h*dI
+        R[k + 1] = R[k] + h*dR
+
+    return t, S, I, R # returns time traversed and complete variables
+
+# %%
+# called with fake data. changed and played with to ensure it was working and better understand the relationship between the rates
+
+if __name__ == "__main__":
+    # Parameters
+    S0 = 990     # initial susceptible
+    I0 = 10      # initial infected
+    R0 = 0       # initial recovered
+    beta = .3   # infection rate
+    gamma =.2  # recovery rate
+    Tmax = 160   # days
+    h = 1     # step size
+
+    t, S, I, R = euler_SIR(S0, I0, R0, beta, gamma, Tmax, h)
+
+results = pd.DataFrame({
+    'Time': t,
+    'Susceptible': S,
+    'Infected': I,
+    'Recovered': R
+})
+
+print(results.head())
+
+# %%
+# New Haven population = 137,000.
+# On day 0, 1 person is infected
+# Everyone is susceptible 
+# Beta = 2, Gamma = 1
+if __name__ == "__main__":
+    # Parameters
+    S0 = 136_999     # initial susceptible
+    I0 = 1      # initial infected
+    R0 = 0       # initial recovered
+    beta = 2   # infection rate
+    gamma = 1  # recovery rate
+    Tmax = 30   # days
+    h = 1     # step size
+
+    t, S, I, R = euler_SIR(S0, I0, R0, beta, gamma, Tmax, h)
+
+results = pd.DataFrame({
+    'Time': t,
+    'Susceptible': S,
+    'Infected': I,
+    'Recovered': R
+})
+
+print(results.tail())
+
+# %%
+# melt the results dataframe so it can be plotted with S, I, and R being individual lines
+# ChatGPT how to name elements for melt and correct errors
+
+results_plot = results.melt(id_vars=['Time'],value_vars=['Susceptible', 'Infected', 'Recovered'], var_name='SIR', value_name='Population')
+print(results_plot.head())
+
+# %%
+p = (
+    ggplot(results_plot, aes(x='Time', y='Population', color='SIR'))
+   + geom_line(size=1.2)
+    + labs(
+        title="SIR Model of New Haven",
+        x="Days",
+        y="Population",
+        color="Susceptible, Infected, Recovered",
+    )
+    + theme_minimal()
+    + theme(figure_size=(10, 6))
+)
+
+p.save('SIR_model.png')
+p
+
+
+# %%
+# Ensure plotting past when infected falls below 1
+results.loc[results['Infected'] <1, 'Time'].min()
+# the Infected rate drops below 1 on Day 26 - this code is not robust to if the rate of infection falls to 1 then jumps back up
+
+# %%
+# When does the number of infected people peak?
+# Used ChatGPT to answer errors - output was as a numpy 
+# Used ChatGPT to make the code robust to if it peak twice
+
+peak_day = results.loc[results['Infected'].idxmax(), 'Time']
+print(f"Peak date: Day {peak_day}")
+
+max_infected = results['Infected'].max()
+peak_days = results.loc[results['Infected'] == max_infected, 'Time'].tolist()
+
+print(f"Peak days: {peak_days}")
+
+
+# %%
+# How many people are infected at peak?
+number_peak = results.loc[peak_day, 'Infected']
+print(f"Number of infected individuals at peak:{number_peak: .2f}")
+
+# %%
+# Number of individuals arguably cannot be decimals so I rounded up to get a  better capture of how many are infected
+whole_number_peak=math.ceil(number_peak)
+print(f"Rounding up, the number of individuals infected at the peak is {whole_number_peak}")
+
+# %%
+# Vary Beta and Gamma
+# Asked ChatGPT how I could vary the beta and gamma with a list of given values that tries every combination
+ 
+if __name__ == "__main__":
+    # Parameters
+    S0 = 136_999    # initial susceptible
+    I0 = 1      # initial infected
+    R0 = 0       # initial recovered
+    Tmax = 160   # days 
+    h = 1     # step size
+    beta_values = [0.5, 1.0, 1.5, 2.0, 1.5, 3.0, 3.5] # varied beta values
+    gamma_values = [0.25, 0.5, 0.75, 1.0, 1.25, 1.50, 1.75, 2.0] # varied gamma values
+
+    all_results=[] # list to hold each run
+
+    for beta, gamma in itertools.product(beta_values, gamma_values): # itertools.products allows iteration over all combinations of gamma and beta
+        t, S, I, R = euler_SIR(S0, I0, R0, beta, gamma, Tmax, h)
+        ind_results=pd.DataFrame({ # data frame of each iteration
+            "Time": t,
+            "Susceptible": S,
+            "Infected": I,
+            "Recovered": R,
+            "Beta": beta,
+            "Gamma": gamma
+        })
+        all_results.append(ind_results)
+
+    pooled_results = pd.concat(all_results, ignore_index=True) # makes the list of all runs into a useable data frame
+
+    print(pooled_results.head())
+    print(pooled_results.tail())
+
+# %%
+print(pooled_results[['Beta','Gamma',]].drop_duplicates()) # print beta gamme combinations to ensure all ran 
+
+# %%
+# From ChatGPT - how to retain peak date and number peaked for each iteration 
+peak_dates = []
+
+for (beta, gamma), group in pooled_results.groupby(['Beta', 'Gamma']): # for each combination of beta gamma
+    peak_day = group.loc[group['Infected'].idxmax(), 'Time']
+    number_peak = group.loc[group['Time'] == peak_day, 'Infected'].values[0]
+    whole_number_peak=math.ceil(number_peak)
+    peak_dates.append({
+        'Beta': beta,
+        'Gamma': gamma,
+        'Peak_Day': peak_day,
+        'Peak_Infected': whole_number_peak
+    })
+peak_dates_df = pd.DataFrame(peak_dates)  
+print(peak_dates_df)  
+
+
+# %%
+l = (ggplot(peak_dates_df, aes(x='factor(Beta)', y='factor(Gamma)', fill='Peak_Day'))
++ geom_tile()
++ geom_text(aes(label='Peak_Day'), color='black', size=8)
++ scale_fill_gradient(low='steelblue', high='yellow', name='Date of Peak Infection')
++ labs (
+    title ='The Effect of Varying Gamma and Beta on Date of Peak Infection',
+    x = 'Beta',
+    y ='Gamma',
+)
++ theme_minimal()
++ theme(figure_size = (8,6))
+)
+
+
+
+l.save('peak_days_heatmap.png')
+l
+
+
+# %%
+# used ChatGPT to 
+
+m = (ggplot(peak_dates_df, aes(x='factor(Beta)', y='factor(Gamma)', fill='Peak_Infected'))
++ geom_tile()
++ geom_text(aes(label='Peak_Infected'), color='black', size=8)
++ scale_fill_gradient(low='steelblue', high='yellow', name='Number of Individuals Infected at Peak')
++ labs (
+    title ='Effect of Varying Gamma and Beta on Amount of Individuals Infected at Peak',
+    x = 'Beta',
+    y ='Gamma',
+)
++ theme_minimal()
++ theme(figure_size=(10,6))
+)
+
+m.save('peak_number_heatmap.png')
+m
+
+# %%
+# testing .5 gamma and .5 beta to ensure the peak is at day 0
+
+if __name__ == "__main__":
+    # Parameters
+    S0 = 136_999     # initial susceptible
+    I0 = 1      # initial infected
+    R0 = 0       # initial recovered
+    beta = .5   # infection rate
+    gamma = 1  # recovery rate
+    Tmax = 30   # days
+    h = 1     # step size
+
+    t, S, I, R = euler_SIR(S0, I0, R0, beta, gamma, Tmax, h)
+
+results = pd.DataFrame({
+    'Time': t,
+    'Susceptible': S,
+    'Infected': I,
+    'Recovered': R
+})
+
+print(results.head())
+
+# %%
+```
 **Problem 5**
+```
