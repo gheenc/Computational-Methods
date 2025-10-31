@@ -21,11 +21,13 @@
 
 
 ## Problem 3 ##
-**Plot on a log-log graph the difference between... varying between 10^-10 and 1**
+I plotted on a log-log graph the difference between the calcutating the derivative numerically and analytically. I labeled the x axis as h or steps and the y axis as the difference between the numerical and analytic approach.
 
-**Describe what happens are h gets smaller and smaller**
+['Line graph showing difference between derivative approaches'](derivative.png)
 
-**Offer hypothesis as to why you see the results you see**
+Moving from right to left on the graph, you can see that as h (or the steps) decreases, the difference (or error) also decreases. This is good and expected in the calculus world. However, we begin to see how very small steps is bad in the computer world. While small steps is good for having small error, computers don't like small numbers, so we see the graph begin to look funky around 10^-8 and actually start to increase in error again. 
+
+This is because computers don't like this super small steps and it is creating compounding error issues that are then seen on our graph. 
 
 ## Problem 4 ##
 **Write a python function that uses Explicit Euler method to plot I(t) given S(0), I(0), R(0), Beta, Gamma, and Tmax(last time point to compute)**
