@@ -558,6 +558,9 @@ I varied beta and gamma: beta [0.5, 1.0, 1.5, 2.0, 1.5, 3.0, 3.5 ], gamma [0.25,
  
 ## Problem 5 ##
 **Do data exploration on data set**
+All columns names already good format - not understandable but have the codebook. all in necessary units - important to understand which survey to better understand the denominator but using quantifiable things like buildings the denominator should not matter. 
+
+Because there are limited missing values, I built a robust string that will track where the missing values are and fill with NA so I know for later measurements. 
 
 **Present representative set of figures that gives insight into data. Comment on insights gained**
 
