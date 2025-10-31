@@ -557,18 +557,284 @@ I varied beta and gamma: beta [0.5, 1.0, 1.5, 2.0, 1.5, 3.0, 3.5 ], gamma [0.25,
 [1] Used ChatGPT and VSCode Copilot AI to create a function of Euler's method that was fit for the SIR model. [2] Used ChatGPT to ensure I melted my data correctly and correct errors [3] Used ChatGPT to fix numpy output of finding peak days and make it robust to if the peak occured twice. [4] Used ChatGPT to round up decimal places. [5] Used ChatGPT to ensure I was varying the beta and gammas and check they were all running. [6] Used ChatGPT to create a for loop that stored all combinations of beta and gamma varying with the date of peak and number infected at peak in their own dataframe. [7] https://enjoymachinelearning.com/blog/heatmap-python/. Uesd this to start heat map and refined with ChatGPT. 
  
 ## Problem 5 ##
-**Do data exploration on data set**
-All columns names already good format - not understandable but have the codebook. all in necessary units - important to understand which survey to better understand the denominator but using quantifiable things like buildings the denominator should not matter. 
+I did data exploration on the dataset I identified previously - the SDOH from the AHRQ. The AHRQ-SDOH collects data from many different surveys and compiles them in one place, but they are are government surveys and therefore freely available for use by the public. I specifically explored the SDOH survey from 2020 stratified by county. 
 
-Because there are limited missing values, I built a robust string that will track where the missing values are and fill with NA so I know for later measurements. 
+There was minimal data cleaning to do. All columns names were in a good format - they're not inherantly understandable but I have the codebook. All values were in correct units. I identified the variables I was likely to want to focus on and deleted unnecessary columns while it was in Excel format. I left a wide bredth of columns that I could focus on for my project but I will not be able to use them all. 
 
-**Present representative set of figures that gives insight into data. Comment on insights gained**
+```python
+#drop every state that is not Alabama
+data1 = data1[data1['STATE']=='Alabama']
 
-**Identify any data cleaning needs (including checking missing data) and write code to perform them.**
+data1 = data1.drop(columns=['COUNTYFIPS', 'STATEFIPS', 'REGION'])
+data1.head()
+
+# Count how many missing values exist before filling
+missing_count = data1.isna().sum().sum()
+
+# get location of each missing value
+missing_locations = data1.isna()
+rows, cols = np.where(missing_locations)
+for r, c in zip(rows, cols):
+    print(f"Missing value at row {r}, column '{data1.columns[c]}'")
+
+# Fill all missing values with "NA"
+data1 = data1.fillna("NA")
+
+print(f"Filled {missing_count} missing values with 'NA'.")
+```
+
+I wanted to focus on one state so I picked Alabama. In Python, I dropped all rows that were not from Alabama and any unnesecarry columns, like region. Because there are limited missing values, I built a robust string that will track where the missing values are and fill with NA so I know for later measurements. For all counties in Alabama, there was only one missing value in the rate of mental providers per 100,000 people - I will likely not use this variable so missing data did not affect my analysis. 
+
+I wanted to look at how many counties in Alabama were classified as each rural code. I made a bar graph to understand the distribution. We can see that the most common county classification in Alabama is 6 - 2,500 to 19,999 people and adjacent to a metro area. Within the classification system, 1-3 is considered metro and 3-9 is considered non-metro with 9 being the most rural classification. We can tell from the bar graph that there is pretty even distribution at both ends of the spectrum, but there are little to no counties in the middle. Specifically there are no counties with a 5 classification. 
+
+['Rural-Metro county classificatio in Alabama']('AL_counties_code.png')
+
+I wanted to look at the availability in resources across each classification code. I made a bar graph to show the average urgent care rate per 100,000 population for each rural classification. I used the rate of urgent cares per 100,000 people in hopes of normalizing across the very different populations amounts and I averaged these rates to account for differing amounts of counties in each classification. One would expect that because rural counties have seen many of their inpatient hospitals close and the average distance needed to travel for healthcare services increase, the rate of urgent cares would also be less for rural populuations [1]. While the highest availability of urgent care centers is counties with a 2 classification, which is considered metro, it is closly followed by counties with a 9 classification, which is the most rural. 
+
+['Rate of Urgent Care for each Rural-Metro classification in Alabama']('AL_urgent_per_code.png')
+
+**Sources**
+[1] https://www.gao.gov/products/gao-21-93[2] I used ChatGPT to produce correct coding syntax of what I wanted to drop or specify within my data frames. [3] Used ChatGPT to help in creating plotly graphs.
 
 ## Code Appendix ##
 **Problem 1**
+```python
+# %%
+# !pip install requests
 
+import requests
+from xml.etree import ElementTree
+import json
+import pprint
+import time
+import aiohttp
+import asyncio
+
+# %%
+#asked ChatGPT how to tweak the API call so it is useable in python
+
+# find 1000 alz articles 
+base_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
+params = {
+    "db": "pubmed",
+    "term": "Alzheimers AND 2024[pdat]",
+    "retmax": "1000",
+    "retmode": "xml"
+}
+
+response = requests.get(base_url, params=params)
+root = ElementTree.fromstring(response.text)
+
+alz_ids = [id_elem.text for id_elem in root.findall(".//Id")]
+print(f"Found {len(alz_ids)} Alzheimers articles.")
+print(alz_ids[:10])  # show first 10 IDs
+
+# %%
+# found all 1000 cancer papers
+
+base_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
+params = {
+    "db": "pubmed", # from PubMed
+    "term": "cancer AND 2024[pdat]", #cancer
+    "retmax": "1000", # only send 1000 articles
+    "retmode": "xml" # sends in xml format
+}
+
+response = requests.get(base_url, params=params)
+root = ElementTree.fromstring(response.text)
+
+cancer_ids = [id_elem.text for id_elem in root.findall(".//Id")]
+print(f"Found {len(cancer_ids)} cancer articles.")
+print(cancer_ids[:10])  # show first 10 IDs
+
+
+# %%
+# asked ChatGPT how to now get metadata for each article ID fetched earlier
+# used ChatGPT to add the time.sleep portion, add article id title being pulled for metadata
+
+# fetch metadata for the 1000 alzheimers
+fetch_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
+all_alz_metadata = []
+failed_pmids = []
+alz_pmids =[]
+
+for i in range(0, len(alz_ids), 200):  # batches of 200
+    batch_ids = ",".join(alz_ids[i:i+200])
+    fetch_params = {
+        "db": "pubmed",
+        "id": batch_ids,
+        "retmode": "xml"
+    }
+    try:
+        fetch_response = requests.get(fetch_url, params=fetch_params, timeout=30)
+        fetch_response.raise_for_status()
+        root = ElementTree.fromstring(fetch_response.text)
+    except Exception as e:
+        print(f"Error fetching batch {i//200+1}: {e}")
+        continue
+
+    for article in root:
+        try:
+            title_elem = article.find(".//ArticleTitle")
+            abstract_elems = article.findall(".//Abstract/AbstractText")
+            journal_elem = article.find(".//Journal/Title")
+            pmid_elem = article.find(".//PMID")
+            date_elem = article.find(".//PubDate/Year")
+
+            title_text = (
+                ElementTree.tostring(title_elem, method="text", encoding="unicode").strip()
+                if title_elem is not None
+                else None
+            )
+            abstract_text = (
+                " ".join(
+                    ElementTree.tostring(elem, method="text", encoding="unicode").strip()
+                    if elem.get("Label") else ElementTree.tostring(elem, method="text", encoding="unicode").strip()
+                    for elem in abstract_elems
+            )
+            if abstract_elems
+            else None
+            )
+
+            metadata = {
+                "PMID": pmid_elem.text if pmid_elem is not None else None,
+                "ArticleTitle": title_text,
+                "AbstractText": abstract_text,
+                "Journal": journal_elem.text if journal_elem is not None else None,
+                "YearPublished": date_elem.text if date_elem is not None else None
+            }
+            all_alz_metadata.append(metadata)
+            alz_pmids.append(metadata['PMID'])
+        except Exception as e:
+            pmid_text = pmid_elem.text if pmid_elem is not None else "UNKNOWN"
+            print(f"Error parsing article PMID {pmid_text}: {e}")
+            failed_pmids.append(pmid_text)
+            continue
+
+    time.sleep(1)
+
+print(f"Retrieved metadata for {len(all_alz_metadata)} Alzheimers articles.")
+print(f"Failed PMIDs in first pass: {len(failed_pmids)}")
+
+
+# %%
+# asked ChatGPT how to now get metadata for each article ID fetched earlier
+# used ChatGPT to add the time.sleep portion, add article id title being pulled for metadata
+
+# fetch metadata for the 1000 cancer
+fetch_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
+all_cancer_metadata = []
+failed_pmids = []
+cancer_pmids =[]
+
+for i in range(0, len(cancer_ids), 200):  # batches of 200
+    batch_ids = ",".join(cancer_ids[i:i+200])
+    fetch_params = {
+        "db": "pubmed",
+        "id": batch_ids,
+        "retmode": "xml"
+    }
+    try:
+        fetch_response = requests.get(fetch_url, params=fetch_params, timeout=30)
+        fetch_response.raise_for_status()
+        root = ElementTree.fromstring(fetch_response.text)
+    except Exception as e:
+        print(f"Error fetching batch {i//200+1}: {e}")
+        continue
+
+    for article in root:
+        try:
+            title_elem = article.find(".//ArticleTitle")
+            abstract_elems = article.findall(".//Abstract/AbstractText")
+            journal_elem = article.find(".//Journal/Title")
+            pmid_elem = article.find(".//PMID")
+            date_elem = article.find(".//PubDate/Year")
+
+            title_text = (
+                ElementTree.tostring(title_elem, method="text", encoding="unicode").strip()
+                if title_elem is not None
+                else None
+            )
+            abstract_text = (
+                " ".join(
+                    ElementTree.tostring(elem, method="text", encoding="unicode").strip()
+                    if elem.get("Label") else ElementTree.tostring(elem, method="text", encoding="unicode").strip()
+                    for elem in abstract_elems
+            )
+            if abstract_elems
+            else None
+            )
+
+            metadata = {
+                "PMID": pmid_elem.text if pmid_elem is not None else None,
+                "ArticleTitle": title_text,
+                "AbstractText": abstract_text,
+                "Journal": journal_elem.text if journal_elem is not None else None,
+                "YearPublished": date_elem.text if date_elem is not None else None
+            }
+            all_cancer_metadata.append(metadata)
+            cancer_pmids.append(metadata['PMID'])
+        except Exception as e:
+            pmid_text = pmid_elem.text if pmid_elem is not None else "UNKNOWN"
+            print(f"Error parsing article PMID {pmid_text}: {e}")
+            failed_pmids.append(pmid_text)
+            continue
+
+    time.sleep(1)
+
+print(f"Retrieved metadata for {len(all_cancer_metadata)} Cancer articles.")
+print(f"Failed PMIDs in first pass: {len(failed_pmids)}")
+
+
+# %%
+# make alzheimer's metadata json
+
+json_alz_metadata = json.dumps(all_alz_metadata, indent=2)
+print(json_alz_metadata[:500])
+
+# %%
+# make cancer's metadata json
+
+json_cancer_metadata = json.dumps(all_cancer_metadata, indent=2)
+print(json_cancer_metadata[:500])
+print(type(json_cancer_metadata))
+
+# %%
+# one big json of both metadata
+
+all_paper_metadata = all_alz_metadata + all_cancer_metadata
+
+json_all_metadata = json.dumps(all_paper_metadata, indent=2)
+print(json_all_metadata[:500])
+
+
+# %%
+# Used ChatGPT to drop the duplicate pmid in the overall list
+# check for overlapping papers by combining all 
+
+all_pmids = cancer_pmids + alz_pmids
+
+all_pmids_unique = list(dict.fromkeys(all_pmids))
+
+print(f"Total combined PMIDs: {len(all_pmids)}")
+print(f"Unique PMIDs: {len(all_pmids_unique)}")
+print(all)
+
+# %%
+# find specific pmids overlapping
+cancer_set = set(cancer_pmids) # conver to set because they're ordered
+alz_set = set(alz_pmids)
+
+# Find overlapping PMIDs
+overlapping_pmids = cancer_set.intersection(alz_set) # pulls out duplicated
+print(overlapping_pmids) # print pmids found in both
+
+# %%
+# check one of the pmids is in both 
+
+print('40326981' in cancer_pmids)
+print('40326981' in alz_pmids)
+```
 
 **Problem 2**
 ```python
@@ -1284,4 +1550,167 @@ print(results.head())
 # %%
 ```
 **Problem 5**
+```python
+# %%
+import pandas as pd
+import plotly.express as px
+from plotly.express import *
+
+# %%
+# import Excel sheet
+data1 = pd.read_excel("SDOH_2020_COUNTY_Cleaned.xlsx", sheet_name="Data")
+
+# %%
+# visualize head to understand column names
+data1.head()
+
+# %%
+# drop every state that is not Alabama
+data1 = data1[data1['STATE']=='Alabama']
+
+# %%
+# Winston Co is the last county of Alabama
+data1.tail()
+
+# %%
+# drop unneeded columns, visualize again
+
+data1 = data1.drop(columns=['COUNTYFIPS', 'STATEFIPS', 'REGION'])
+data1.head()
+
+# %%
+# Count how many missing values exist before filling
+missing_count = data1.isna().sum().sum()
+
+# get location of each missing value
+missing_locations = data1.isna()
+rows, cols = np.where(missing_locations)
+for r, c in zip(rows, cols):
+    print(f"Missing value at row {r}, column '{data1.columns[c]}'")
+
+# Fill all missing values with "NA"
+data1 = data1.fillna("NA")
+
+print(f"Filled {missing_count} missing values with 'NA'.")
+
+
+# %%
+# see how many counties are each count of the rural categories 
+# 1-3 is metro areas of 250,000+ people
+# 3-9 are seperated in groups of 20,000 or more, adjacent to a metro or not; 2,500-19,999 adjacent or not to a metro area; less than 2,500 adjacent or not to a metro area
+# 9 is the most rural with less than 2,500 people and not adjacent to a rural area
+# there are no counties with a 5 designation
+
+# for Alabama, the most common type of county is 6 - 2,500-19,999 and adjacent to a metro area. Followed by 3 - fewer than 250,000 population
+
+counts = data1["AHRF_USDA_RUCC_2013"].value_counts().sort_index()
+print(counts)
+
+# making sure counties are not being double counted or can be given two values
+print(counts.sum())
+print(f"There are {len(data1)} counties")
+
+
+# %%
+# Convert counts to a DataFrame for plotting
+counts_df = counts.reset_index()
+counts_df.columns = ["Rural_Metro_Code", "County_Count"]
+    
+# Make the bar chart
+fig = px.bar(
+    counts_df,
+    x="Rural_Metro_Code",
+    y="County_Count",
+    title="Number of Counties per Rural-Metro Code in Alabama",
+    labels={"Rural_Metro_Code": "Rural-Metro Code", "County_Count": "Number of Counties"},
+    text="County_Count"  # show count on top of bars
+)
+
+# Move text above bars
+fig.update_traces(textposition="outside")
+
+
+fig.update_layout(height=600)
+
+fig.write_image('AL_counties_code.png')
+fig.show()
+
+
+# %%
+# visualize the rate of urgent care center per 100,000 population column to understand data
+# this is the rate of urgent care centers per 100,000 population - should be a percentage
+
+print(data1["HIFLD_UC_RATE"].head())
+
+
+
+# %%
+# average rate of urgent care centers per each rural-metro code
+# i want to stratify based on rural-metro code and then get the average of the column
+
+avg_urgent_by_code = (
+    data1
+    .groupby("AHRF_USDA_RUCC_2013", as_index=False)["HIFLD_UC_RATE"]
+    .mean()
+)
+
+print(avg_urgent_by_code)
+
+
+# %%
+# multiply urgent care rate by 100 bc it is a percent
+avg_urgent_by_code["HIFLD_UC_RATE"] = avg_urgent_by_code["HIFLD_UC_RATE"] * 100
+
+print(avg_urgent_by_code)
+
+
+# %%
+fig = px.bar(
+    avg_urgent_by_code,
+    x=[1,2,3,4,6,7,8,9],
+    y="HIFLD_UC_RATE",
+    title="Average Urgent Care Centers per 100,000 People for Each Rural-Metro Code in Alabama",
+    labels={"AHRF_USDA_RUCC_2013": "Rural-Metro Code", "HIFLD_UC_RATE": "Urgent Care Rate (%)"},
+    text=avg_urgent_by_code["HIFLD_UC_RATE"].round(2).astype(str) + "%",
+)
+
+# Skip 5 on x-axis
+tick_vals = [1, 2, 3, 4, 6, 7, 8, 9]
+fig.update_xaxes(
+    tickvals=tick_vals,
+    ticktext=[str(v) for v in tick_vals],
+    title="Rural-Metro Code"
+)
+
+# Move all bar texts above the bars
+fig.update_traces(textposition='outside')
+
+fig.update_layout(
+    height=600,  # taller figure
+)
+
+fig.write_image('AL_urgent_per_code.png')
+fig.show()
+
+
+# %% [markdown]
+# 	From AHRF User Guide 2020
+#     
+#     CODE				METROPOLITAN COUNTIES (1-3)
+# 
+# 	01		Counties in metro areas of 1 million population or more
+# 	02		Counties in metro areas of 250,000 – 1,000,000 population
+# 	03		Counties in metro areas of fewer than 250,000 population
+# 	
+# 						NONMETROPOLITAN COUNTIES (4-9)
+# 						
+# 	04		Urban population of 20,000 or more, adjacent to a metro area
+# 	05		Urban population of 20,000 or more, not adjacent to a metro area
+# 	06		Urban population of 2,500-19,999, adjacent to a metro area
+# 	07		Urban population of 2,500-19,999, not adjacent to a metro area
+# 	08		Completely rural or less than 2,500 urban population, adjacent to a metro area
+# 	09		Completely rural or less than 2,500 urban population, not adjacent to a metro area
+# 
+
+# %%
 ```
