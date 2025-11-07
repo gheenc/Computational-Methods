@@ -601,12 +601,12 @@ I wanted to look at how many counties in Alabama were classified as each rural c
 
 !['Rural-Metro county classificatio in Alabama'](AL_counties_code.png)
 
-I wanted to look at the availability in resources across each classification code. I made a bar graph to show the average urgent care rate per 100,000 population for each rural classification. I used the rate of urgent cares per 100,000 people in hopes of normalizing across the very different populations amounts and I averaged these rates to account for differing amounts of counties in each classification. One would expect that because rural counties have seen many of their inpatient hospitals close and the average distance needed to travel for healthcare services increase, the rate of urgent cares would also be less for rural populuations [1]. While the highest availability of urgent care centers is counties with a 2 classification, which is considered metro, it is closly followed by counties with a 9 classification, which is the most rural. 
+I wanted to look at the availability in resources across each classification code. I made a bar graph to show the average urgent care rate per 100,000 population for each rural classification. I used the rate of urgent cares per 100,000 people in hopes of normalizing across the very different populations amounts but more exploration is required to see if this is the best meaurement. I averaged the rates within each classifition to account for differing amounts of counties in each classification. One would expect that because rural counties have seen many of their inpatient hospitals close and the average distance needed to travel for healthcare services increase, the rate of urgent cares would also be less for rural populuations [1]. While the highest availability of urgent care centers is counties with a 2 classification, which is considered metro, it is closly followed by counties with a 9 classification, which is the most rural. 
 
 !['Rate of Urgent Care for each Rural-Metro classification in Alabama'](AL_urgent_per_code.png)
 
 **Sources**
-[1] https://www.gao.gov/products/gao-21-93[2] I used ChatGPT to produce correct coding syntax of what I wanted to drop or specify within my data frames. [3] Used ChatGPT to help in creating plotly graphs.
+[1] https://www.gao.gov/products/gao-21-93 [2]I used ChatGPT to produce correct coding syntax of what I wanted to drop or specify within my data frames. [3] Used ChatGPT to help in creating plotly graphs.
 
 ## Code Appendix ##
 **Problem 1**
@@ -1567,6 +1567,7 @@ print(results.head())
 import pandas as pd
 import plotly.express as px
 from plotly.express import *
+import numpy as np
 
 # %%
 # import Excel sheet
@@ -1641,6 +1642,11 @@ fig = px.bar(
 # Move text above bars
 fig.update_traces(textposition="outside")
 
+tick_vals = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+fig.update_xaxes(
+    tickvals=tick_vals,
+    ticktext=[str(v) for v in tick_vals],
+    title="Rural-Metro Code")
 
 fig.update_layout(height=600)
 
