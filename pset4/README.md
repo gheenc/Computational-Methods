@@ -1,5 +1,5 @@
 ## Problem Set 4 ##
-**Problem 1 - Gradient Descent**
+## Problem 1 - Gradient Descent
 **Is this a clean URL and why** **Yes, this is a clean URL because it is human readable and can see what you are calling and where.**
 
 **Implement 2-D version of gradient descent to find optimal choices of a and b**
@@ -14,7 +14,7 @@
 
 **Discuss how to test for local vs global minima if you had not known how many minima there were**
 
-**Problem 2**
+## Problem 2
 **Implement function that takes 2 strings and returns optimal local alignment** 
 
 **and score using Smith-Waterman**
@@ -29,7 +29,7 @@
 
 **paralellize for extra credit**
 
-**Problem 3**
+## Problem 3
 **implement k-nearest numbers. store in quad-tree**
 
 **Given new point and value, identify most common class within those k nearest neighbors**
@@ -46,14 +46,29 @@
 
 **interpret what confusion matrix means**
 
-**Problem 4**
+## Problem 4 
 **
 
-**Problem 5**
-I have watched the video and asked any questions.
+## Problem 5
+I have watched the entire video and asked any questions.
 
-Robert McDougal presented the lecture. HTTP was demonstrated for building web servers. Thsi differs from the classic servers in that ...
-You might use the developer tools to debug JacaScript in web page...
-app.route decorator is used to implement RESTful API...
+**Who presented the lecture?** Robert McDougal presented the lecture. 
 
+**What framework was demonstrated for building web servers?** HTTP/HTML was demonstrated for building web servers. 
+
+**How does the approach of the framework differ from "classical" servers that simply provide static web content?** This differs from the classic servers in that it is dynamic. The static servers would would require you to load the data everytime. This now allows you to load the data once and the computer will keep it. 
+
+**Briefly explain how you might use the "Developer tools" to debug JavaScript issues in your web pages.** You can go back to the Developer Tools to see the elements and determine if things need to be edited. 
+
+**Explain briefly how the app.route decorator is used to implement a RESTful API.** As exhibited in the server.py script, decorators are used to implement RESTful APIs because they listen for calls and implement what they are told. Because every URL path is calling a function. Within the HTML, you can specify what can be called in your URL as was explified by a=2
+
+
+## Problem 6
+**What does each file do?** Analyze is a html file that creates a body of test that takes in what the user entered and outputs the scripts analysis. Index is a html file that creates the webpage seen and offers a place to enter something to be analyzed. The server.py is a file that uses Flask and decorators 
+
+**How are they interconnected?** In the server.py, you call the index and analyze that is in the template folder and return their code. Within index, you call the action of analyze. 
+
+**Are there any key parts of the files for making the server do something?** Yes, 
+
+Using my data, I want to be able answer the question of how counties in a state are classified according to the rural-metro code. So for example, if someone entered Alabama, it would return 1-x, 2-x, 3-x...
 
