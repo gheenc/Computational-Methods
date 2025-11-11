@@ -1,6 +1,6 @@
 ## Problem Set 4 ##
 ## Problem 1 - Gradient Descent
-**Is this a clean URL and why** **Yes, this is a clean URL because it is human readable and can see what you are calling and where.**
+**Is this a clean URL and why** No, this is not a Clean URL because it is querying and it is passing parameters into it to function e.g. searching for a=0.4 rather than stating a file path like a Clean URL would. 
 
 **Implement 2-D version of gradient descent to find optimal choices of a and b**
 
@@ -50,25 +50,25 @@
 **
 
 ## Problem 5
-I have watched the entire video and asked any questions.
+I have watched the entire video and asked the TAs any of my questions.
 
 **Who presented the lecture?** Robert McDougal presented the lecture. 
 
-**What framework was demonstrated for building web servers?** HTTP/HTML was demonstrated for building web servers. 
+**What framework was demonstrated for building web servers?** Flask was demonstrated for building web servers. 
 
 **How does the approach of the framework differ from "classical" servers that simply provide static web content?** This differs from the classic servers in that it is dynamic. The static servers would would require you to load the data everytime. This now allows you to load the data once and the computer will keep it. 
 
-**Briefly explain how you might use the "Developer tools" to debug JavaScript issues in your web pages.** You can go back to the Developer Tools to see the elements and determine if things need to be edited. 
+**Briefly explain how you might use the "Developer tools" to debug JavaScript issues in your web pages.** You can go back to the Developer Tools to see the elements and determine if things need to be edited. You can do this to simple edits without having to make large commits. 
 
-**Explain briefly how the app.route decorator is used to implement a RESTful API.** As exhibited in the server.py script, decorators are used to implement RESTful APIs because they listen for calls and implement what they are told. Because every URL path is calling a function. Within the HTML, you can specify what can be called in your URL as was explified by a=2
+**Explain briefly how the app.route decorator is used to implement a RESTful API.** As exhibited in the server.py script, decorators are used to implement RESTful APIs because they listen for calls and implement what they are told but they use the HTTP status codes. 
 
 
 ## Problem 6
-**What does each file do?** Analyze is a html file that creates a body of test that takes in what the user entered and outputs the scripts analysis. Index is a html file that creates the webpage seen and offers a place to enter something to be analyzed. The server.py is a file that uses Flask and decorators 
+**What does each file do?** Analyze is a html file that creates a body of test that takes in what the user entered and outputs the scripts analysis. Index is a html file that creates the webpage seen and offers a place to enter something to be analyzed. The server.py is a file that uses Flask and decorators. Tells Flask should trigger the function. 
 
-**How are they interconnected?** In the server.py, you call the index and analyze that is in the template folder and return their code. Within index, you call the action of analyze. 
+**How are they interconnected?** In the server.py, you call the index and analyze that is in the template folder and return their code. Within index, you call the action of analyze. Flask allows you to input one and call the other. Decorator says when user clicks a button to move you to that page (defines routes). 
 
-**Are there any key parts of the files for making the server do something?** Yes, 
+**Are there any key parts of the files for making the server do something?** Yes, the analyze and index help in displaying. The name Flask function so Flask knows to use the templates we have. 
 
 Using my data, I want to be able answer the question of how counties in a state are classified according to the rural-metro code. So for example, if someone entered Alabama, it would return 1-x, 2-x, 3-x...
 
