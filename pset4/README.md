@@ -47,7 +47,51 @@
 **interpret what confusion matrix means**
 
 ## Problem 4 
-**
+I loaded all the data from the csv file and droped the eyeDetection column full of categorical data. I visualized the rest of the data to better understand the file. 
+
+I then created a standardize variable I could apply to the data and stored this values in a new variable named data_standard.I visualized this dataframe. 
+```python
+def standardize(series):
+    return (series - series.mean()) / series.std()
+data_standard = data.apply(standardize)
+data_standard.head()
+```
+I then did a PCA on the standardized data and plotted the comparison between PCA0 and PCA1.
+```python
+pca_raw = decomposition.PCA() # performed on all components
+pca = pd.DataFrame(
+    pca_raw.fit_transform(data_standard))
+```
+!['Scatterplot of PCA1 vs PCA0 of standardized EEG-Eye data'](Original_PCA.png)
+
+I then zoomed in on this data at the origin to better visualize the main components.
+!['Zoomed in scatterplot of PCA1 vs PCA0 of standardized EEG eye data'](Zoom_PCA.png)
+
+I performed K-means clustering using the sklearn's kmeans on the data to cluster into 7 clusters with a random init.
+```python
+kmeans = KMeans(n_clusters=7, init="random", random_state=0).fit(data_standard)
+```
+
+In order to plot I added a column named 'cluster' to the data frame of the kmeans labels. I also created the centers of the PCA and added them to their own data frame for plotting of the center points. 
+
+I plotted the zoomed in standardized data, color-coding by cluster and included X's on the center of the clusters.
+```python
+pca["cluster"] = kmeans.labels_
+pca["cluster"] = pca["cluster"].astype(str) 
+cluster_order = [str(i) for i in range(7)] 
+centers_pca = pca_raw.transform(kmeans.cluster_centers_)
+centers_df = pd.DataFrame(centers_pca[:, :2], columns=['PCA0', 'PCA1'])
+```
+['Color Coded Scatterplot of K-Means Clustering with X on the Center of the Clusters'](x_centers.png)
+
+**We only see 6 clusters instead of 7 because we have reduced it to 2 dimensions so some of the clusters are behind the others**
+**They are behind each other**
+**This is not a representative view of the clusters because we are representing data in only 2 dimensions. If the points were smaller, we might see some of the ones that are behind but we still wouldn't fully appreciate the relationships of the data because it has been reduced to 2 dimensions**
+
+
+Repeat k means clusting several times.
+When we repeat K-means are we changing number of clusters etc??
+
 
 ## Problem 5
 I have watched the entire video and asked the TAs any of my questions.
