@@ -88,10 +88,19 @@ centers_df = pd.DataFrame(centers_pca[:, :2], columns=['PCA0', 'PCA1'])
 **They are behind each other**
 **This is not a representative view of the clusters because we are representing data in only 2 dimensions. If the points were smaller, we might see some of the ones that are behind but we still wouldn't fully appreciate the relationships of the data because it has been reduced to 2 dimensions**
 
+I only say 5 crosses for 7 clusters so I printed the pca centers dataframe and saw cluser 1 has a high PCA 0 and cluster 5 has a high PCA1, so those clusers are off the screen, which can also be seen on the zoomed out version of the centers dataframe. 
+['Scatterplot of zoomed out Centers PCA dataframe'](zoomed_out_centers.png)
 
-Repeat k means clusting several times.
-When we repeat K-means are we changing number of clusters etc??
+I repeated the k-means clustering again with 7 clusters but different random states (2 and 5) and did not see any noticeable differences - there were still only 5 crosses in the zoomed in plane and a similar differential pattern. 
+['Scatterplot of PCA K-Means with Random State 2'](x_centers_1.png)
+['Scatterplot of PCA K-Means with Random State 5'](x_centers_2.png)
 
+I then did clustering with only 3 clusters and thus 3 centers. With this test we saw noticebale difference in the clustering of the group and the centers all being within the frame. 
+['Scatterplot of PCA K-Means with Clustering of 3'](x_centers_3.png)
+
+I then did a clustering with 10 clusters. There is a lot more differentiation in groups on the zoomed in portion with 7 distinct colors being seen and 7 centers, meaning 3 clusters and centers were outside the zoomed in portion. In the full scatterplot, we can then see these clusters and centers. 
+['Scatterplot of PCA K-Means with Clustering of 10 Zoomed in'](x_centers_4.png)
+['Scatterplot of PCA K-Means with Clustering of 10 Zoomed out'](x_centers_5.png)
 
 ## Problem 5
 I have watched the entire video and asked the TAs any of my questions.
