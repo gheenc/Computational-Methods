@@ -15,17 +15,123 @@
 **Discuss how to test for local vs global minima if you had not known how many minima there were**
 
 ## Problem 2
-**Implement function that takes 2 strings and returns optimal local alignment** 
+I implemented a Smith-Waterman function that takes in two sequences and aligns them with a default of 1 for match, mismatch, and gap penalty. 
+```python 
+def smith_waterman(seq1, seq2, match_score=1, mismatch_penalty=1, gap_penalty=1): 
+    max_score = 0
+    max_pos = (0,0)
+    
+    rows = len(seq2) + 1 #matrix size 
+    cols = len(seq1) + 1 
+    matrix = [[0 for _ in range(cols)] for _ in range(rows)] # Create scoring matrix filled with zeros
+       
+    # Score
+    for i in range(1, rows): # first row/column is 0 so starts in second
+        for j in range(1, cols):
+            if seq1[j-1] == seq2[i-1]:
+                diag = matrix[i-1][j-1] + match_score # if two align get match point
+            else:
+                diag = matrix[i-1][j-1] - mismatch_penalty # if two do not align, mismatch penalty
 
-**and score using Smith-Waterman**
+            up = matrix[i-1][j] - gap_penalty # puts gap penalty in seq1
+            left = matrix[i][j-1] - gap_penalty # puts gap penalty in seq2
 
-**insert - as needed to indicate gap**
+            matrix[i][j] = max(0, diag, up, left) # highest score 
+            if matrix[i][j] > max_score:
+                max_score = matrix[i][j] # keeps track of highest score
+                max_pos = (i, j) # where highest score is 
+    # now the matrix is scored 
+    # reconstructs which two aligned make best match
+    aligned_seq1 = ""
+    aligned_seq2 = ""
+    i, j = max_pos # start from cell with highest score 
 
-**To identify the local alignment after the matrix has been calculated, your program should backtrack from the biggest value, repeatedly moving to one of the three possible places that it could have come from (left, up, or diagonally both), whichever makes the math work out - do not store location of each match's parent**
+    while matrix[i][j] != 0: # trace backwards until reach a 0 ie a stop does not match
+        score_current = matrix[i][j] # score of current
+        score_diag = matrix[i-1][j-1] # score of diagonal
+        score_up = matrix[i-1][j] # score of above
+        score_left = matrix[i][j-1] # score of left - which could have to this one
 
-**function shoudl take in 3 keyword arguemnts: match=1, gap_penalty=1, mismatch+penalty=1**
+        if seq1[j-1] == seq2[i-1]:
+            match = match_score
+        else:
+            match = -mismatch_penalty # is diagonal a match or mismatch, subtracts for mismatch 
+        # how did we arrive at the cell - diagonal, left (gap in seq2), or up (gap in seq1)
+        if score_current == score_diag + match:
+            aligned_seq1 = seq1[j-1] + aligned_seq1
+            aligned_seq2 = seq2[i-1] + aligned_seq2
+            i -= 1
+            j -= 1 # match was diagnoal; add to strink and move diagonally up and left 
+        elif score_current == score_left - gap_penalty: # subtract for gap
+            aligned_seq1 = seq1[j-1] + aligned_seq1
+            aligned_seq2 = "-" + aligned_seq2
+            j -= 1 # came from left meaning seq2 has a gap, add - in a seq2 and move left 
+        elif score_current == score_up - gap_penalty:
+            aligned_seq1 = "-" + aligned_seq1
+            aligned_seq2 = seq2[i-1] + aligned_seq2
+            i -= 1
+        else: break
 
-**test and explain how test shows funcation is working. Test other values of match, gap_penalty, and mismatch-penalty**
+    # Print full matrix
+    for row in matrix:
+        print(row) 
+
+    return aligned_seq1, aligned_seq2, max_score # return the aligned sequence and max score 
+```
+This function scores the given sequences, aligning them to the optimal local alignment and inserting a - as a gap when needed. It returns a matrix that is calculated by backtracking from biggest values and going left, up, or diagonally based on what will give the best score and alignment. 
+
+I tested it with a small sequence that has obvious alignment at the beginning only.
+```python 
+smith_waterman('TACA', 'TATG')
+('TA', 'TA', 2)
+```
+I also tested it using the sequences given in the problem set. The first being a longer sequence that has a score of 8.
+```python 
+smith_waterman('tgcatcgagaccctacgtgac', 'actagacctagcatcgac')
+
+returns
+('agacccta-cgt-gac', 'aga-cctagcatcgac', 8)
+```
+
+The second being the same sequence but with a gap penalty of 2 instead leading to a best score of 7 and a more aligned sequence in the middle being the best. 
+```python
+smith_waterman('tgcatcgagaccctacgtgac', 'actagacctagcatcgac', gap_penalty=2)
+
+returns 
+('gcatcga', 'gcatcga', 7)
+```
+
+I also tested it on totally identical sequences. 
+```python 
+smith_waterman('gggg', 'gggg')
+
+returns
+('gggg', 'gggg', 4)
+```
+and two totally difference sequences.
+```python
+smith_waterman('cccc', 'gggg')
+
+returns
+('', '', 0)
+```
+I then tested the same sequence first with a gap penalty of 0 that ended with a score of 6 and best alignment had a gap in the middle. 
+```python
+smith_waterman('ACGATCG', 'ACGGTCG', gap_penalty=0)
+
+returns 
+('AC-GATCG', 'ACGG-TCG', 6)
+```
+
+I tested the same sequence with a gap penalty of 2 and it ended with a score of 5 because with the higher gap penalty it perferred the mismatch in the middle instead.
+```python
+smith_waterman('ACGATCG', 'ACGGTCG', gap_penalty=2)
+
+returns
+('ACGATCG', 'ACGGTCG', 5)
+```
+
+Through these tests, I can see that my function works on short and long sequences, easy and difficult alighemnet choices, and differing penalties. 
 
 **paralellize for extra credit**
 
