@@ -1,6 +1,6 @@
 # css style from: https://www.w3schools.com/Css/tryit.asp?filename=trycss_default
 
-
+import pandas as pd
 from flask import Flask, render_template, request
 from collections import Counter
 
@@ -15,10 +15,12 @@ def index():
 @app.route("/analyze", methods=["POST"])
 def analyze():
     usertext = request.form["usertext"]
-    counts = Counter(usertext)
+    df = pd.read_excel('data/SDOH_2020_COUNTY_Cleaned.xlsx', sheet_name='Data')
+    state_data = df[df['STATE'].str.lower() == usertext.lower()]
+    county_counts = state_data['AHRF_USDA_RUCC_2013'].astype(int).value_counts().sort_index()
     result = ""
-    for item, count in counts.items():
-        result += f"The character '{item}' appears {count} times.\n"
+    for category, count in county_counts.items():
+        result += f"Category {category}: {count}\n "
     return render_template("analyze_gheen.html", analysis=result, usertext=usertext)
 
 
