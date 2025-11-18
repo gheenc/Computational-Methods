@@ -19,7 +19,7 @@ def analyze():
     result = ""
     for item, count in counts.items():
         result += f"The character '{item}' appears {count} times.\n"
-    return render_template("analyze.html", analysis=result, usertext=usertext)
+    return render_template("analyze_gheen.html", analysis=result, usertext=usertext)
 
 
 if __name__ == "__main__":
