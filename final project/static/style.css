@@ -1,6 +1,5 @@
-<html>
-<head>
-<style>
+/*index*/
+
 body {
     background-color: lightblue;
     font-family: Verdana, sans-serif;
@@ -16,7 +15,7 @@ h1 {
 
 p {
     font-size: 18px;
-    color: #003366;
+    color: #000000;
     text-align: center;
 }
 
@@ -51,18 +50,32 @@ form {
     margin: 0 auto;
     text-align: center;
 }
-</style>
-</head>
 
-<body>
+/*analyze*/
+/* Existing styles remain unchanged */
 
-<h1>Hello everybody</h1>
-<p>Type some text here to analyze it:</p>
+.result-box {
+    background-color: rgb(255, 255, 255);
+    padding: 10px;
+    border-radius: 5px;
+    margin: 0 auto 20px auto;
+    width: 90%;
+    font-family: monospace;
+    overflow-x: auto;
+}
 
-<form action="/analyze" method="POST">
-    <textarea name="usertext"></textarea><br>
-    <input type="submit" value="Analyze">
-</form>
+/* Back button styling */
+.back-button {
+    display: inline-block;
+    text-decoration: none;
+    background-color: navy;
+    color: white;
+    padding: 0.5em 1em;
+    border-radius: 5px;
+    margin-top: 10px;
+    font-size: 1rem;
+}
 
-</body>
-</html>
+.back-button:hover {
+    background-color: #000080;
+}

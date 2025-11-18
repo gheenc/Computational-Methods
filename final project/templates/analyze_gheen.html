@@ -1,8 +1,19 @@
 <html>
-    <body>
-        You entered:
-        <pre style="background-color: lightgray; margin-left: 5em">{{ usertext }}</pre>
-        My analysis:
-        <pre style="background-color: lightgray; margin-left: 5em">{{ analysis }}</pre>
-    </body>
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<h1>Rural Rurla-Metro Codings</h1>
+
+<p><strong>Your Statea:</strong></p>
+<pre class="result-box">{{ usertext }}</pre>
+
+<p><strong>Here's how many counties in each state have this rurlal-metro coding:</strong></p>
+<pre class="result-box">{{ analysis }}</pre>
+
+<br>
+<a href="/" class="back-button">Go Back</a>
+
+</body>
 </html>
