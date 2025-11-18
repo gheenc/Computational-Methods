@@ -229,7 +229,22 @@ I have watched the entire video and asked the TAs any of my questions.
 
 **Are there any key parts of the files for making the server do something?** Yes, the analyze and index help in displaying. The name Flask function so Flask knows to use the templates we have. 
 
-Using my data, I want to be able answer the question of how counties in a state are classified according to the rural-metro code. So for example, if someone entered Alabama, it would return 1-x, 2-x, 3-x...
+Using my data, I want to be able answer the question of how counties in a state are classified according to the rural-metro code. In using staes I felt a drop down menu was more user-friendly than a text box. For example, if someone selected Alabama, it would return counties in coding 1-x, 2-x, 3-x... To do this, I am taking the column of code classification (RUCC codes) from my dataset and returning the values count in order of the wanted state.
+
+I used flask to create an interactive website that accomplishes this analysis. 
+Here is the input page. There is a full dropdown list of all 50 states.
+!['Input Page for States'](input_page.png)
+
+Here is the output page for Alabama.
+!['Alabama County Rural-Metro Count Results'](alabama_result.png)
+
+I also created an API which I tested with Alabama and verified against the results page.
+!['API for calling alabama](api_call_alabama.png)
+
+I tested the API again for Oklahoma.
+!['API for calling Oklahoma](api_call_oklahoma.png)
+
+I also instituted a css style page (in GitHun final project/static). 
 
 ## Code Appendix 
 ## Problem 1
