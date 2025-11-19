@@ -1,7 +1,7 @@
 # css style from: https://www.w3schools.com/Css/tryit.asp?filename=trycss_default
 
 import pandas as pd
-from flask import Flask, render_template, request, jsonify 
+from flask import Flask, render_template, request, jsonify, redirect  
 from collections import Counter
 
 app = Flask(__name__)
@@ -13,9 +13,18 @@ def state_county_counts(state_name):
     county_counts = state_data['AHRF_USDA_RUCC_2013'].astype(int).value_counts().sort_index().to_dict()
     return county_counts 
 
+# landing page
+@app.route("/home")
+def home():
+    return render_template("home_gheen.html")
+
+# redirect to home
+@app.route('/')
+def root():
+    return redirect("/home")
 
 # index page
-@app.route("/")
+@app.route("/index")
 def index():
     return render_template("index_gheen.html")
 
