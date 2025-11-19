@@ -3,20 +3,13 @@
 import pandas as pd
 from flask import *
 from collections import Counter
-import os
-
-IMAGES_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'images')
-
-print("App directory:", os.path.dirname(os.path.abspath(__file__)))
-print("Images folder path:", IMAGES_FOLDER)
-print("Files in images folder:", os.listdir(IMAGES_FOLDER))
 
 app = Flask(__name__)
 
 #bring in images
 @app.route('/images/<path:filename>')
 def images(filename):
-    return send_from_directory(IMAGES_FOLDER, filename)
+    return send_from_directory('images', filename)
 
 # helper function pulling state and county counts
 def state_county_counts(state_name):
