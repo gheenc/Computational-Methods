@@ -136,21 +136,355 @@ Through these tests, I can see that my function works on short and long sequence
 **paralellize for extra credit**
 
 ## Problem 3
-**implement k-nearest numbers. store in quad-tree**
+I implemented a quad tree that will store my data (x, y, label) and a k nearest neighbors that will search this tree and return nearest points and  labels and predicted class the query point based on the wanted # of k and search distance. 
+```python
+class QuadTree: 
+    def __init__(self, points, boundary, capacity=4, parent=None):  # capacity = max points before splitting
+        self.parent = parent
+        self.xmin, self.ymin, self.xmax, self.ymax = boundary # uses point to make boundery
+        self.children = None # becomes list of 4 children if subdivided
 
-**Given new point and value, identify most common class within those k nearest neighbors**
+        # Decide whether to make a leaf or subdivide
+        if len(points) <= capacity or self.degenerate():
+            self.points = points  # leaf node stores points
+            self.size = len(points)
+        else:
+            self.points = None # only leafs store points
+            self.subdivide(points, capacity)
+            self.size = sum(child.size for child in self.children)
 
-**Normalize seven quantitative columns to mean of 0 and standard deviation 1**
+    def degenerate(self): # prevent self recursion
+        return self.xmin == self.xmax or self.ymin == self.ymax
 
-**Reduce data to two dimensions using PCA**
+    def subdivide(self, points, capacity):
+        mx = (self.xmin + self.xmax) / 2 # midpoint of x
+        my = (self.ymin + self.ymax) / 2 # mispoint of y
 
-**Scatterplot, color-coding by type of rice**
+        quads = [ 
+            (self.xmin, self.ymin, mx, my),  # SW
+            (mx, self.ymin, self.xmax, my),  # SE
+            (self.xmin, my, mx, self.ymax),  # NW
+            (mx, my, self.xmax, self.ymax)   # NE
+        ]
 
-**What does the graph suggest about effectiveness of using k-neraest neighbors on 2-D reduction of data to predict type of rice**
+        buckets = [[] for _ in range(4)] # hold points assigned to each quadrant 
+        for x, y, label in points: # unpack points 
+            for i, (xmin, ymin, xmax, ymax) in enumerate(quads):
+                if xmin <= x <= xmax and ymin <= y <= ymax: # if in quadrant adds to list and does not check other quadrants
+                    buckets[i].append((x, y, label))
+                    break
 
-**train-test split with k-nearest neighbors implementation, give confusion matrix for predicting type of rice with k=1**
+        # Recursively build children
+        self.children = [QuadTree(bucket, quads[i], capacity, parent=self) for i, bucket in enumerate(buckets)]
 
-**interpret what confusion matrix means**
+    def all_points(self):
+        if self.points is not None:
+            return self.points # if it is a leaf return all poinsts
+        pts = []
+        for child in self.children:
+            pts.extend(child.all_points()) # gather all children points and return 
+        return pts
+
+    def quadrant_for_point(self, x, y):
+        if self.children is None:
+            return None
+        for child in self.children:
+            if child.xmin <= x <= child.xmax and child.ymin <= y <= child.ymax:
+                return child
+        return None
+            
+    def descend_for_k(self, x, y, k): # uses helper function to choose next child  
+        node = self  
+        while node.children is not None:
+            child = node.quadrant_for_point(x,y)
+            if child.size <k: # stops descending if child has fewer than k points
+                return node
+            node = child
+        return node # returns deepest node that still has k points 
+    
+    def contains(self, x, y): # does this node's bounding box contain x,y
+        return (self.xmin <= x <= self.xmax) and (self.ymin <= y <= self.ymax)
+    
+    def small_containing_quadtree(self, x, y): # return smallest quadtree with x, y 
+        if not self.contains(x,y): # if does not contain point return empty 
+            return None
+        if self.children is None:
+            return self
+        for child in self.children:
+            if child.contains(x,y):
+                return child.small_containing_quadtree(x, y)
+        return self 
+    
+    def within_distance(self, x, y, d):
+        dx = 0
+        if x < self.xmin:
+            dx = self.xmin - x
+        elif x > self.xmax:
+            dx = x - self.xmax
+        
+        dy = 0 
+        if y < self.ymin:
+            dy = self.ymin - y
+        elif y > self.ymax:
+            dy = y - self.ymax
+        return (dx*dx + dy*dy) <= d*d # if point is inside box, will return - if outside will be positive
+    
+    def leaves_within_distance(self, x, y, d, found=None):
+        if found is None:
+            found = []
+        if not self.within_distance(x, y, d):
+            return found
+        if self.children is None:
+            found.append(self)
+            return found 
+        for child in self.children:
+            child.leaves_within_distance(x, y, d, found)
+        return found 
+    
+def k_nearest_neighbors(tree, x0, y0, k, search_distance):
+    leaves = tree.leaves_within_distance(x0, y0, d=search_distance) # leaves within search distance
+    
+    candidate_points = []
+    for leaf in leaves:
+        candidate_points.extend(leaf.all_points()) # gather all points from candidates
+    if len(candidate_points) == 0:
+        return [], [], None # if no points found 
+    
+    candidate_points = np.array(candidate_points)
+    coords = candidate_points[:, :2].astype(float)
+
+    dx = coords[:, 0] - x0 # distance using euclidean distances 
+    dy = coords[:, 1] - y0
+    distances = dx**2 + dy**2
+
+    k_actual = min(k, len(candidate_points))
+    min_i = np.argpartition(distances, k_actual-1)[:k_actual] # find k smallest distances 
+
+    nearest_points = candidate_points[min_i]
+    nearest_distances = distances[min_i]
+
+    labels = [p[2] for p in nearest_points] # determine most common class label 
+    predicted_class = Counter(labels).most_common(1)[0][0]
+
+    return nearest_points, nearest_distances, predicted_class
+```
+I tested this with a known data set for k=3 and search distance of 20.
+```python
+points = [
+    (10, 10, 'A'),
+    (20, 15, 'B'),
+    (42, 5, 'C'),
+    (30, 25, 'D'),
+    (50, 40, 'E')
+]
+
+# Define the boundary of your QuadTree: (xmin, ymin, xmax, ymax)
+boundary = (0, 0, 60, 60)
+
+# Create the QuadTree instance
+tree = QuadTree(points, boundary, capacity=2)
+
+nearest_pts, nearest_dists, predicted_class = k_nearest_neighbors(tree, 42, 6, 3, 20)
+
+print("k nearest points:", nearest_pts)
+print("Predicted class:", predicted_class)
+
+returns 
+k nearest points: [['42' '5' 'C']
+ ['30' '25' 'D']
+ ['20' '15' 'B']]
+Predicted class: C
+```
+I then called in the raw data and standardized the 7 quantitative columns. 
+```python
+def standardize(series):
+    return (series - series.mean()) / series.std()
+
+rice_standard = rice.copy()
+cols_to_standardize = [c for c in rice.columns if c !='Class']
+rice_standard[cols_to_standardize] = rice[cols_to_standardize].apply(standardize)
+
+rice_standard.head()
+```
+I applied PCA to the 7 standardized columns then added back the class column.
+```python
+pca_raw = decomposition.PCA() # performed on all components
+pca_df = pd.DataFrame(
+    pca_raw.fit_transform(rice_standard[cols_to_standardize])
+)
+pca_df = pca_df.rename(columns={0: 'PCA0', 1: 'PCA1'})
+pca_df['Class'] = rice_standard['Class'].values
+
+pca_df.head()
+```
+I plotted this PCA on a scatterplot
+!['Scatterplot of PCA on Rice Data showing Class of Rice'](Original_PCA.png)
+
+**What does the graph suggest about effectiveness of using k-neraest neighbors on 2-D reduction of data to predict type of rice** The graph shows that there is clear variation for the outliers of the data but there is general overlap in the middle that might confuse the k nearest neighbors. If querying for a point on the edge, k nearest neighbors will likely be very effective but querying for a point in the middle risks less effectiveness. 
+
+I shuffled the PCA data and split it into features (points) and labels (class) then split each to train on 70% of the data and test on the remaining. I then computed the mean and standard deviation of the training data as the metric of standardization then applied PCA to both the training and test data.
+```python
+# Shuffle first
+pca_df_shuffled = pca_df.sample(frac=1, random_state=42).reset_index(drop=True)
+
+# Split into features and labels
+features = pca_df_shuffled.drop(columns='Class') # input values to use to predict
+labels = pca_df_shuffled['Class'] # labels that are predicted
+
+# 70/30 split - training on 70%, test on 30% data 
+split_idx = int(0.7 * len(pca_df_shuffled))
+X_train_raw = features.iloc[:split_idx].values
+y_train = labels.iloc[:split_idx].values
+X_test_raw = features.iloc[split_idx:].values
+y_test = labels.iloc[split_idx:].values
+
+
+# must train because KNN is a lazy alg - training is really just defining what points it can reference/giving comparison data to use 
+# split into training to reference/compare and test which will check how well predicts for unseen points 
+
+# Compute training mean and std
+train_mean = X_train_raw.mean(axis=0)
+train_std = X_train_raw.std(axis=0)
+
+# Standardize
+X_train = (X_train_raw - train_mean) / train_std
+X_test = (X_test_raw - train_mean) / train_std  # IMPORTANT: use training mean/std
+
+# Fit PCA only on training set
+pca = decomposition.PCA(n_components=2)
+X_train_pca = pca.fit_transform(X_train)
+
+# Apply same PCA transformation to test set
+X_test_pca = pca.transform(X_test)
+```
+I recombined the x and y to make a comprehensive list of training points to determine the boundary of my QuadTree and built the QuadTree with a capacity of 2. 
+```python
+# Combine X_train and y_train into list of (x, y, label)
+train_points = [(x[0], x[1], label) for x, label in zip(X_train, y_train)]
+
+# Determine the boundary of the QuadTree
+xmin, ymin = X_train_pca.min(axis=0)
+xmax, ymax = X_train_pca.max(axis=0)
+boundary = (xmin, ymin, xmax, ymax)
+
+# Build QuadTree
+tree = QuadTree(train_points, boundary, capacity=2)
+```
+I looked at the min and max of the pca to determine a good search window for my k-nearest neighbors. I ran the k-nearest neighbors with a k=1 and search window=3. This then produced a confusion matrix that I then converted to a dataframe for cleaner viewing. The columns are what was predicted and the rows are what the class actually was so I added labels for better understanding. 
+
+```python
+y_pred = []
+for x0, y0 in X_test_pca:
+    _, _, pred = k_nearest_neighbors(tree, x0, y0, 1, 3)
+    if pred is None:
+        pred = 'Unknown'
+    y_pred.append(pred)
+y_pred = np.array(y_pred)
+
+all_labels = np.unique(np.concatenate([y_test, y_pred]))
+
+# Compute confusion matrix
+cm_1 = confusion_matrix(y_test, y_pred, labels=all_labels)
+
+# Make a nice DataFrame
+cm_1_df = pd.DataFrame(cm_1, index=all_labels, columns=all_labels)
+cm_1_df = cm_1_df.add_prefix('Predicted ').rename(index=lambda x: f'Was {x}')
+print(cm_1_df)
+
+returned 
+
+                Predicted Cammeo  Predicted Osmancik
+Was Cammeo                 306                 175
+Was Osmancik               245                 417
+```
+This confusion matrix suggested that of all the rice tested on, k-nearest neighbors was correct in predicting a class Cammeo when it was a class Cammeo 306 times, correct in predicting a class Osmancik when it was a class Osmancik 417 times, and incorrectly predicted class Cammeo when it was truly Class Osmacik 245 times and incorrected predicted class Osmancik when it was a class Cammeo 175 times.
+
+This confusion matrix comments on the true positives and false positive of our k-nearest neighbors and can further be used to develop the sensitivity and specificity of the tool. When using a k=1 and search distance=3, our k-nearest neighbors was pretty good at correctly predicting the correct label; it was a little more prone to predicting Cammeo when it was truly Osmacik compared to predicting Osmacik when it was Cammeo. 
+
+I ran the k-nearest neighbors again with k=5 and retained search distance=3.
+
+```python
+y_pred = []
+for x0, y0 in X_test_pca:
+    _, _, pred = k_nearest_neighbors(tree, x0, y0, 5, 3)
+    if pred is None:
+        pred = 'Unknown'
+    y_pred.append(pred)
+y_pred = np.array(y_pred)
+
+all_labels = np.unique(np.concatenate([y_test, y_pred]))
+
+# Compute confusion matrix
+cm_2 = confusion_matrix(y_test, y_pred, labels=all_labels)
+
+# Make a nice DataFrame
+cm_2_df = pd.DataFrame(cm_2, index=all_labels, columns=all_labels)
+cm_2_df = cm_2_df.add_prefix('Predicted ').rename(index=lambda x: f'Was {x}')
+print(cm_2_df)
+
+returned 
+              Predicted Cammeo  Predicted Osmancik
+Was Cammeo                 319                 162
+Was Osmancik               242                 420
+```
+When using a k=5, the k-nearest neighbors distribution was very similar. It was correct in predicting a class Cammeo when it was a class Cammeo 319 times, correct in predicting a class Osmancik when it was a class Osmancik 420 times, and incorrectly predicted class Cammeo when it was truly Class Osmacik 242 times and incorrected predicted class Osmancik when it was a class Cammeo 162 times. We see a very similar conclusion as above that the k-nearest neighbors was pretty good at correctly predicting the labels,
+
+I also repeated the k-nearest neighbors when a smaller search distance to see how that would affect the k-nearest neighbors.
+```python
+# used ChatGPT to debug unknowns and add labels
+
+y_pred = []
+for x0, y0 in X_test_pca:
+    _, _, pred = k_nearest_neighbors(tree, x0, y0, 1, 1)
+    if pred is None:
+        pred = 'Unknown'
+    y_pred.append(pred)
+y_pred = np.array(y_pred)
+
+all_labels = np.unique(np.concatenate([y_test, y_pred]))
+
+# Compute confusion matrix
+cm_3 = confusion_matrix(y_test, y_pred, labels=all_labels)
+
+# Make a nice DataFrame
+cm_3_df = pd.DataFrame(cm_3, index=all_labels, columns=all_labels)
+cm_3_df = cm_3_df.add_prefix('Predicted ').rename(index=lambda x: f'Was {x}')
+print(cm_3_df)
+
+returned 
+              Predicted Cammeo  Predicted Osmancik  Predicted Unknown
+Was Cammeo                 306                 174                  1
+Was Osmancik               245                 411                  6
+Was Unknown                  0                   0                  0
+
+# used ChatGPT to debug unknowns and add labels
+
+y_pred = []
+for x0, y0 in X_test_pca:
+    _, _, pred = k_nearest_neighbors(tree, x0, y0, 5, 1)
+    if pred is None:
+        pred = 'Unknown'
+    y_pred.append(pred)
+y_pred = np.array(y_pred)
+
+all_labels = np.unique(np.concatenate([y_test, y_pred]))
+
+# Compute confusion matrix
+cm_3 = confusion_matrix(y_test, y_pred, labels=all_labels)
+
+# Make a nice DataFrame
+cm_3_df = pd.DataFrame(cm_3, index=all_labels, columns=all_labels)
+cm_3_df = cm_3_df.add_prefix('Predicted ').rename(index=lambda x: f'Was {x}')
+print(cm_3_df)
+
+returned 
+              Predicted Cammeo  Predicted Osmancik  Predicted Unknown
+Was Cammeo                 319                 161                  1
+Was Osmancik               243                 413                  6
+Was Unknown                  0                   0                  0
+```
+Having a smaller search distance, it returned some classes as unknown, no matter the neighbors wanted. Overall there were similar distribution in the ability to correctly predict the classes. Expanding the search distance did not affect the results of the confusion matrix. 
+
 
 ## Problem 4 
 I loaded all the data from the csv file and droped the eyeDetection column full of categorical data. I visualized the rest of the data to better understand the file. 
@@ -244,7 +578,7 @@ I also created an API which I tested with Alabama and verified against the resul
 I tested the API again for Oklahoma.
 !['API for calling Oklahoma](api_call_oklahoma.png)
 
-I also instituted a css style page (in GitHun final project/static). 
+I also instituted a css style page (in GitHub final project/static). 
 
 ## Code Appendix 
 ## Problem 1
@@ -252,6 +586,409 @@ I also instituted a css style page (in GitHun final project/static).
 ## Problem 2
 
 ## Problem 3
+```python
+# %%
+import numpy as np
+from collections import Counter
+import pandas as pd
+from sklearn import decomposition
+from sklearn.metrics import confusion_matrix
+import plotly.express as px
+from plotly.subplots import make_subplots
+import plotly.graph_objects as go
+import math 
+
+
+# %%
+# Implement a two-dimensional k-nearest neighbors classifier 
+# asked ChatGPT how to implement code in slides to fit problem needs
+# from the slides - this is naive and testing against every point 
+
+
+def knn_no_quad(test_pt, training_pts, training_types, k): # takes in point want to classify, list of known data points, class labels, how many nearest neighbors
+    test_pt = np.array(test_pt) # takes in test points and turns into numpy array
+    distances = [np.linalg.norm(test_pt - pt) for pt in training_pts] # calculates Eculidean distance from test point to each training point
+    k_smallest_indices = np.argpartition(distances, k)[:k] # finds smallest distance/which training points are clostest to target
+    k_nearest_labels = [training_types[i] for i in k_smallest_indices] # returns class label of nearest points
+    most_common_label = Counter(k_nearest_labels).most_common(1)[0][0] # gives vote to closest neighbors
+    return most_common_label
+
+# %%
+class QuadTree: 
+    def __init__(self, points, boundary, capacity=4, parent=None):  # capacity = max points before splitting
+        self.parent = parent
+        self.xmin, self.ymin, self.xmax, self.ymax = boundary # uses point to make boundery
+        self.children = None # becomes list of 4 children if subdivided
+
+        # Decide whether to make a leaf or subdivide
+        if len(points) <= capacity or self.degenerate():
+            self.points = points  # leaf node stores points
+            self.size = len(points)
+        else:
+            self.points = None # only leafs store points
+            self.subdivide(points, capacity)
+            self.size = sum(child.size for child in self.children)
+
+    def degenerate(self): # prevent self recursion
+        return self.xmin == self.xmax or self.ymin == self.ymax
+
+    def subdivide(self, points, capacity):
+        mx = (self.xmin + self.xmax) / 2 # midpoint of x
+        my = (self.ymin + self.ymax) / 2 # mispoint of y
+
+        quads = [ 
+            (self.xmin, self.ymin, mx, my),  # SW
+            (mx, self.ymin, self.xmax, my),  # SE
+            (self.xmin, my, mx, self.ymax),  # NW
+            (mx, my, self.xmax, self.ymax)   # NE
+        ]
+
+        buckets = [[] for _ in range(4)] # hold points assigned to each quadrant 
+        for x, y, label in points: # unpack points 
+            for i, (xmin, ymin, xmax, ymax) in enumerate(quads):
+                if xmin <= x <= xmax and ymin <= y <= ymax: # if in quadrant adds to list and does not check other quadrants
+                    buckets[i].append((x, y, label))
+                    break
+
+        # Recursively build children
+        self.children = [QuadTree(bucket, quads[i], capacity, parent=self) for i, bucket in enumerate(buckets)]
+
+    def all_points(self):
+        if self.points is not None:
+            return self.points # if it is a leaf return all poinsts
+        pts = []
+        for child in self.children:
+            pts.extend(child.all_points()) # gather all children points and return 
+        return pts
+
+    def quadrant_for_point(self, x, y):
+        if self.children is None:
+            return None
+        for child in self.children:
+            if child.xmin <= x <= child.xmax and child.ymin <= y <= child.ymax:
+                return child
+        return None
+            
+    def descend_for_k(self, x, y, k): # uses helper function to choose next child  
+        node = self  
+        while node.children is not None:
+            child = node.quadrant_for_point(x,y)
+            if child.size <k: # stops descending if child has fewer than k points
+                return node
+            node = child
+        return node # returns deepest node that still has k points 
+    
+    def contains(self, x, y): # does this node's bounding box contain x,y
+        return (self.xmin <= x <= self.xmax) and (self.ymin <= y <= self.ymax)
+    
+    def small_containing_quadtree(self, x, y): # return smallest quadtree with x, y 
+        if not self.contains(x,y): # if does not contain point return empty 
+            return None
+        if self.children is None:
+            return self
+        for child in self.children:
+            if child.contains(x,y):
+                return child.small_containing_quadtree(x, y)
+        return self 
+    
+    def within_distance(self, x, y, d):
+        dx = 0
+        if x < self.xmin:
+            dx = self.xmin - x
+        elif x > self.xmax:
+            dx = x - self.xmax
+        
+        dy = 0 
+        if y < self.ymin:
+            dy = self.ymin - y
+        elif y > self.ymax:
+            dy = y - self.ymax
+        return (dx*dx + dy*dy) <= d*d # if point is inside box, will return - if outside will be positive
+    
+    def leaves_within_distance(self, x, y, d, found=None):
+        if found is None:
+            found = []
+        if not self.within_distance(x, y, d):
+            return found
+        if self.children is None:
+            found.append(self)
+            return found 
+        for child in self.children:
+            child.leaves_within_distance(x, y, d, found)
+        return found 
+    
+def k_nearest_neighbors(tree, x0, y0, k, search_distance):
+    leaves = tree.leaves_within_distance(x0, y0, d=search_distance) # leaves within search distance
+    
+    candidate_points = []
+    for leaf in leaves:
+        candidate_points.extend(leaf.all_points()) # gather all points from candidates
+    if len(candidate_points) == 0:
+        return [], [], None # if no points found 
+    
+    candidate_points = np.array(candidate_points)
+    coords = candidate_points[:, :2].astype(float)
+
+    dx = coords[:, 0] - x0 # distance using euclidean distances 
+    dy = coords[:, 1] - y0
+    distances = dx**2 + dy**2
+
+    k_actual = min(k, len(candidate_points))
+    min_i = np.argpartition(distances, k_actual-1)[:k_actual] # find k smallest distances 
+
+    nearest_points = candidate_points[min_i]
+    nearest_distances = distances[min_i]
+
+    labels = [p[2] for p in nearest_points] # determine most common class label 
+    predicted_class = Counter(labels).most_common(1)[0][0]
+
+    return nearest_points, nearest_distances, predicted_class
+
+
+
+
+# %%
+# Used to test my tree - generated by ChatGPT
+# Example points and boundary
+points = [
+    (10, 10, 'A'),
+    (20, 15, 'B'),
+    (42, 5, 'C'),
+    (30, 25, 'D'),
+    (50, 40, 'E')
+]
+
+# Define the boundary of your QuadTree: (xmin, ymin, xmax, ymax)
+boundary = (0, 0, 60, 60)
+
+# Create the QuadTree instance
+tree = QuadTree(points, boundary, capacity=2)
+
+# Now you can safely call leaves_within_distance
+leaves = tree.leaves_within_distance(42, 17, d=20)
+
+for leaf in leaves:
+    print("Leaf size:", leaf.size)
+    print("Points:", leaf.all_points())
+
+
+# %%
+nearest_pts, nearest_dists, predicted_class = k_nearest_neighbors(tree, 42, 6, 3, 20)
+
+print("k nearest points:", nearest_pts)
+print("Predicted class:", predicted_class)
+
+
+# %%
+# call in rice
+rice = pd.read_excel("Rice_Cammeo_Osmancik.xlsx")
+
+# %%
+rice.head()
+
+# %%
+# standardize 7 quantitative rice data
+# used ChatGPT to standardize all except class one while retaining the class 
+
+def standardize(series):
+    return (series - series.mean()) / series.std()
+
+rice_standard = rice.copy()
+cols_to_standardize = [c for c in rice.columns if c !='Class']
+rice_standard[cols_to_standardize] = rice[cols_to_standardize].apply(standardize)
+
+rice_standard.head()
+
+# %%
+pca_raw = decomposition.PCA() # performed on all components
+pca_df = pd.DataFrame(
+    pca_raw.fit_transform(rice_standard[cols_to_standardize])
+)
+pca_df = pca_df.rename(columns={0: 'PCA0', 1: 'PCA1'})
+pca_df['Class'] = rice_standard['Class'].values
+
+pca_df.head()
+
+# %%
+# plot PCA0 vs PCA1
+# Used ChatGPT to fix errors thrown of using categorical classes in plotly
+
+fig = px.scatter(
+    x=pca_df['PCA0'],
+    y=pca_df['PCA1'],
+    color=rice['Class'],
+    title="Rice Data (PC0 vs PC1)",
+    labels={'x': 'PC0', 'y': 'PC1'},
+    template='plotly_white'
+)
+
+fig.write_image('Original_PCA.png')
+fig.show()
+
+
+# %%
+# asked chatGPT how to implement a test train split 
+# used ChatGPT to only standardize for training, not test and understand to implement PCA after 
+
+# Shuffle first
+pca_df_shuffled = pca_df.sample(frac=1, random_state=42).reset_index(drop=True)
+
+# Split into features and labels
+features = pca_df_shuffled.drop(columns='Class') # input values to use to predict
+labels = pca_df_shuffled['Class'] # labels that are predicted
+
+# 70/30 split - training on 70%, test on 30% data 
+split_idx = int(0.7 * len(pca_df_shuffled))
+X_train_raw = features.iloc[:split_idx].values
+y_train = labels.iloc[:split_idx].values
+X_test_raw = features.iloc[split_idx:].values
+y_test = labels.iloc[split_idx:].values
+
+
+# must train because KNN is a lazy alg - training is really just defining what points it can reference/giving comparison data to use 
+# split into training to reference/compare and test which will check how well predicts for unseen points 
+
+# Compute training mean and std
+train_mean = X_train_raw.mean(axis=0)
+train_std = X_train_raw.std(axis=0)
+
+# Standardize
+X_train = (X_train_raw - train_mean) / train_std
+X_test = (X_test_raw - train_mean) / train_std  # IMPORTANT: use training mean/std
+
+# Fit PCA only on training set
+pca = decomposition.PCA(n_components=2)
+X_train_pca = pca.fit_transform(X_train)
+
+# Apply same PCA transformation to test set
+X_test_pca = pca.transform(X_test)
+
+
+# %%
+# Combine X_train and y_train into list of (x, y, label)
+train_points = [(x[0], x[1], label) for x, label in zip(X_train, y_train)]
+
+# Determine the boundary of the QuadTree
+xmin, ymin = X_train_pca.min(axis=0)
+xmax, ymax = X_train_pca.max(axis=0)
+boundary = (xmin, ymin, xmax, ymax)
+
+# Build QuadTree
+tree = QuadTree(train_points, boundary, capacity=2)
+
+
+# %%
+# looked at min and max of pca to choose good search distance 
+print(pca_df.max())
+print(pca_df.min())
+
+# %%
+# used ChatGPT to debug unknowns and add labels
+
+y_pred = []
+for x0, y0 in X_test_pca:
+    _, _, pred = k_nearest_neighbors(tree, x0, y0, 1, 3)
+    if pred is None:
+        pred = 'Unknown'
+    y_pred.append(pred)
+y_pred = np.array(y_pred)
+
+all_labels = np.unique(np.concatenate([y_test, y_pred]))
+
+# Compute confusion matrix
+cm_1 = confusion_matrix(y_test, y_pred, labels=all_labels)
+
+# Make a nice DataFrame
+cm_1_df = pd.DataFrame(cm_1, index=all_labels, columns=all_labels)
+cm_1_df = cm_1_df.add_prefix('Predicted ').rename(index=lambda x: f'Was {x}')
+print(cm_1_df)
+
+# %%
+# used ChatGPT to debug unknowns and add labels
+
+y_pred = []
+for x0, y0 in X_test_pca:
+    _, _, pred = k_nearest_neighbors(tree, x0, y0, 5, 3)
+    if pred is None:
+        pred = 'Unknown'
+    y_pred.append(pred)
+y_pred = np.array(y_pred)
+
+all_labels = np.unique(np.concatenate([y_test, y_pred]))
+
+# Compute confusion matrix
+cm_2 = confusion_matrix(y_test, y_pred, labels=all_labels)
+
+# Make a nice DataFrame
+cm_2_df = pd.DataFrame(cm_2, index=all_labels, columns=all_labels)
+cm_2_df = cm_2_df.add_prefix('Predicted ').rename(index=lambda x: f'Was {x}')
+print(cm_2_df)
+
+# %%
+# used ChatGPT to debug unknowns and add labels
+
+y_pred = []
+for x0, y0 in X_test_pca:
+    _, _, pred = k_nearest_neighbors(tree, x0, y0, 1, 1)
+    if pred is None:
+        pred = 'Unknown'
+    y_pred.append(pred)
+y_pred = np.array(y_pred)
+
+all_labels = np.unique(np.concatenate([y_test, y_pred]))
+
+# Compute confusion matrix
+cm_3 = confusion_matrix(y_test, y_pred, labels=all_labels)
+
+# Make a nice DataFrame
+cm_3_df = pd.DataFrame(cm_3, index=all_labels, columns=all_labels)
+cm_3_df = cm_3_df.add_prefix('Predicted ').rename(index=lambda x: f'Was {x}')
+print(cm_3_df)
+
+# %%
+# used ChatGPT to debug unknowns and add labels
+
+y_pred = []
+for x0, y0 in X_test_pca:
+    _, _, pred = k_nearest_neighbors(tree, x0, y0, 5, 1)
+    if pred is None:
+        pred = 'Unknown'
+    y_pred.append(pred)
+y_pred = np.array(y_pred)
+
+all_labels = np.unique(np.concatenate([y_test, y_pred]))
+
+# Compute confusion matrix
+cm_3 = confusion_matrix(y_test, y_pred, labels=all_labels)
+
+# Make a nice DataFrame
+cm_3_df = pd.DataFrame(cm_3, index=all_labels, columns=all_labels)
+cm_3_df = cm_3_df.add_prefix('Predicted ').rename(index=lambda x: f'Was {x}')
+print(cm_3_df)
+
+# %%
+# used ChatGPT to debug unknowns and add labels
+
+y_pred = []
+for x0, y0 in X_test_pca:
+    _, _, pred = k_nearest_neighbors(tree, x0, y0, 1, 10)
+    if pred is None:
+        pred = 'Unknown'
+    y_pred.append(pred)
+y_pred = np.array(y_pred)
+
+all_labels = np.unique(np.concatenate([y_test, y_pred]))
+
+# Compute confusion matrix
+cm_3 = confusion_matrix(y_test, y_pred, labels=all_labels)
+
+# Make a nice DataFrame
+cm_3_df = pd.DataFrame(cm_3, index=all_labels, columns=all_labels)
+cm_3_df = cm_3_df.add_prefix('Predicted ').rename(index=lambda x: f'Was {x}')
+print(cm_3_df)
+
+# %%
+```
 
 ## Problem 4
 ```python
