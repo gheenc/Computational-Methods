@@ -6,15 +6,18 @@
 
 <h1>Rural-Metro Codings</h1>
 
-<p><strong>Your State:</strong></p>
-<pre class="result-box">{{ usertext }}</pre>
+<h2>Rural-Metro Coding for {{usertext}}<h2></h2>
 
 <p><strong>Here's how many counties in each state have this rural-metro coding:</strong></p>
 <pre class="result-box">{{ analysis }}</pre>
 
+<img src="{{url_for ('images', filename=state_image)}}"
+alt="Map for {{usertext}}"
+class="analyze-image">
+
 <div class="legend-box">
     <h3>Category Legend</h3>
-    <ul>
+    <ul class="legend-list">
         <li><strong>1</strong>: Metro Areas of 1 million + population</li>
         <li><strong>2</strong>: Metro Areas of 250,000-1,000,000 population</li>
         <li><strong>3</strong>: Metro Areas of fewer than 250,000 population</li>

@@ -573,12 +573,19 @@ Here is the output page for Alabama.
 !['Alabama County Rural-Metro Count Results'](alabama_result.png)
 
 I also created an API which I tested with Alabama and verified against the results page.
-!['API for calling alabama](api_call_alabama.png)
+!['API for calling Alabama'](api_call_alabama.png)
 
 I tested the API again for Oklahoma.
-!['API for calling Oklahoma](api_call_oklahoma.png)
+!['API for calling Oklahoma'](api_call_oklahoma.png)
 
 I also instituted a css style page (in GitHub final project/static). 
+
+I added a static image of a breakdown of the entire US counties rural-metro coding.
+!['US Rural-Metro Coding'](static_image.png)
+
+I also added images of each state that would generate on the analyze page when that state was queried for the rural-metro county breakdown.
+!['Alabama Image'](images_al.png)
+!['South Carolina Image'](images_sc.png)
 
 ## Code Appendix 
 ## Problem 1

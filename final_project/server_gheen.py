@@ -41,7 +41,9 @@ def analyze():
     analyze_text = ""
     for category, count in counts.items():
         analyze_text += f"Category {category}: {count}\n "
-    return render_template("analyze_gheen.html", analysis=analyze_text, usertext=usertext)
+    state_image = usertext.lower().replace(" ", "_") + "_code.png"
+    return render_template("analyze_gheen.html", analysis=analyze_text, usertext=usertext, state_image=state_image)
+
 
 @app.route("/api/county-codes", methods=["GET"])
 def api_county_codes():
