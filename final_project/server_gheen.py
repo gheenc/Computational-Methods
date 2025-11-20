@@ -15,6 +15,7 @@ def images(filename):
 def state_county_counts(state_name):
     data = pd.read_excel('data/SDOH_2020_COUNTY_Cleaned.xlsx', sheet_name='Data')
     state_data = data[data['STATE'].str.lower() == state_name.lower()]
+    state_data = state_data.fillna(0)
     county_counts = state_data['AHRF_USDA_RUCC_2013'].astype(int).value_counts().sort_index().to_dict()
     return county_counts 
 
@@ -43,7 +44,7 @@ def analyze():
         analyze_text += f"Category {category}: {count}\n "
     state_image = usertext.lower().replace(" ", "_") + "_code.png"
     return render_template("analyze_gheen.html", analysis=analyze_text, usertext=usertext, state_image=state_image)
-
+# ALASKA HAS COUNTIES WITH NO CODING NEED TO DO A None
 
 @app.route("/api/county-codes", methods=["GET"])
 def api_county_codes():

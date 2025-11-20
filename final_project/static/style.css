@@ -70,12 +70,11 @@ h2 {
 }
 
 .result-box {
-    background-color: rgb(255, 255, 255);
     padding: 10px;
     border-radius: 5px;
     margin: 0 auto 20px auto;
     width: 90%;
-    font-family: monospace;
+    font-family: Verdana;
     overflow-x: auto;
 }
 
@@ -89,6 +88,7 @@ h2 {
     border-radius: 5px;
     margin-top: 10px;
     font-size: 1rem;
+    margin: 0
 }
 
 .back-button:hover {
@@ -98,7 +98,7 @@ h2 {
 .analyze-image {
     display: block;
     margin: 0 auto;
-    width: 350px;              
+    width: 300px;              
     height: 200px;              
     border-radius: 10px;
 }

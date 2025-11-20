@@ -557,11 +557,12 @@ I have watched the entire video and asked the TAs any of my questions.
 
 
 ## Problem 6
-**What does each file do?** Analyze is a html file that creates a body of test that takes in what the user entered and outputs the scripts analysis. Index is a html file that creates the webpage seen and offers a place to enter something to be analyzed. The server.py is a file that uses Flask and decorators. Tells Flask should trigger the function. 
+**What does each file do?** The server.py is a file that uses Flask and decorators and keeps track of what functions should trigger. Index is an html file that creates the initial webpage that is seen and offers a textbox that the user can type in a word to be analyzed. Analyze is a html file that follows index and restates what the user entered to be analyzed and the analysis (how many times a letter appears in the word analyzed).
 
-**How are they interconnected?** In the server.py, you call the index and analyze that is in the template folder and return their code. Within index, you call the action of analyze. Flask allows you to input one and call the other. Decorator says when user clicks a button to move you to that page (defines routes). 
+**How are they interconnected?** In the server.py, you define the index and analyze functions and their route by using the flask decorator. 
+Index and Analyze in templates is called by server.py. Index will also lead to analyze when someone wants their word analyzed. 
 
-**Are there any key parts of the files for making the server do something?** Yes, the analyze and index help in displaying. The name Flask function so Flask knows to use the templates we have. 
+**Are there any key parts of the files for making the server do something?** Yes, the routes established in Flask that call index and analyze have those webpages show. Analyze is also defined in server.py and that takes in the users text, counts the letters and returns how many times each item appears. Calling server.py has the whole server run. 
 
 Using my data, I want to be able answer the question of how counties in a state are classified according to the rural-metro code. In using staes I felt a drop down menu was more user-friendly than a text box. For example, if someone selected Alabama, it would return counties in coding 1-x, 2-x, 3-x... To do this, I am taking the column of code classification (RUCC codes) from my dataset and returning the values count in order of the wanted state.
 
@@ -578,21 +579,23 @@ I also created an API which I tested with Alabama and verified against the resul
 I tested the API again for Oklahoma.
 !['API for calling Oklahoma'](api_call_oklahoma.png)
 
-I also instituted a css style page (in GitHub final project/static). 
+I also instituted a css style page (in GitHub final_project/static and in code appendix). 
 
 I added a static image of a breakdown of the entire US counties rural-metro coding.
 !['US Rural-Metro Coding'](static_image.png)
 
-I also added images of each state that would generate on the analyze page when that state was queried for the rural-metro county breakdown.
+I also added images of each state that would generate on the analyze page when that state was queried for the rural-metro county breakdown. Before ultimate submission, I will add the colors that correspond to each category. 
 !['Alabama Image'](images_al.png)
 !['South Carolina Image'](images_sc.png)
 
+Choosing a drop down menu to display the states was a method of error handling in that it dramatically decrease the amount and type of error the user can make. I also had to handle errors in the calling of my dataset from the dropdown menu, for example, Alaska had some counties that did not have codings because they were defined  after 2013 when the RUCC codes were assigned. I also clarified on the front page that only the 50 contiguous US state would be analyzed to handle anyone erraneously wanting data about Puerto Rico, DC, or another US territory. 
+
 ## Code Appendix 
-## Problem 1
+## Problem 1 - Code
 
-## Problem 2
+## Problem 2 - Code
 
-## Problem 3
+## Problem 3 - Code
 ```python
 # %%
 import numpy as np
@@ -997,7 +1000,7 @@ print(cm_3_df)
 # %%
 ```
 
-## Problem 4
+## Problem 4 - Code
 ```python
 # %%
 import pandas as pd
@@ -1375,3 +1378,5 @@ graph = (
 graph.save('x_centers_5.png')
 graph
 ```
+
+## Problem 6 - Code 
