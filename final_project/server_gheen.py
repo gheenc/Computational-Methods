@@ -44,7 +44,6 @@ def analyze():
         analyze_text += f"Category {category}: {count}\n "
     state_image = usertext.lower().replace(" ", "_") + "_code.png"
     return render_template("analyze_gheen.html", analysis=analyze_text, usertext=usertext, state_image=state_image)
-# ALASKA HAS COUNTIES WITH NO CODING NEED TO DO A None
 
 @app.route("/api/county-codes", methods=["GET"])
 def api_county_codes():

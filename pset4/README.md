@@ -2,17 +2,68 @@
 ## Problem 1 - Gradient Descent
 **Is this a clean URL and why** No, this is not a Clean URL because it is querying and it is passing parameters into it to function e.g. searching for a=0.4 rather than stating a file path like a Clean URL would. 
 
-**Implement 2-D version of gradient descent to find optimal choices of a and b**
+I implemented a 2-D verision of the gradient descent that allows you to find the optimal choice of a and b by minimizing error. It defines fprime_a, fprime_b, and f, which calls to the API. H and Gamma are hardcoded as well as the starting point of a and b. I chose epsilon and an error tolerance as stopping criteria which are also hard coded. **It then cycles for a wanted range, calculating the fprime of a and b, updating that as the new a and b, then calculating fprime of those new values. This is how you are able to find the gradient despite not being able to directly compute it.** 
+```python 
+def f(a, b):
+    a = round(a, 6) # sending shorter floats to be nicer to server 
+    b = round(b, 6)
+    r = (requests.get(f"http://ramcdougal.com/cgi-bin/error_function.py?a={a}&b={b}", headers={"User-Agent": "MyScript"}).text)
+    return float(r)
+def fprime_a(a, b):
+    return (f(a+h, b) - f(a, b)) / h 
+def fprime_b(a, b):
+    return (f(a, b+h) - f(a, b)) / h 
 
-**Explain how you estimate the gradient given that you cannot directly compute the derivate**
+h= .01 # did not want too small of error to avoid computational errors
+gamma = .25 # gamma controls how big of step
+epsilon = 1e-4 # stopping criteria of stopping when updates being too small
+error_tolerance = 1e-4
 
-**Identify any numerical choices -- including stopping criteria -- and justify why this was reasonable**
+a, b = .5, .8 # initial guess for  both
+current_run = []
+previous_error = None
 
-**Find a and b value/location of local minimum and global minimum by querying API**
+for i in range(15):
+    current_error = f(a, b)
+    current_run.append({"a":a, "b":b, "error":current_error}) 
 
-**Identify which corresponds to which**
+    if previous_error is not None and abs(previous_error - current_error) < error_tolerance:
+        print("Error change too small")
+        break
+ 
+    new_a = a - gamma * fprime_a(a, b) # doing gradient descent and determining new a and b
+    new_b = b - gamma * fprime_b(a, b) 
 
-**Discuss how to test for local vs global minima if you had not known how many minima there were**
+    if np.sqrt((new_a-a) **2 + (new_b - b)**2) < epsilon: # stopping criteria of when updates are too small 
+        print("Updates too small")
+        break
+
+    a, b = new_a, new_b
+    print(f"a:{a}, b:{b}, error:{current_error}")
+print(f"lowest error run: {min(current_run, key=lambda x:x['error'])}") # prints run with smallest error 
+```
+I chose the following numerical choices: 
+
+Gamma controls the speed of the steps: too large and it could overshoot the minimum; too small and it will converge slowly. I found the best convergence to be at 0.25 because .5-1 gave too varying of values thus that were far off from the correct minimum and smaller number like .01-.1 were too small of updates risking never finding the minimum.
+
+H or step size controls the accuracy so too large and you risk being inaccurate and too small you risk numerical precision errors by the computer. I chose 0.01 as I found this got me the closest to converging on a minimum.
+
+I chose epsilon as a stopping criteria because it breaks if the change in variables is minimal. If this criteria is too large you risk stopping too early and if it's too small you will run through lots of iterations. I chose 1e-4 because there were no notificable benefits after 1e-5. 
+
+I also implemented a stopping criteria of error between runs being too small and breaking. This ensured that I was being nice to the server and decreased my risk of numerical precision errors. I chose 1e-4 because that is a small difference between errors but allows enough difference if needed to continue convergence. 
+
+I chose to do 15 runs because I found my stopping criteria would kick in very close to 15 so I need more than 10 but more than 15 wuold be unnecessary. I also found without stopping criteria that runs after 15 were similar to each other and close to convergence.
+
+**local minimum with starting a=.5 b=.8**
+**a: 0.21551550000000153, b: 0.685812499999993, error: 1.1000103976**
+
+To find the global, I changed my starting point.
+**global minimum with starting a =.4, b=.2**
+**a: 0.7058004997500086, b: 0.16414099975000634, error: 1.00010396249**
+
+I knew the second run was the global error because it had the smallest level of error. There is less error associated with global minimums. 
+
+**If you had not known how many mimima there are, you would do multiple starting points and track their convergences. Global would be the one with the smallest error and you could track other convergences that could be local minima**
 
 ## Problem 2
 I implemented a Smith-Waterman function that takes in two sequences and aligns them with a default of 1 for match, mismatch, and gap penalty. 
@@ -592,6 +643,70 @@ Choosing a drop down menu to display the states was a method of error handling i
 
 ## Code Appendix 
 ## Problem 1 - Code
+```python
+# %%
+import math
+import numpy as np
+import requests
+
+# %%
+# implement 2D version of gradient descent algorithm to find optimal choices of a and b
+# used ChatGPT to ensure adjustment of code from slide(8) to 2D version and understand stopping criteria and implement error as a returned value 
+
+def f(a, b):
+    a = round(a, 6) # sending shorter floats to be nicer to server 
+    b = round(b, 6)
+    r = (requests.get(f"http://ramcdougal.com/cgi-bin/error_function.py?a={a}&b={b}", headers={"User-Agent": "MyScript"}).text)
+    return float(r)
+def fprime_a(a, b):
+    return (f(a+h, b) - f(a, b)) / h 
+def fprime_b(a, b):
+    return (f(a, b+h) - f(a, b)) / h 
+
+h= .01 # did not want too small of error to avoid computational errors
+gamma = .25 # gamma controls how big of step
+epsilon = 1e-4 # stopping criteria of stopping when updates being too small
+error_tolerance = 1e-4
+
+a, b = .4, .2 # initial guess for  both
+current_run = []
+previous_error = None
+
+for i in range(15):
+    current_error = f(a, b)
+    current_run.append({"a":a, "b":b, "error":current_error}) 
+
+    if previous_error is not None and abs(previous_error - current_error) < error_tolerance:
+        print("Error change too small")
+        break
+ 
+    new_a = a - gamma * fprime_a(a, b) # doing gradient descent and determining new a and b
+    new_b = b - gamma * fprime_b(a, b) 
+
+    if np.sqrt((new_a-a) **2 + (new_b - b)**2) < epsilon: # stopping criteria of when updates are too small 
+        print("Updates too small")
+        break
+
+    a, b = new_a, new_b
+    print(f"a:{a}, b:{b}, error:{current_error}")
+print(f"lowest error run: {min(current_run, key=lambda x:x['error'])}") # prints run with smallest error 
+
+
+# %%
+# EXPAIN HOW ESTIMATE GRADIENT
+
+# gamma - how much move along gradient each iteration - controls speed - too large: overshoot; too small: slow convergence
+# GAMMA - best convergence at .25; far off at 1 and .5 and too small at .01 and .1
+
+# h - error, estimating derivative numerically - controls accuracy - too large: inaccurate; too small: numerical precision errors
+# ERROR - .01 got us the closest 
+
+# epsilon - minimum change in varibales to stop iteration - too large: stops too early, too small: too many iterations 
+# EPSILON - chose 1e-4 becuase no noticeable difference after (1e-5 etc)
+
+# range - how many iterations - too many: unnecessary , too few: don't see convergence
+# RANGE -  minimal differences past .000 decimal place after 8 runs, rounded up to 10
+```
 
 ## Problem 2 - Code
 
