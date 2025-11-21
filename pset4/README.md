@@ -649,6 +649,41 @@ I also added images of each state that would generate on the analyze page when t
 
 Choosing a drop down menu to display the states was a method of error handling in that it dramatically decrease the amount and type of error the user can make. I also had to handle errors in the calling of my dataset from the dropdown menu, for example, Alaska had some counties that did not have codings because they were defined  after 2013 when the RUCC codes were assigned. I also clarified on the front page that only the 50 contiguous US state would be analyzed to handle anyone erraneously wanting data about Puerto Rico, DC, or another US territory. 
 
+All associated files can be found in my git hub final_projects folder.
+
+I also implemented a deeper analysis page that will hold deeper analysis. I also implemented helper functions that will produce an anlysis of the total numbers of healthcare institutions (Urgent Care, ER, PICU, OB) by county total and by rate. I am working through debugging this so it displays correctly. 
+```python
+#helper function to do analysis - total er 2020 
+def counts_total_ER_2020():
+    data = pd.read_excel('data/COMBINED CLEAN.xlsx', sheet_name='2020')
+    data = data.drop(data.index[0])
+    data = data.fillna("NA")
+    counts = data["RUCC_CODE"].value_counts().sort_index().reset_index()
+    counts.columns = ["RUCC_CODE", "County_Count"]
+    average_ER_counts = (data.groupby("RUCC_CODE", as_index=False)["TOTAL_ER"].mean())
+    average_ER_counts.columns = ["RUCC_CODE", "Avg_ER"]
+    final_df = counts.merge(average_ER_counts, on="RUCC_CODE", how="left")
+    return final_df
+    #fig = px.bar(final_df, x=[1, 2, 3, 4, 5, 6, 7, 8, 9], y="Avg_ER",
+                 #title = "Average Amounts of Hospitals with ER per County Classification in US",
+                 #labels={"RUCC_CODE": "Rural-Metro Code", "Avg_ER": "Average Number of ERs"},
+                #text=final_df["Avg_ER"].round(2).astype(str))
+    #fig.savefig("static/plot_age_er.png", bbox_inces="tight")
+
+
+#helper function analysis - total er 2020 rate
+def counts_total_ER_rate_2020():
+    data = pd.read_excel('data/COMBINED CLEAN.xlsx', sheet_name='2020')
+    data = data.drop(data.index[0])
+    data = data.fillna("NA")
+    counts = data["RUCC_CODE"].value_counts().sort_index()
+    counts.columns = ["RUCC_CODE", "County_Count"]
+    average_ER_rate_counts = (data.groupby("RUCC_CODE", as_index=False)["TOTAL_ER_RATE"].mean())
+    average_ER_rate_counts.columns = ["RUCC_CODE", "Avg_ER_Rate"]
+    final_df = counts.merge(average_ER_rate_counts, on="RUCC_CODE", how="left")
+    return final_df
+```
+
 Sources: [1] I adapted code by Robert McDougal demonstrating flask [2] Photos are from https://www.shepscenter.unc.edu/wp-content/uploads/2015/12/ruralurbancodes2013c.pdf and https://www.cdc.gov/nchs/data-analysis-tools/urban-rural.html [3] Used ChatGPT to develop API call [4] Used https://www.w3schools.com/Css/css_editor.asp as a template for the CSS and used ChatGPT to edit to my needs [4] Used ChatGPT to understand how to call in a CSS sheet and have buttons go to other pages
 
 ## Code Appendix 
@@ -719,6 +754,116 @@ print(f"lowest error run: {min(current_run, key=lambda x:x['error'])}") # prints
 ```
 
 ## Problem 2 - Code
+```python
+# %%
+import multiprocessing as mp
+from multiprocessing import shared_memory 
+import numpy as np
+import random 
+import string
+import time
+from mpi4py import MPI
+
+# %%
+def smith_waterman(seq1, seq2, match_score=1, mismatch_penalty=1, gap_penalty=1): 
+    max_score = 0
+    max_pos = (0,0)
+    
+    rows = len(seq2) + 1 #matrix size 
+    cols = len(seq1) + 1 
+    matrix = [[0 for _ in range(cols)] for _ in range(rows)] # Create scoring matrix filled with zeros
+       
+    # Score
+    for i in range(1, rows): # first row/column is 0 so starts in second
+        for j in range(1, cols):
+            if seq1[j-1] == seq2[i-1]:
+                diag = matrix[i-1][j-1] + match_score # if two align get match point
+            else:
+                diag = matrix[i-1][j-1] - mismatch_penalty # if two do not align, mismatch penalty
+
+            up = matrix[i-1][j] - gap_penalty # puts gap penalty in seq1
+            left = matrix[i][j-1] - gap_penalty # puts gap penalty in seq2
+
+            matrix[i][j] = max(0, diag, up, left) # highest score 
+            if matrix[i][j] > max_score:
+                max_score = matrix[i][j] # keeps track of highest score
+                max_pos = (i, j) # where highest score is 
+    # now the matrix is scored 
+    # reconstructs which two aligned make best match
+    aligned_seq1 = ""
+    aligned_seq2 = ""
+    i, j = max_pos # start from cell with highest score 
+
+    while matrix[i][j] != 0: # trace backwards until reach a 0 ie a stop does not match
+        score_current = matrix[i][j] # score of current
+        score_diag = matrix[i-1][j-1] # score of diagonal
+        score_up = matrix[i-1][j] # score of above
+        score_left = matrix[i][j-1] # score of left - which could have to this one
+
+        if seq1[j-1] == seq2[i-1]:
+            match = match_score
+        else:
+            match = -mismatch_penalty # is diagonal a match or mismatch, subtracts for mismatch 
+        # how did we arrive at the cell - diagonal, left (gap in seq2), or up (gap in seq1)
+        if score_current == score_diag + match:
+            aligned_seq1 = seq1[j-1] + aligned_seq1
+            aligned_seq2 = seq2[i-1] + aligned_seq2
+            i -= 1
+            j -= 1 # match was diagnoal; add to strink and move diagonally up and left 
+        elif score_current == score_left - gap_penalty: # subtract for gap
+            aligned_seq1 = seq1[j-1] + aligned_seq1
+            aligned_seq2 = "-" + aligned_seq2
+            j -= 1 # came from left meaning seq2 has a gap, add - in a seq2 and move left 
+        elif score_current == score_up - gap_penalty:
+            aligned_seq1 = "-" + aligned_seq1
+            aligned_seq2 = seq2[i-1] + aligned_seq2
+            i -= 1
+        else: break
+
+    # Print full matrix
+    for row in matrix:
+        print(row) 
+
+    return aligned_seq1, aligned_seq2, max_score # return the aligned sequence and max score 
+# %%
+# test alignment of sequences
+
+smith_waterman('TACA', 'TATG')
+
+# %%
+# test using examples in problem set
+
+smith_waterman('tgcatcgagaccctacgtgac', 'actagacctagcatcgac')
+
+# %%
+# test using examples in problem set - returns a more complex matching case 
+
+smith_waterman('tgcatcgagaccctacgtgac', 'actagacctagcatcgac', gap_penalty=2)
+
+# %%
+# testing - proves works because all match
+smith_waterman('gggg', 'gggg')
+
+# %%
+# testing - proves works because none match
+smith_waterman('cccc', 'gggg')
+
+# %%
+# returns simple matching case
+smith_waterman('caac', 'gaag')
+
+# %%
+# testing - proves works because none match
+# clarified with ChatGPT difference between gap penalty and mismatch penalty 
+smith_waterman('ACGATCG', 'ACGGTCG', gap_penalty=0)
+
+# %%
+# gap penalty of 2 makes mismatches perferred to gaps 
+smith_waterman('ACGATCG', 'ACGGTCG', gap_penalty=2)
+
+# %%
+smith_waterman('ACGTTGAC', 'ACGTGAC', gap_penalty=2)
+```
 
 ## Problem 3 - Code
 ```python
@@ -1505,3 +1650,464 @@ graph
 ```
 
 ## Problem 6 - Code 
+server.py
+```python
+import pandas as pd
+from flask import *
+from collections import Counter
+import plotly 
+from plotly import *
+
+app = Flask(__name__)
+
+#bring in images
+@app.route('/images/<path:filename>')
+def images(filename):
+    return send_from_directory('images', filename)
+
+# helper function pulling state and county counts
+def state_county_counts(state_name):
+    data = pd.read_excel('data/SDOH_2020_COUNTY_Cleaned.xlsx', sheet_name='Data')
+    state_data = data[data['STATE'].str.lower() == state_name.lower()]
+    state_data = state_data.fillna(0)
+    county_counts = state_data['AHRF_USDA_RUCC_2013'].astype(int).value_counts().sort_index().to_dict()
+    return county_counts 
+
+#helper function to do analysis - total er 2020 
+def counts_total_ER_2020():
+    data = pd.read_excel('data/COMBINED CLEAN.xlsx', sheet_name='2020')
+    data = data.drop(data.index[0])
+    data = data.fillna("NA")
+    counts = data["RUCC_CODE"].value_counts().sort_index().reset_index()
+    counts.columns = ["RUCC_CODE", "County_Count"]
+    average_ER_counts = (data.groupby("RUCC_CODE", as_index=False)["TOTAL_ER"].mean())
+    average_ER_counts.columns = ["RUCC_CODE", "Avg_ER"]
+    final_df = counts.merge(average_ER_counts, on="RUCC_CODE", how="left")
+    return final_df
+    #fig = px.bar(final_df, x=[1, 2, 3, 4, 5, 6, 7, 8, 9], y="Avg_ER",
+                 #title = "Average Amounts of Hospitals with ER per County Classification in US",
+                 #labels={"RUCC_CODE": "Rural-Metro Code", "Avg_ER": "Average Number of ERs"},
+                #text=final_df["Avg_ER"].round(2).astype(str))
+    #fig.savefig("static/plot_age_er.png", bbox_inces="tight")
+
+
+#helper function analysis - total er 2020 rate
+def counts_total_ER_rate_2020():
+    data = pd.read_excel('data/COMBINED CLEAN.xlsx', sheet_name='2020')
+    data = data.drop(data.index[0])
+    data = data.fillna("NA")
+    counts = data["RUCC_CODE"].value_counts().sort_index()
+    counts.columns = ["RUCC_CODE", "County_Count"]
+    average_ER_rate_counts = (data.groupby("RUCC_CODE", as_index=False)["TOTAL_ER_RATE"].mean())
+    average_ER_rate_counts.columns = ["RUCC_CODE", "Avg_ER_Rate"]
+    final_df = counts.merge(average_ER_rate_counts, on="RUCC_CODE", how="left")
+    return final_df
+
+# landing page
+@app.route("/home")
+def home():
+    return render_template("home_gheen.html")
+
+# redirect to home
+@app.route('/')
+def root():
+    return redirect("/home")
+
+# index page
+@app.route("/index")
+def index():
+    return render_template("index_gheen.html")
+
+# analyze page
+@app.route("/analyze", methods=["POST"])
+def analyze():
+    usertext = request.form["usertext"]
+    counts = state_county_counts(usertext)
+    analyze_text = ""
+    for category, count in counts.items():
+        analyze_text += f"Category {category}: {count}\n "
+    state_image = usertext.lower().replace(" ", "_") + "_code.png"
+    return render_template("analyze_gheen.html", analysis=analyze_text, usertext=usertext, state_image=state_image)
+
+# about the dataset page
+@app.route("/dataset", methods=["GET", "POST"])
+def dataset():
+    return render_template("dataset_gheen.html")
+
+# deeper analysis/graphs page
+@app.route("/graphs", methods=["GET", "POST"])
+def graphs():
+    counts_total_ER_2020()
+    counts_total_ER_2020()
+    return render_template("deeper_analysis_gheen.html")
+
+#API call
+@app.route("/api/county-codes", methods=["GET"])
+def api_county_codes():
+    state = request.args.get("state")
+    if not state:
+        return jsonify({'error':'Missing ?state= parameter'}), 400
+    counts = state_county_counts(state)
+    return jsonify({
+        'state': state,
+        'county_category_counts': counts
+    })
+
+if __name__ == "__main__":
+    app.run(debug=True, port=5002)
+```
+index_gheen.html
+```python
+<html>
+<head>
+    <link rel="stylesheet" href="{{url_for('static', filename='style.css')}}">
+</head>
+<body>
+
+<h1>Rural Healthcare Access</h1>
+<p>Type a State to Learn the Rural-Metro Coding of it's Counties:</p>
+
+<form action="/analyze" method="POST">
+    <select name="usertext">
+        <option value="Alabama">Alabama</option>
+        <option value="Alaska">Alaska</option>
+        <option value="Arizona">Arizona</option>
+        <option value="Arkansas">Arkansas</option>
+        <option value="California">California</option>
+        <option value="Colorado">Colorado</option>
+        <option value="Connecticut">Connecticut</option>
+        <option value="Delaware">Delaware</option>
+        <option value="Florida">Florida</option>
+        <option value="Georgia">Georgia</option>
+        <option value="Hawaii">Hawaii</option>
+        <option value="Idaho">Idaho</option>
+        <option value="Illinois">Illinois</option>
+        <option value="Indiana">Indiana</option>
+        <option value="Iowa">Iowa</option>
+        <option value="Kansas">Kansas</option>
+        <option value="Kentucky">Kentucky</option>
+        <option value="Louisiana">Louisiana</option>
+        <option value="Maine">Maine</option>
+        <option value="Maryland">Maryland</option>
+        <option value="Massachusetts">Massachusetts</option>
+        <option value="Michigan">Michigan</option>
+        <option value="Minnesota">Minnesota</option>
+        <option value="Mississippi">Mississippi</option>
+        <option value="Missouri">Missouri</option>
+        <option value="Montana">Montana</option>
+        <option value="Nebraska">Nebraska</option>
+        <option value="Nevada">Nevada</option>
+        <option value="New Hampshire">New Hampshire</option>
+        <option value="New Jersey">New Jersey</option>
+        <option value="New mMxico">New Mexico</option>
+        <option value="New York">New York</option>
+        <option value="North Carolina">North Carolina</option>
+        <option value="North Dakota">North Dakota</option>
+        <option value="Ohio">Ohio</option>
+        <option value="Oklahoma">Oklahoma</option>
+        <option value="Oregon">Oregon</option>
+        <option value="Pennsylvania">Pennsylvania</option>
+        <option value="Rhode Island">Rhode Island</option>
+        <option value="South Carolina">South Carolina</option>
+        <option value="South Dakota">South Dakota</option>
+        <option value="Tennessee">Tennessee</option>
+        <option value="Texas">Texas</option>
+        <option value="Utah">Utah</option>
+        <option value="Vermont">Vermont</option>
+        <option value="Virginia">Virginia</option>
+        <option value="Washington">Washington</option>
+        <option value="West Virginia">West Virginia</option>
+        <option value="Wisconsin">Wisconsin</option>
+        <option value="Wyoming">Wyoming</option>
+    </select>
+    <br><br>
+    <input type="submit" value="Analyze">
+</form>
+
+
+<div style="text-align: center; margin-top: 20px;">
+    <a href="/home">
+        <button>Back to Home</button>
+    </a>
+</div>
+
+</body>
+</html>
+```
+home_gheen.html
+```python
+<html>
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<h1>Welcome to Rural Healthcare Analysis</h1>
+<p>Explore state rural-metro codes by going to the analyzer:</p>
+
+<img src="{{ url_for('images', filename='us_map_counties.png') }}"
+     alt="Distribution of Rural and Metro Counties Image"
+     class="home-image">
+
+
+
+<div style="text-align: center; margin-top: 20px;">
+    <a href="/index">
+        <button>Go to Analyzer</button>
+    </a>
+</div>
+
+<div style="text-align: left; margin-top: 20px;">
+    <a href="/dataset">
+        <button>About the Dataset</button>
+    </a>
+</div>
+
+<div style="text-align: right; margin-top: 20px;">
+    <a href="/graphs">
+        <button>Deeper Analysis</button>
+    </a>
+</div>
+
+
+
+
+<p>*Only data from the 50 contiguous US state is available for analysis</p>
+</body>
+</html>
+```
+analyze_gheen.html
+```python
+<html>
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<h1>Rural-Metro Codings</h1>
+
+<h2>Rural-Metro Coding for {{usertext}}<h2></h2>
+
+<p><strong>Here's how many counties in each state have this rural-metro coding:</strong></p>
+<pre class="result-box">{{ analysis }}</pre>
+
+<img src="{{url_for ('images', filename=state_image)}}"
+alt="Map for {{usertext}}"
+class="analyze-image">
+
+<div class="legend-box">
+    <h3>Category Legend</h3>
+    <ul class="legend-list">
+        <li><strong>0</strong>: County Not Classified</li>
+        <li><strong>1</strong>: Metro Areas of 1 million + population</li>
+        <li><strong>2</strong>: Metro Areas of 250,000-1,000,000 population</li>
+        <li><strong>3</strong>: Metro Areas of fewer than 250,000 population</li>
+        <li><strong>4</strong>: Urban 20,000+ population, adjacent to a metro area</li>
+        <li><strong>5</strong>: Urban 20,000+ population, not adjacent to a metro area</li>
+        <li><strong>6</strong>: Urban 2,500-19,999 population, adjacent to a metro area</li>
+        <li><strong>7</strong>: Urban 2,500-19,999 population, not adjacent to a metro area</li>
+        <li><strong>8</strong>: Rural less than 2,500 population, adjacent to metro area</li>
+        <li><strong>9</strong>: Rural less than 2,500 population, not adjacent to metro area</li>
+    </ul>
+</div>
+
+<br>
+<a href="/index" class="back-button">Go Back</a>
+<br>
+
+<br>
+<a href="/home">
+    <button>Back to Home</button>
+</a>
+<br>
+
+</body>
+</html>
+```
+dataset_gheen.html
+```python
+<html>
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<h1>About the Datasets Used</h1>
+
+
+
+<p>SDOH</p>
+<p>RUCC Codes 2013</p>
+
+
+
+<div style="text-align: center; margin-top: 20px;">
+    <a href="/home">
+        <button>Back to Home</button>
+    </a>
+</div>
+
+
+</body>
+</html>
+```
+deeper_analysis.html
+```python
+<html>
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<h1>Deeper Analysis</h1>
+
+<p>Average Number of ER in Each County Classification in the US</p>
+
+
+
+<div style="text-align: center; margin-top: 20px;">
+    <a href="/home">
+        <button>Back to Home</button>
+    </a>
+</div>
+
+
+</body>
+</html>
+```
+CSS style guide
+```python
+/*home*/
+
+.home-image {
+    display: block;
+    margin: 0 auto;
+    height: 500px;
+    width: 600px;
+    border-radius: 10px;
+}
+
+/*index*/
+
+body {
+    background-color: lightblue;
+    font-family: Verdana, sans-serif;
+    margin: 0;
+    padding: 20px;
+}
+
+h1 {
+    color: white;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+p {
+    font-size: 18px;
+    color: #000000;
+    text-align: center;
+}
+
+/* Text area where user types */
+textarea {
+    width: 100%;
+    height: 10em;
+    font-size: 1rem;
+    padding: 10px;
+    border: 1px solid #577;
+    border-radius: 5px;
+}
+
+/* Submit button */
+input[type="submit"] {
+    padding: 0.6em 1.2em;
+    background-color: navy;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-top: 10px;
+}
+
+input[type="submit"]:hover {
+    background-color: #000080;
+}
+
+form {
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+/*analyze*/
+/* Existing styles remain unchanged */
+h2 {
+    color: black;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.result-box {
+    padding: 10px;
+    border-radius: 5px;
+    margin: 0 auto 20px auto;
+    width: 90%;
+    font-family: Verdana;
+    overflow-x: auto;
+}
+
+/* Back button styling */
+.back-button {
+    display: inline-block;
+    text-decoration: none;
+    background-color: navy;
+    color: white;
+    padding: 0.5em 1em;
+    border-radius: 5px;
+    margin-top: 10px;
+    font-size: 1rem;
+    margin: 0
+}
+
+.back-button:hover {
+    background-color: #000080;
+}
+
+.analyze-image {
+    display: block;
+    margin: 0 auto;
+    width: 300px;              
+    height: 200px;              
+    border-radius: 10px;
+}
+
+.legend-box {
+    width: 100%;
+    padding: 5px 10px;
+    box-sizing: border-box;
+    border-top: 1px solid #ccc;
+}
+
+.legend-box h3 {
+    font-size: 10px;  /* smaller heading */
+    margin: 0 0 5px 0;
+    text-align: center;
+}
+
+.legend-list {
+    display: flex;
+    flex-wrap: wrap;       /* wraps to next line if needed */
+    justify-content: center; /* center horizontally */
+    font-size: 10px;       /* smaller text */
+    list-style: none;      /* remove bullets */
+    padding: 0;
+    margin: 0;
+}
+
+.legend-list li {
+    margin: 0 10px;        /* space between items */
+    white-space: nowrap;   /* prevent line breaks inside items */
+}
+```
+
