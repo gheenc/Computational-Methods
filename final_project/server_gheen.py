@@ -1,8 +1,8 @@
-# css style from: https://www.w3schools.com/Css/tryit.asp?filename=trycss_default
-
 import pandas as pd
 from flask import *
 from collections import Counter
+import plotly 
+from plotly import *
 
 app = Flask(__name__)
 
@@ -18,6 +18,34 @@ def state_county_counts(state_name):
     state_data = state_data.fillna(0)
     county_counts = state_data['AHRF_USDA_RUCC_2013'].astype(int).value_counts().sort_index().to_dict()
     return county_counts 
+
+#helper function to do analysis - total er 2020 
+def counts_total_ER_2020():
+    data = pd.read_excel('data/COMBINED CLEAN.xlsx', sheet_name='2020')
+    data = data.drop(data.index[0])
+    data = data.fillna("NA")
+    counts = data["RUCC_CODE"].value_counts().sort_index().reset_index()
+    counts.columns = ["RUCC_CODE", "County_Count"]
+    average_ER_counts = (data.groupby("RUCC_CODE", as_index=False)["TOTAL_ER"].mean())
+    average_ER_counts.columns = ["RUCC_CODE", "Avg_ER"]
+    final_df = counts.merge(average_ER_counts, on="RUCC_CODE", how="left")
+    fig = px.bar(final_df, x=[1, 2, 3, 4, 5, 6, 7, 8, 9], y="Avg_ER",
+                 title = "Average Amounts of Hospitals with ER per County Classification in US",
+                 labels={"RUCC_CODE": "Rural-Metro Code", "Avg_ER": "Average Number of ERs"},
+                text=final_df["Avg_ER"].round(2).astype(str))
+    fig.savefig("static/plot_age_er.png", bbox_inces="tight")
+    plt.close(fig)
+
+#helper function analysis - total er 2020 rate
+def counts_total_ER_rate_2020():
+    data = pd.read_excel('data/COMBINED CLEAN.xlsx', sheet_name='2020')
+    data = data.drop(data.index[0])
+    data = data.fillna("NA")
+    counts = data["RUCC_CODE"].value_counts().sort_index()
+    counts.columns = ["RUCC_CODE", "County_Count"]
+    average_ER_rate_counts = (data.groupby("RUCC_CODE", as_index=False)["TOTAL_ER_RATE"].mean())
+    average_ER_rate_counts.columns = ["RUCC_CODE", "Avg_ER_Rate"]
+    final_df = counts.merge(average_ER_rate_counts, on="RUCC_CODE", how="left")
 
 # landing page
 @app.route("/home")
@@ -45,6 +73,17 @@ def analyze():
     state_image = usertext.lower().replace(" ", "_") + "_code.png"
     return render_template("analyze_gheen.html", analysis=analyze_text, usertext=usertext, state_image=state_image)
 
+# about the dataset page
+@app.route("/dataset", methods=["GET", "POST"])
+def dataset():
+    return render_template("dataset_gheen.html")
+
+# deeper analysis/graphs page
+@app.route("/graphs", methods=["GET", "POST"])
+def graphs():
+    return render_template("deeper_analysis_gheen.html")
+
+#API call
 @app.route("/api/county-codes", methods=["GET"])
 def api_county_codes():
     state = request.args.get("state")

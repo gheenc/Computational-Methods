@@ -1,4 +1,5 @@
 ## Problem Set 4 ##
+
 ## Problem 1 - Gradient Descent
 **Is this a clean URL and why** No, this is not a Clean URL because it is querying and it is passing parameters into it to function e.g. searching for a=0.4 rather than stating a file path like a Clean URL would. 
 
@@ -64,6 +65,8 @@ To find the global, I changed my starting point.
 I knew the second run was the global error because it had the smallest level of error. There is less error associated with global minimums. 
 
 **If you had not known how many mimima there are, you would do multiple starting points and track their convergences. Global would be the one with the smallest error and you could track other convergences that could be local minima**
+
+Sources: [1] used ChatGPT to ensure adjustment of code from slide(8) to 2D version and understand stopping criteria and implement error as a returned value 
 
 ## Problem 2
 I implemented a Smith-Waterman function that takes in two sequences and aligns them with a default of 1 for match, mismatch, and gap penalty. 
@@ -182,9 +185,11 @@ returns
 ('ACGATCG', 'ACGGTCG', 5)
 ```
 
-Through these tests, I can see that my function works on short and long sequences, easy and difficult alighemnet choices, and differing penalties. 
+Through these tests, I can see that my function works on short and long sequences, easy and difficult alignment choices, and differing penalties. 
 
 **paralellize for extra credit**
+
+Source: [1] https://www.delftstack.com/howto/python/smith-waterman-algorithm-python/ - used as starting point [2] Used ChatGPT to tweak code given in article
 
 ## Problem 3
 I implemented a quad tree that will store my data (x, y, label) and a k nearest neighbors that will search this tree and return nearest points and  labels and predicted class the query point based on the wanted # of k and search distance. 
@@ -536,6 +541,7 @@ Was Unknown                  0                   0                  0
 ```
 Having a smaller search distance, it returned some classes as unknown, no matter the neighbors wanted. Overall there were similar distribution in the ability to correctly predict the classes. Expanding the search distance did not affect the results of the confusion matrix. 
 
+Sources: [1] Used ChatGPT to implement each section of the hints given in problem set. [2]Used ChatGPT to test tree and each section as added [3] Used ChatGPT to standardize all the quantitative data and have to the class column remain once PCA dataframe was made [4] Use ChatGPT to fix errors thrown by using categorical data in plotly [5] Use ChatGPT to understand reason for training and testing and ensure standardization of only training data for implementing PCA [6] Used ChatGPT to debug errors thrown when making confusion matrix and add specific labels for more clarity 
 
 ## Problem 4 
 I loaded all the data from the csv file and droped the eyeDetection column full of categorical data. I visualized the rest of the data to better understand the file. 
@@ -579,7 +585,7 @@ centers_df = pd.DataFrame(centers_pca[:, :2], columns=['PCA0', 'PCA1'])
 **They are behind each other**
 **This is not a representative view of the clusters because we are representing data in only 2 dimensions. If the points were smaller, we might see some of the ones that are behind but we still wouldn't fully appreciate the relationships of the data because it has been reduced to 2 dimensions**
 
-I only say 5 crosses for 7 clusters so I printed the pca centers dataframe and saw cluser 1 has a high PCA 0 and cluster 5 has a high PCA1, so those clusers are off the screen, which can also be seen on the zoomed out version of the centers dataframe. 
+I only saw 5 crosses for 7 clusters so I printed the pca centers dataframe and saw cluser 1 has a high PCA 0 and cluster 5 has a high PCA1, so those clusers are off the screen, which can also be seen on the zoomed out version of the centers dataframe. 
 ['Scatterplot of zoomed out Centers PCA dataframe'](zoomed_out_centers.png)
 
 I repeated the k-means clustering again with 7 clusters but different random states (2 and 5) and did not see any noticeable differences - there were still only 5 crosses in the zoomed in plane and a similar differential pattern. 
@@ -592,6 +598,8 @@ I then did clustering with only 3 clusters and thus 3 centers. With this test we
 I then did a clustering with 10 clusters. There is a lot more differentiation in groups on the zoomed in portion with 7 distinct colors being seen and 7 centers, meaning 3 clusters and centers were outside the zoomed in portion. In the full scatterplot, we can then see these clusters and centers. 
 ['Scatterplot of PCA K-Means with Clustering of 10 Zoomed in'](x_centers_4.png)
 ['Scatterplot of PCA K-Means with Clustering of 10 Zoomed out'](x_centers_5.png)
+
+Sources: [1] Used to implement K means clustering and understand the sklearn library [2] Used ChatGPT to order the legend of clusers and add cluster centers [3] Asked ChatGPT how to make k means plottable 
 
 ## Problem 5
 I have watched the entire video and asked the TAs any of my questions.
@@ -640,6 +648,8 @@ I also added images of each state that would generate on the analyze page when t
 !['South Carolina Image'](images_sc.png)
 
 Choosing a drop down menu to display the states was a method of error handling in that it dramatically decrease the amount and type of error the user can make. I also had to handle errors in the calling of my dataset from the dropdown menu, for example, Alaska had some counties that did not have codings because they were defined  after 2013 when the RUCC codes were assigned. I also clarified on the front page that only the 50 contiguous US state would be analyzed to handle anyone erraneously wanting data about Puerto Rico, DC, or another US territory. 
+
+Sources: [1] I adapted code by Robert McDougal demonstrating flask [2] Photos are from https://www.shepscenter.unc.edu/wp-content/uploads/2015/12/ruralurbancodes2013c.pdf and https://www.cdc.gov/nchs/data-analysis-tools/urban-rural.html [3] Used ChatGPT to develop API call [4] Used https://www.w3schools.com/Css/css_editor.asp as a template for the CSS and used ChatGPT to edit to my needs [4] Used ChatGPT to understand how to call in a CSS sheet and have buttons go to other pages
 
 ## Code Appendix 
 ## Problem 1 - Code
