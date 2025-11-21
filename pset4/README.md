@@ -189,7 +189,7 @@ Through these tests, I can see that my function works on short and long sequence
 
 **paralellize for extra credit**
 
-Source: [1] https://www.delftstack.com/howto/python/smith-waterman-algorithm-python/ - used as starting point [2] Used ChatGPT to tweak code given in article
+Source: [1] https://www.delftstack.com/howto/python/smith-waterman-algorithm-python/ - used as starting point [2] Used ChatGPT to tweak code given in article [4] https://docs.ycrc.yale.edu/clusters-at-yale/guides/mpi4py/ understand how to assign rank during MPI
 
 ## Problem 3
 I implemented a quad tree that will store my data (x, y, label) and a k nearest neighbors that will search this tree and return nearest points and  labels and predicted class the query point based on the wanted # of k and search distance. 
@@ -613,7 +613,6 @@ I have watched the entire video and asked the TAs any of my questions.
 **Briefly explain how you might use the "Developer tools" to debug JavaScript issues in your web pages.** You can go back to the Developer Tools to see the elements and determine if things need to be edited. You can do this to simple edits without having to make large commits. 
 
 **Explain briefly how the app.route decorator is used to implement a RESTful API.** As exhibited in the server.py script, decorators are used to implement RESTful APIs because they listen for calls and implement what they are told but they use the HTTP status codes. 
-
 
 ## Problem 6
 **What does each file do?** The server.py is a file that uses Flask and decorators and keeps track of what functions should trigger. Index is an html file that creates the initial webpage that is seen and offers a textbox that the user can type in a word to be analyzed. Analyze is a html file that follows index and restates what the user entered to be analyzed and the analysis (how many times a letter appears in the word analyzed).
