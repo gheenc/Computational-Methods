@@ -674,7 +674,7 @@ pca_raw = decomposition.PCA() # performed on all components
 pca = pd.DataFrame(
     pca_raw.fit_transform(data_standard))
 ```
-!['Scatterplot of PCA1 vs PCA0 of standardized EEG-Eye data'](Original_PCA.png)
+!['Scatterplot of PCA1 vs PCA0 of standardized EEG-Eye data'](Zoom_Out_PCA.png)
 
 I then zoomed in on this data at the origin to better visualize the main components.
 !['Zoomed in scatterplot of PCA1 vs PCA0 of standardized EEG eye data'](Zoom_PCA.png)
@@ -827,7 +827,7 @@ gamma = .25 # gamma controls how big of step
 epsilon = 1e-4 # stopping criteria of stopping when updates being too small
 error_tolerance = 1e-4
 
-a, b = .4, .2 # initial guess for  both
+a, b = .4, .2 # initial guess for  both; changed each run
 current_run = []
 previous_error = None
 
