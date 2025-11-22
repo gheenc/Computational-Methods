@@ -705,15 +705,15 @@ I only saw 5 crosses for 7 clusters so I printed the pca centers dataframe and s
 ['Scatterplot of zoomed out Centers PCA dataframe'](zoomed_out_centers.png)
 
 I repeated the k-means clustering again with 7 clusters but different random states (2 and 5) and did not see any noticeable differences - there were still only 5 crosses in the zoomed in plane and a similar distribution pattern. 
-['Scatterplot of PCA K-Means with Random State 2'](x_centers_1_1.png)
-['Scatterplot of PCA K-Means with Random State 5'](x_centers_2_1.png)
+['Scatterplot of PCA K-Means with Random State 2'](x_centers_1.png)
+['Scatterplot of PCA K-Means with Random State 5'](x_centers_2.png)
 
 I then did clustering with only 3 clusters and thus 3 centers. With this test we saw noticebale difference in the clustering of the group and the centers all being within the frame. 
-['Scatterplot of PCA K-Means with Clustering of 3'](x_centers_3_1.png)
+['Scatterplot of PCA K-Means with Clustering of 3'](x_centers_3.png)
 
 I then did a clustering with 10 clusters. There is a lot more differentiation in groups on the zoomed in portion with 7 distinct colors being seen and 7 centers, meaning 3 clusters and centers were outside the zoomed in portion. In the full scatterplot, we can then see these clusters and centers. 
-['Scatterplot of PCA K-Means with Clustering of 10 Zoomed in'](x_centers_4_1.png)
-['Scatterplot of PCA K-Means with Clustering of 10 Zoomed out'](x_centers_5_1.png)
+['Scatterplot of PCA K-Means with Clustering of 10 Zoomed in'](x_centers_4.png)
+['Scatterplot of PCA K-Means with Clustering of 10 Zoomed out'](x_centers_5.png)
 
 Sources: [1] Used to implement K means clustering and understand the sklearn library [2] Used ChatGPT to order the legend of clusers and add cluster centers [3] Asked ChatGPT how to make k means plottable 
 
