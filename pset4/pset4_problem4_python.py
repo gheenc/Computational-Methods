@@ -75,7 +75,7 @@ fig.update_layout(
     template="plotly_white"
 )
 
-fig.write_image('Zoom_Out_PCA.png')
+fig.write_image('zoomed_out_PCA.png')
 fig.show()
 
 

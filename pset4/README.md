@@ -3,7 +3,7 @@
 ## Problem 1 - Gradient Descent
 **Is this a clean URL and why** No, this is not a Clean URL because it is querying and it is passing parameters into it to function e.g. searching for a=0.4 rather than stating a file path like a Clean URL would. 
 
-I implemented a 2-D verision of the gradient descent that allows you to find the optimal choice of a and b by minimizing error. It defines fprime_a, fprime_b, and f, which calls to the API. H and Gamma are hardcoded as well as the starting point of a and b. I chose epsilon and an error tolerance as stopping criteria which are also hard coded. **It then cycles for a wanted range, calculating the fprime of a and b, updating that as the new a and b, then calculating fprime of those new values. This is how you are able to find the gradient despite not being able to directly compute it.** 
+I implemented a 2-D verision of the gradient descent that allows you to find the optimal choice of a and b by minimizing error. It defines fprime_a, fprime_b, and f, which calls to the API. H and Gamma are hardcoded as well as the starting point of a and b. I chose epsilon and an error tolerance as stopping criteria which are also hard coded. **It then cycles for a wanted range, calculating the fprime of a and b, updating that as the new a and b, then calculating fprime of those new values, thus we are slowly progressing along the descent to find the minima. This is how you are able to find the gradient despite not being able to directly compute it.** 
 ```python 
 def f(a, b):
     a = round(a, 6) # sending shorter floats to be nicer to server 
@@ -51,7 +51,7 @@ H or step size controls the accuracy so too large and you risk being inaccurate 
 
 I chose epsilon as a stopping criteria because it breaks if the change in variables is minimal. If this criteria is too large you risk stopping too early and if it's too small you will run through lots of iterations. I chose 1e-4 because there were no notificable benefits after 1e-5. 
 
-I also implemented a stopping criteria of error between runs being too small and breaking. This ensured that I was being nice to the server and decreased my risk of numerical precision errors. I chose 1e-4 because that is a small difference between errors but allows enough difference if needed to continue convergence. 
+I also implemented a stopping criteria of error between runs being too small and breaking. This ensured that I was being nice to the server by not sweeping unnecessarily and decreased my risk of numerical precision errors being thrown by the computer. I chose 1e-4 because that is a small difference between errors but allows enough difference if needed to continue convergence. I also found I did not gain much by allowing smaller amounts of error.
 
 I chose to do 15 runs because I found my stopping criteria would kick in very close to 15 so I need more than 10 but more than 15 wuold be unnecessary. I also found without stopping criteria that runs after 15 were similar to each other and close to convergence.
 
@@ -188,7 +188,7 @@ returns
 Through these tests, I can see that my function works on short and long sequences, easy and difficult alignment choices, and differing penalties. 
 
 **Extra Credit**
-I attempted to paralellize using MPI. I wrote this code that uses one rank to calculate the top half and one rank calculate the left half of the matrix. They would then use allgather to share the border values and compute the last matrix values of the bottom right. It would then take this last value and continue backwards to find the best score.  
+I attempted to paralellize using MPI. I implemented this code that uses one rank to calculate the top half and one rank calculate the left half of the matrix. They would then use allgather to share the border values and compute the last matrix values of the bottom right. It would then take this last value and continue backwards to find the best score.  
 
 ```python
 
@@ -307,7 +307,7 @@ def parallel_smith_waterman(seq1, seq2, match_score=1, mismatch_penalty=1, gap_p
 Source: [1] https://www.delftstack.com/howto/python/smith-waterman-algorithm-python/ - used as starting point [2] Used ChatGPT to tweak code given in article [4] https://docs.ycrc.yale.edu/clusters-at-yale/guides/mpi4py/ understand how to assign rank during MPI
 
 ## Problem 3
-I implemented a quad tree that will store my data (x, y, label) and a k nearest neighbors that will search this tree and return nearest points and  labels and predicted class the query point based on the wanted # of k and search distance. 
+I implemented a quad tree that will store my data (x, y, label) and a k nearest neighbors that will search this tree and return nearest points and  labels and predicted class of the query point based on the wanted # of k and search distance. 
 ```python
 class QuadTree: 
     def __init__(self, points, boundary, capacity=4, parent=None):  # capacity = max points before splitting
@@ -491,7 +491,7 @@ pca_df.head()
 I plotted this PCA on a scatterplot
 !['Scatterplot of PCA on Rice Data showing Class of Rice'](Original_PCA.png)
 
-**What does the graph suggest about effectiveness of using k-neraest neighbors on 2-D reduction of data to predict type of rice** The graph shows that there is clear variation for the outliers of the data but there is general overlap in the middle that might confuse the k nearest neighbors. If querying for a point on the edge, k nearest neighbors will likely be very effective but querying for a point in the middle risks less effectiveness. 
+**What does the graph suggest about effectiveness of using k-neraest neighbors on 2-D reduction of data to predict type of rice** The graph shows that there is clear variation for the outliers of the data but there is some overlap in the middle that might confuse the k nearest neighbors. If querying for a point on the edge, k nearest neighbors will likely be very effective but querying for a point in the middle risks less effectiveness. 
 
 I shuffled the PCA data and split it into features (points) and labels (class) then split each to train on 70% of the data and test on the remaining. I then computed the mean and standard deviation of the training data as the metric of standardization then applied PCA to both the training and test data.
 ```python
@@ -568,7 +568,8 @@ returned
 Was Cammeo                 306                 175
 Was Osmancik               245                 417
 ```
-This confusion matrix suggested that of all the rice tested on, k-nearest neighbors was correct in predicting a class Cammeo when it was a class Cammeo 306 times, correct in predicting a class Osmancik when it was a class Osmancik 417 times, and incorrectly predicted class Cammeo when it was truly Class Osmacik 245 times and incorrected predicted class Osmancik when it was a class Cammeo 175 times.
+
+**Interpretation** This confusion matrix suggested that of all the rice tested on, k-nearest neighbors was correct in predicting a class Cammeo when it was a class Cammeo 306 times, correct in predicting a class Osmancik when it was a class Osmancik 417 times, and incorrectly predicted class Cammeo when it was truly Class Osmacik 245 times and incorrected predicted class Osmancik when it was a class Cammeo 175 times.
 
 This confusion matrix comments on the true positives and false positive of our k-nearest neighbors and can further be used to develop the sensitivity and specificity of the tool. When using a k=1 and search distance=3, our k-nearest neighbors was pretty good at correctly predicting the correct label; it was a little more prone to predicting Cammeo when it was truly Osmacik compared to predicting Osmacik when it was Cammeo. 
 
@@ -598,7 +599,7 @@ returned
 Was Cammeo                 319                 162
 Was Osmancik               242                 420
 ```
-When using a k=5, the k-nearest neighbors distribution was very similar. It was correct in predicting a class Cammeo when it was a class Cammeo 319 times, correct in predicting a class Osmancik when it was a class Osmancik 420 times, and incorrectly predicted class Cammeo when it was truly Class Osmacik 242 times and incorrected predicted class Osmancik when it was a class Cammeo 162 times. We see a very similar conclusion as above that the k-nearest neighbors was pretty good at correctly predicting the labels,
+**Interpretation**  When using a k=5, the k-nearest neighbors distribution was very similar. It was correct in predicting a class Cammeo when it was a class Cammeo 319 times, correct in predicting a class Osmancik when it was a class Osmancik 420 times, and incorrectly predicted class Cammeo when it was truly Class Osmacik 242 times and incorrected predicted class Osmancik when it was a class Cammeo 162 times. We see a very similar conclusion as above that the k-nearest neighbors was overall pretty good at correctly predicting the labels. The matrix between k=1 and k=5 were very similar in their end numbers and their overall distribution. 
 
 I also repeated the k-nearest neighbors when a smaller search distance to see how that would affect the k-nearest neighbors.
 ```python
@@ -674,7 +675,7 @@ pca_raw = decomposition.PCA() # performed on all components
 pca = pd.DataFrame(
     pca_raw.fit_transform(data_standard))
 ```
-!['Scatterplot of PCA1 vs PCA0 of standardized EEG-Eye data'](Zoom_Out_PCA.png)
+!['Scatterplot of PCA1 vs PCA0 of standardized EEG-Eye data'](zoomed_out_PCA.png)
 
 I then zoomed in on this data at the origin to better visualize the main components.
 !['Zoomed in scatterplot of PCA1 vs PCA0 of standardized EEG eye data'](Zoom_PCA.png)
@@ -696,14 +697,14 @@ centers_df = pd.DataFrame(centers_pca[:, :2], columns=['PCA0', 'PCA1'])
 ```
 ['Color Coded Scatterplot of K-Means Clustering with X on the Center of the Clusters'](x_centers.png)
 
-**We only see 6 clusters instead of 7 because we have reduced it to 2 dimensions so some of the clusters are behind the others**
-**They are behind each other**
+**We only see 5 clusters instead of 7 because we have reduced it to 2 dimensions so some of the clusters are behind the others**
+**Centers appear to be in other zones because the true zones that they belong to are behind the ones we can see. Therefore, we are not able to visualize the whole zone but we can see their center because they are overlaid last so it wrongly makes it appear that some zones have multiple centers**
 **This is not a representative view of the clusters because we are representing data in only 2 dimensions. If the points were smaller, we might see some of the ones that are behind but we still wouldn't fully appreciate the relationships of the data because it has been reduced to 2 dimensions**
 
 I only saw 5 crosses for 7 clusters so I printed the pca centers dataframe and saw cluser 1 has a high PCA 0 and cluster 5 has a high PCA1, so those clusers are off the screen, which can also be seen on the zoomed out version of the centers dataframe. 
 ['Scatterplot of zoomed out Centers PCA dataframe'](zoomed_out_centers.png)
 
-I repeated the k-means clustering again with 7 clusters but different random states (2 and 5) and did not see any noticeable differences - there were still only 5 crosses in the zoomed in plane and a similar differential pattern. 
+I repeated the k-means clustering again with 7 clusters but different random states (2 and 5) and did not see any noticeable differences - there were still only 5 crosses in the zoomed in plane and a similar distribution pattern. 
 ['Scatterplot of PCA K-Means with Random State 2'](x_centers_1.png)
 ['Scatterplot of PCA K-Means with Random State 5'](x_centers_2.png)
 
@@ -765,7 +766,7 @@ Choosing a drop down menu to display the states was a method of error handling i
 
 All associated files can be found in my git hub final_projects folder.
 
-I also implemented a deeper analysis page that will hold deeper analysis. I also implemented helper functions that will produce an anlysis of the total numbers of healthcare institutions (Urgent Care, ER, PICU, OB) by county total and by rate. I am working through debugging this so it displays correctly. 
+I also began doing multiple analyses and implemented a deeper analysis page that will hold deeper analysis. I also implemented helper functions that will produce an anlysis of the total numbers of healthcare institutions (Urgent Care, ER, PICU, OB) by county total and by rate. I am working through debugging this so it displays correctly. 
 ```python
 #helper function to do analysis - total er 2020 
 def counts_total_ER_2020():
