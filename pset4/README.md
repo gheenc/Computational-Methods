@@ -1497,6 +1497,7 @@ print(cm_3_df)
 ```
 
 ## Problem 4 - Code
+Both ipynb and py are correct and should be the same.
 ```python
 # %%
 import pandas as pd
@@ -1517,7 +1518,7 @@ warnings.filterwarnings("ignore", message="Could not find the number of physical
 
 # %%
 # import Excel sheet
-data = pd.read_csv("eeg-eye-state.csv")
+data = pd.read_csv(r"C:\Users\carol\compmethods-cg2288\pset4\eeg-eye-state.csv")
 
 # %%
 # drop categorical column
@@ -1575,7 +1576,7 @@ fig.update_layout(
     template="plotly_white"
 )
 
-fig.write_image('Original_PCA.png')
+fig.write_image('Zoom_Out_PCA.png')
 fig.show()
 
 
@@ -1616,6 +1617,9 @@ fig.show()
 
 kmeans = KMeans(n_clusters=7, init="random", random_state=1).fit(data_standard)
 
+pca["cluster"] = kmeans.labels_
+pca["cluster"] = pca["cluster"].astype(str) # makes string so can be plotted as discrete and not continuous
+
 # %%
 centers_df =  (
     pca.groupby('cluster')[['PCA0','PCA1']]
@@ -1631,10 +1635,6 @@ centers_df
 # # Asked ChatGPT how to make scatterplot of kmeans, order the legend and add center of clusters
 # add cluster to PCA dataframe
 # makes string so can be plotted as discrete and not continuous
-
-pca["cluster"] = kmeans.labels_
-pca["cluster"] = pca["cluster"].astype(str) # makes string so can be plotted as discrete and not continuous
-
 
 cluster_order = [str(i) for i in range(7)]  # Specifying order of clusters for legend
 

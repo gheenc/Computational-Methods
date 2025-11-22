@@ -116,6 +116,9 @@ fig.show()
 
 kmeans = KMeans(n_clusters=7, init="random", random_state=1).fit(data_standard)
 
+pca["cluster"] = kmeans.labels_
+pca["cluster"] = pca["cluster"].astype(str) # makes string so can be plotted as discrete and not continuous
+
 # %%
 centers_df =  (
     pca.groupby('cluster')[['PCA0','PCA1']]
@@ -131,10 +134,6 @@ centers_df
 # # Asked ChatGPT how to make scatterplot of kmeans, order the legend and add center of clusters
 # add cluster to PCA dataframe
 # makes string so can be plotted as discrete and not continuous
-
-pca["cluster"] = kmeans.labels_
-pca["cluster"] = pca["cluster"].astype(str) # makes string so can be plotted as discrete and not continuous
-
 
 cluster_order = [str(i) for i in range(7)]  # Specifying order of clusters for legend
 
