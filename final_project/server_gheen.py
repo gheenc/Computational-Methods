@@ -28,7 +28,7 @@ def counts_total_ER_2020():
     counts.columns = ["RUCC_CODE", "County_Count"]
     average_ER_counts = (data.groupby("RUCC_CODE", as_index=False)["TOTAL_ER"].mean())
     average_ER_counts.columns = ["RUCC_CODE", "Avg_ER"]
-    final_df = counts.merge(average_ER_counts, on="RUCC_CODE", how="left")
+    final_df = counts.merge(average_ER_counts, on="RUCC_CODE", how="left") #
     return final_df
     #fig = px.bar(final_df, x=[1, 2, 3, 4, 5, 6, 7, 8, 9], y="Avg_ER",
                  #title = "Average Amounts of Hospitals with ER per County Classification in US",
