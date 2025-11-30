@@ -49,6 +49,10 @@ def counts_total_ER_rate_2020():
     final_df = counts.merge(average_ER_rate_counts, on="RUCC_CODE", how="left")
     return final_df
 
+#helpful function for selecting region and 2 classifications to compare 
+
+
+
 # landing page
 @app.route("/home")
 def home():
