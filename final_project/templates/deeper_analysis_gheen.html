@@ -4,10 +4,60 @@
 </head>
 <body>
 
-<h1>Deeper Analysis</h1>
+
+<h1>What Would You Like to Compare?</h1>
 
 <p>Average Number of ER in Each County Classification in the US</p>
 
+<form action="/deep_analyze" method="POST">
+    <label> Select what You Want to Compare </label>
+    <select name="category" id="'category">
+        <option value="POS_MAX_DIST_ED">Maximum Distance to ER</option>
+        <option value="POS_MEAN_DIST_ED">Mean Distance to ER</option>
+        <option value="POS_MEDIAN_DIST_ED">Median Distance to ER</option>
+        <option value="POS_MAX_DIST_TRAUMA">Maximum Distance to Trauma Center</option>
+        <option value="POS_MEAN_DIST_TRAUMA">Mean Distance to Trauma Center</option>
+        <option value="POS_MEDIAN_DIST_TRAUMA">Median Distance to Trauma Center</option>
+        <option value="POS_MAX_DIST_MEDSURG_ICU">Maximum Distance to ICU</option>
+        <option value="POS_MEAN_DIST_MEDSURG_ICU">Mean Distance to ICU</option>
+        <option value="POS_MEAN_DIST_MEDSURG_ICU">Median Distance to ICU</option>
+        <option value="POS_ASC_RATE">Total Number of Ambulatory Surgery Centers</option>
+    </select>
+    <br><br>
+
+    <label> 1st RUCC to Compare </label>
+    <select name="rucc1">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+        <option value="7">7</option>
+        <option value="8">8</option>
+        <option value="9">9</option>
+    </select>
+    <br><br>
+
+    <label> 2nd RUCC to Compare </label>
+    <select name="rucc2">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+        <option value="7">7</option>
+        <option value="8">8</option>
+        <option value="9">9</option>
+    </select>
+    <br><br>
+
+    <input type="submit" value="Analyze">
+</form>
+
+</body>
+</html>
 
 
 <div style="text-align: center; margin-top: 20px;">

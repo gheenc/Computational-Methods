@@ -1,0 +1,29 @@
+<html>
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+
+<h1>Clustering</h1>
+
+<p>Average Number of ER in Each County Classification in the US</p>
+
+<form action="/clusters" method="POST">
+    <label> How Many Clusters Would You Like to Make? </label>
+    <input type="number" name="num_clusters" oninput="this.value = this.value.replace(/[^0-9]/g,'');" min="1" max="20" step="1" required>
+    <br><br>
+
+    <input type="submit" value="Analyze">
+</form>
+
+
+<div style="text-align: center; margin-top: 20px;">
+    <a href="/home">
+        <button>Back to Home</button>
+    </a>
+</div>
+
+
+</body>
+</html>

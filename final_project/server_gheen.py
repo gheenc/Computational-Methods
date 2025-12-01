@@ -3,8 +3,16 @@ from flask import *
 from collections import Counter
 import plotly 
 from plotly import *
+import matplotlib.pyplot as plt
+from matplotlib import *
+import io
+import base64
+
 
 app = Flask(__name__)
+
+#call in raw data once
+full_data = pd.read_pickle("clean_data.pkl")
 
 #bring in images
 @app.route('/images/<path:filename>')
@@ -84,12 +92,59 @@ def analyze():
 def dataset():
     return render_template("dataset_gheen.html")
 
-# deeper analysis/graphs page
+# shows deeper analysis/graphs page to input 
 @app.route("/graphs", methods=["GET", "POST"])
 def graphs():
-    counts_total_ER_2020()
-    counts_total_ER_2020()
     return render_template("deeper_analysis_gheen.html")
+
+
+#deeper analysis page of graphs
+@app.route("/deep_analyze", methods=["POST"])
+def deep_analyze():
+    category = request.form["category"]
+    rucc1 = request.form["rucc1"]
+    rucc2 = request.form["rucc2"] # defined/pulled from deeper analysis page
+
+    df1 = full_data[full_data['AHRF_USDA_RUCC_2013'] == rucc1]
+    df2 = full_data[full_data['AHRF_USDA_RUCC_2013'] == rucc2] # pulls ruccs wanted 
+
+    df1_group = df1.groupby('YEAR')[category].mean() # groups each year and get mean for graphing 
+    df2_group = df2.groupby('YEAR')[category].mean()
+
+    # Plotly-ready data
+    plot_data = [
+        {
+            "x": df1_group["YEAR"].tolist(),
+            "y": df1_group[category].tolist(),
+            "mode": "lines+markers",
+            "name": f"RUCC {rucc1}",
+        },
+        {
+            "x": df2_group["YEAR"].tolist(),
+            "y": df2_group[category].tolist(),
+            "mode": "lines+markers",
+            "name": f"RUCC {rucc2}",
+        },
+    ]
+
+    layout = {
+        "title": f"{category} Trends: RUCC {rucc1} vs RUCC {rucc2}",
+        "xaxis": {"title": "Year"},
+        "yaxis": {"title": category},
+        "hovermode": "x unified",
+    }
+
+    return render_template('compare_graphs_gheen.html', plot_data=plot_data, plot_layout=layout, category=category, rucc1=rucc1, rucc2=rucc2, graph=graph)
+
+# shows page for starting k-nearest neighbors clustering
+@app.route("/clustering", methods=["GET", "POST"])
+def clusters():
+    return render_template("clustering_gheen.html")
+
+# page showing results of clustering 
+@app.route("/clusters", methods=["GET", "POST"])
+def clustering():
+    return render_template("clustering_results_gheen.html")
 
 #API call
 @app.route("/api/county-codes", methods=["GET"])
