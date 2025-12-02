@@ -108,8 +108,8 @@ def deep_analyze():
     df1 = full_data[full_data['AHRF_USDA_RUCC_2013'] == rucc1]
     df2 = full_data[full_data['AHRF_USDA_RUCC_2013'] == rucc2] # pulls ruccs wanted 
 
-    df1_group = df1.groupby('YEAR')[category].mean() # groups each year and get mean for graphing 
-    df2_group = df2.groupby('YEAR')[category].mean()
+    df1_group = df1.groupby('YEAR')[category].mean().reset_index() # groups each year and get mean for graphing 
+    df2_group = df2.groupby('YEAR')[category].mean().reset_index()
 
     # Plotly-ready data
     plot_data = [
@@ -134,7 +134,7 @@ def deep_analyze():
         "hovermode": "x unified",
     }
 
-    return render_template('compare_graphs_gheen.html', plot_data=plot_data, plot_layout=layout, category=category, rucc1=rucc1, rucc2=rucc2, graph=graph)
+    return render_template('compare_graphs_gheen.html', plot_data=plot_data, plot_layout=layout, category=category, rucc1=rucc1, rucc2=rucc2, graph=graphs)
 
 # shows page for starting k-nearest neighbors clustering
 @app.route("/clustering", methods=["GET", "POST"])
