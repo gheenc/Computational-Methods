@@ -12,7 +12,9 @@ import base64
 app = Flask(__name__)
 
 #call in raw data once
-full_data = pd.read_pickle("clean_data.pkl")
+full_data = pd.read_parquet(r"C:\Users\carol\compmethods-cg2288\final_project\clean_data.parquet")
+print(full_data.head())
+print(list(full_data.columns))
 
 #bring in images
 @app.route('/images/<path:filename>')
@@ -102,14 +104,25 @@ def graphs():
 @app.route("/deep_analyze", methods=["POST"])
 def deep_analyze():
     category = request.form["category"]
-    rucc1 = request.form["rucc1"]
-    rucc2 = request.form["rucc2"] # defined/pulled from deeper analysis page
+    rucc1 = int(request.form["rucc1"])
+    rucc2 = int(request.form["rucc2"]) # defined/pulled from deeper analysis page
 
     df1 = full_data[full_data['AHRF_USDA_RUCC_2013'] == rucc1]
     df2 = full_data[full_data['AHRF_USDA_RUCC_2013'] == rucc2] # pulls ruccs wanted 
 
     df1_group = df1.groupby('YEAR')[category].mean().reset_index() # groups each year and get mean for graphing 
     df2_group = df2.groupby('YEAR')[category].mean().reset_index()
+
+    {"POS_MAX_DIST_ED": "Maximum Distance to ER", 
+        "POS_MEAN_DIST_ED": Mean Distance to ER
+        POS_MEDIAN_DIST_ED": Median Distance to ER
+        "POS_MAX_DIST_TRAUMA: Maximum Distance to Trauma Center
+        "POS_MEAN_DIST_TRAUMA": Mean Distance to Trauma Center
+        "POS_MEDIAN_DIST_TRAUMA": Median Distance to Trauma Center
+        "POS_MAX_DIST_MEDSURG_ICU": Maximum Distance to ICU
+        "POS_MEAN_DIST_MEDSURG_ICU":Mean Distance to ICU
+        "POS_MEDIAN_DIST_MEDSURG_ICU":Median Distance to ICU
+        "POS_ASC_RATE":Total Number of Ambulatory Surgery Centers
 
     # Plotly-ready data
     plot_data = [
@@ -144,9 +157,11 @@ def clusters():
 # page showing results of clustering 
 @app.route("/clusters", methods=["GET", "POST"])
 def clustering():
+
+
     return render_template("clustering_results_gheen.html")
 
-#API call
+#API call for RUCC breakdown
 @app.route("/api/county-codes", methods=["GET"])
 def api_county_codes():
     state = request.args.get("state")
@@ -157,6 +172,7 @@ def api_county_codes():
         'state': state,
         'county_category_counts': counts
     })
+
 
 if __name__ == "__main__":
     app.run(debug=True, port=5002)
