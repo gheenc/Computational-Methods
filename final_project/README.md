@@ -1,9 +1,14 @@
 ## About the Dataset
 **Describe the dataset and why it is interesting.**
+I chose to analyze the Social Determinants of Health (SDOH) dataset, which is a large collection of data collected by different federal entities conjoined together and managed by the Agency for Healthcare Research and Quality (AHRQ). The SDOH has been published from 2010-2020 and consists of almost 1,000 variable every county, zip code, and census tract in the US. *I chose to analyze on a county level because it is the highest level of the options.* 
+Specifically, I pulled variables from the Provider of Service (POS) dataset and the Area Health Resources Files (AHRF) dataset. 
 
+From the POS dataset, I used the maximum, median, and mean distance to ER, med-surgical ICU, and designated trauma center. The POS data is collected by the Centers of Medicaid and Medicare quarterly. *Who fills it out* 
+
+From the AHRF dataset, I used the Rural-Urban Continuum Codes (RUCC) from 2013. These codes are originally developed and collected by the USDA every decade. The codes for each county in the USA are  
 
 **Explain how you acquired it (e.g. via an API, file download, etc).**
-I acquired my data via a file download. 
+I acquired my data via a file download. On the SDOH website, they offer a direct file download of a xlsx file for every year at each level that is offered. 
 
 
 # FAIR Data
@@ -25,6 +30,8 @@ I acquired my data via a file download.
 **Why these questions?**
 **What were the results?**
 **Any surprises?**
+I was actually suprised that most of the analysis followed the expectation of rural counties being farther from healthcare. I thought I would find some exceptions to this though but I did not. 
+
 **How did you validate your analyses?**
 
 # Web Front and API
