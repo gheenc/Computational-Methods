@@ -60,13 +60,13 @@ def dataset():
     return render_template("dataset_gheen.html")
 
 # shows deeper analysis/graphs page to input 
-@app.route("/analyze", methods=["GET", "POST"])
+@app.route("/compare", methods=["GET", "POST"])
 def graphs():
     return render_template("deeper_analysis_gheen.html")
 
 
 #deeper analysis page of graphs
-@app.route("/deep_analyze", methods=["POST"])
+@app.route("/graphs", methods=["POST"])
 def deep_analyze():
     category = request.form["category"]
     rucc1 = int(request.form["rucc1"])

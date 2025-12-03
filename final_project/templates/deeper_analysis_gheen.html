@@ -6,12 +6,12 @@
 
 
 <h1>What Would You Like to Compare?</h1>
+<p class="subheader"><strong>Create a Graph Showing Distance to Healthcare for RUCCs from 2013-2020</strong></p>
 
-<p>Average Number of ER in Each County Classification in the US</p>
 
-<form action="/analyze" method="POST">
-    <label> Select what You Want to Compare </label>
-    <select name="category" id="'category">
+<form action="/graphs" method="POST">
+    <label> Select What You Want to Compare </label>
+    <select name="category" id="category">
                 <option value="POS_MAX_DIST_ED">Maximum Distance to ER</option>
         <option value="POS_MEAN_DIST_ED">Mean Distance to ER</option>
         <option value="POS_MEDIAN_DIST_ED">Median Distance to ER</option>
@@ -42,7 +42,7 @@
     <label> 2nd RUCC to Compare </label>
     <select name="rucc2">
         <option value="1">1</option>
-        <option value="2">2</option>
+        <option value="2" selected>2</option>
         <option value="3">3</option>
         <option value="4">4</option>
         <option value="5">5</option>
