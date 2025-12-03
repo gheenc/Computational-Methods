@@ -3,6 +3,7 @@
 
 
 **Explain how you acquired it (e.g. via an API, file download, etc).**
+I acquired my data via a file download. 
 
 
 # FAIR Data
@@ -33,3 +34,6 @@
 **Mention any surprising results or unexpected difficulties.**
 
 ## Sources 
+[1]Social Determinants of Health Database. Content last reviewed June 2023. Agency for Healthcare Research and Quality, Rockville, MD.
+https://www.ahrq.gov/sdoh/data-analytics/sdoh-data.html
+[2]

@@ -1,3 +1,5 @@
+# pip install pyarrow
+
 import pandas as pd
 from flask import *
 from collections import Counter
@@ -5,16 +7,14 @@ import plotly
 from plotly import *
 import matplotlib.pyplot as plt
 from matplotlib import *
-import io
-import base64
 
 
 app = Flask(__name__)
 
 #call in raw data once
 full_data = pd.read_parquet(r"C:\Users\carol\compmethods-cg2288\final_project\clean_data.parquet")
-print(full_data.head())
-print(list(full_data.columns))
+full_data = full_data.drop_duplicates(subset=['STATE', 'COUNTY']) # drops duplicate from dataset 
+
 
 #bring in images
 @app.route('/images/<path:filename>')
@@ -23,45 +23,10 @@ def images(filename):
 
 # helper function pulling state and county counts
 def state_county_counts(state_name):
-    data = pd.read_excel('data/SDOH_2020_COUNTY_Cleaned.xlsx', sheet_name='Data')
-    state_data = data[data['STATE'].str.lower() == state_name.lower()]
+    state_data = full_data[full_data['STATE'].str.lower() == state_name.lower()]
     state_data = state_data.fillna(0)
     county_counts = state_data['AHRF_USDA_RUCC_2013'].astype(int).value_counts().sort_index().to_dict()
     return county_counts 
-
-#helper function to do analysis - total er 2020 
-def counts_total_ER_2020():
-    data = pd.read_excel('data/COMBINED CLEAN.xlsx', sheet_name='2020')
-    data = data.drop(data.index[0])
-    data = data.fillna("NA")
-    counts = data["RUCC_CODE"].value_counts().sort_index().reset_index()
-    counts.columns = ["RUCC_CODE", "County_Count"]
-    average_ER_counts = (data.groupby("RUCC_CODE", as_index=False)["TOTAL_ER"].mean())
-    average_ER_counts.columns = ["RUCC_CODE", "Avg_ER"]
-    final_df = counts.merge(average_ER_counts, on="RUCC_CODE", how="left") #
-    return final_df
-    #fig = px.bar(final_df, x=[1, 2, 3, 4, 5, 6, 7, 8, 9], y="Avg_ER",
-                 #title = "Average Amounts of Hospitals with ER per County Classification in US",
-                 #labels={"RUCC_CODE": "Rural-Metro Code", "Avg_ER": "Average Number of ERs"},
-                #text=final_df["Avg_ER"].round(2).astype(str))
-    #fig.savefig("static/plot_age_er.png", bbox_inces="tight")
-
-
-#helper function analysis - total er 2020 rate
-def counts_total_ER_rate_2020():
-    data = pd.read_excel('data/COMBINED CLEAN.xlsx', sheet_name='2020')
-    data = data.drop(data.index[0])
-    data = data.fillna("NA")
-    counts = data["RUCC_CODE"].value_counts().sort_index()
-    counts.columns = ["RUCC_CODE", "County_Count"]
-    average_ER_rate_counts = (data.groupby("RUCC_CODE", as_index=False)["TOTAL_ER_RATE"].mean())
-    average_ER_rate_counts.columns = ["RUCC_CODE", "Avg_ER_Rate"]
-    final_df = counts.merge(average_ER_rate_counts, on="RUCC_CODE", how="left")
-    return final_df
-
-#helpful function for selecting region and 2 classifications to compare 
-
-
 
 # landing page
 @app.route("/home")
@@ -95,7 +60,7 @@ def dataset():
     return render_template("dataset_gheen.html")
 
 # shows deeper analysis/graphs page to input 
-@app.route("/graphs", methods=["GET", "POST"])
+@app.route("/analyze", methods=["GET", "POST"])
 def graphs():
     return render_template("deeper_analysis_gheen.html")
 
@@ -113,16 +78,16 @@ def deep_analyze():
     df1_group = df1.groupby('YEAR')[category].mean().reset_index() # groups each year and get mean for graphing 
     df2_group = df2.groupby('YEAR')[category].mean().reset_index()
 
-    {"POS_MAX_DIST_ED": "Maximum Distance to ER", 
-        "POS_MEAN_DIST_ED": Mean Distance to ER
-        POS_MEDIAN_DIST_ED": Median Distance to ER
-        "POS_MAX_DIST_TRAUMA: Maximum Distance to Trauma Center
-        "POS_MEAN_DIST_TRAUMA": Mean Distance to Trauma Center
-        "POS_MEDIAN_DIST_TRAUMA": Median Distance to Trauma Center
-        "POS_MAX_DIST_MEDSURG_ICU": Maximum Distance to ICU
-        "POS_MEAN_DIST_MEDSURG_ICU":Mean Distance to ICU
-        "POS_MEDIAN_DIST_MEDSURG_ICU":Median Distance to ICU
-        "POS_ASC_RATE":Total Number of Ambulatory Surgery Centers
+    humna_readable = {"POS_MAX_DIST_ED": "Maximum Distance to ER", 
+        "POS_MEAN_DIST_ED": "Mean Distance to ER",
+        "POS_MEDIAN_DIST_ED": "Median Distance to ER",
+        "POS_MAX_DIST_TRAUMA": "Maximum Distance to Trauma Center",
+        "POS_MEAN_DIST_TRAUMA": "Mean Distance to Trauma Center",
+        "POS_MEDIAN_DIST_TRAUMA": "Median Distance to Trauma Center",
+        "POS_MAX_DIST_MEDSURG_ICU": "Maximum Distance to ICU",
+        "POS_MEAN_DIST_MEDSURG_ICU": "Mean Distance to ICU",
+        "POS_MEDIAN_DIST_MEDSURG_ICU": "Median Distance to ICU",
+        "POS_ASC_RATE":"Total Number of Ambulatory Surgery Centers"}
 
     # Plotly-ready data
     plot_data = [
@@ -141,9 +106,10 @@ def deep_analyze():
     ]
 
     layout = {
-        "title": f"{category} Trends: RUCC {rucc1} vs RUCC {rucc2}",
+        "title": f"{humna_readable} Through the Years",
+        "subtitle" : f"Rural-Urban Classification Codes: {rucc1} vs {rucc2}",
         "xaxis": {"title": "Year"},
-        "yaxis": {"title": category},
+        "yaxis": {"title": "Distance in Miles"},
         "hovermode": "x unified",
     }
 
