@@ -90,7 +90,6 @@ h2 {
 }
 
 .result-box {
-    padding: 10px;
     border-radius: 5px;
     margin: 0 auto 20px auto;
     width: 90%;
@@ -119,10 +118,13 @@ h2 {
 
 .analyze-image {
     display: block;
-    margin: 0 auto;
-    width: 200px;              
-    height: 300px;              
+    margin: 0 auto;             
     border-radius: 10px;
+    max-width: 500px;
+    max-height: 350px;
+    min-width: 100px;
+    min-height: 100px;
+    height: auto;
 }
 
 .legend-box {
