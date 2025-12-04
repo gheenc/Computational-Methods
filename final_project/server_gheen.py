@@ -50,7 +50,7 @@ def analyze():
     analyze_text = ""
     for category, count in counts.items():
         analyze_text += f"Category {category}: {count}\n "
-    state_image = usertext.lower().replace(" ", "_") + "_code.png"
+    state_image = usertext.lower().replace(" ", "_") + ".png"
     return render_template("analyze_gheen.html", analysis=analyze_text, usertext=usertext, state_image=state_image)
 
 # about the dataset page
@@ -58,12 +58,14 @@ def analyze():
 def dataset():
     return render_template("dataset_gheen.html")
 
-# shows deeper analysis/graphs page to input 
+# input what want to compare 
 @app.route("/compare", methods=["GET", "POST"])
 def graphs():
     category = request.form.get("category")
     rucc1 = request.form.get("rucc1")
     rucc2 = request.form.get("rucc2")
+    region1 = request.form.get("region1")
+    region2 = request.form.get("region2")
 
     human_readable = {"POS_MAX_DIST_ED": "Maximum Distance to ER", 
         "POS_MEAN_DIST_ED": "Mean Distance to ER",
@@ -77,24 +79,26 @@ def graphs():
         "POS_ASC_RATE":"Total Number of Ambulatory Surgery Centers"}
 
     category_readable = human_readable.get(category, "Unknown Category") # convert to human-readable
-    return render_template("deeper_analysis_gheen.html", category_readable=category_readable, category=category, rucc1=rucc1, rucc2=rucc2)
+    return render_template("deeper_analysis_gheen.html", category_readable=category_readable, category=category, rucc1=rucc1, rucc2=rucc2, region1=region1, region2=region2)
 
 
-#deeper analysis page of graphs
+#show graphs 
 @app.route("/graphs", methods=["POST"])
 def deep_analyze():
     category = request.form["category"]
     rucc1 = int(request.form["rucc1"])
     rucc2 = int(request.form["rucc2"]) # defined/pulled from deeper analysis page
+    region1 = request.form["region1"]
+    region2 = request.form["region2"]
 
     df1 = full_data[full_data['AHRF_USDA_RUCC_2013'] == rucc1]
     df2 = full_data[full_data['AHRF_USDA_RUCC_2013'] == rucc2] # pulls ruccs wanted 
 
-    df1_group = df1.groupby('YEAR')[category].mean().reset_index() # groups each year and get mean for graphing 
-    df2_group = df2.groupby('YEAR')[category].mean().reset_index()
+    df3 = df1[df1["REGION"] == region1]
+    df4 = df1[df1["REGION"] == region2]
 
-    print(df1_group)
-    print(df2_group)
+    df1_group = df3.groupby('YEAR')[category].mean().reset_index() # groups each year and get mean for graphing 
+    df2_group = df4.groupby('YEAR')[category].mean().reset_index()
 
     human_readable = {"POS_MAX_DIST_ED": "Maximum Distance to ER", 
         "POS_MEAN_DIST_ED": "Mean Distance to ER",

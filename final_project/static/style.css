@@ -120,8 +120,8 @@ h2 {
 .analyze-image {
     display: block;
     margin: 0 auto;
-    width: 300px;              
-    height: 200px;              
+    width: 200px;              
+    height: 300px;              
     border-radius: 10px;
 }
 

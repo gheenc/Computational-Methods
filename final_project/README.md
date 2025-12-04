@@ -15,12 +15,18 @@ I acquired my data via a file download. On the SDOH website, they offer a direct
 **Discuss the FAIRness of the data provider.**
 **FAIR is a journey not a destination, so when considering each aspect find something that it does well and something that could be done better**
 **Include: Was the data well-annotated with metadata? Was the license clear?**
+F - findable
+A - 
+I - 
+R - 
 
 
 # Data Cleaning
 **Describe any data cleaning or other preprocessing.**
 **e.g. If some data was missing, how did you handle it?**
+Data cleaning was minimal
 
+In 2019, Alaska split some counties and thus 2 new ones were created that did not have 2013 RUCC codes. *What shall I do with this*
 
 # Summary Statistics
 **Discuss summary statistics and how they do or do not reflect the characteristics of the data. (e.g. are they skewed by outliers, is missing data a problem? are they misleading because of non-continuous variables? etc?)**
@@ -39,8 +45,9 @@ I was actually suprised that most of the analysis followed the expectation of ru
 
 # Discussion
 **Mention any surprising results or unexpected difficulties.**
+I considered being able to analyze multiple RUCC between each other but I didn't know how to do this without making the user face appear clunky. 
 
 ## Sources 
 [1]Social Determinants of Health Database. Content last reviewed June 2023. Agency for Healthcare Research and Quality, Rockville, MD.
-https://www.ahrq.gov/sdoh/data-analytics/sdoh-data.html
-[2]
+https://www.ahrq.gov/sdoh/data-analytics/sdoh-data.html - dataset
+[2]https://www.shepscenter.unc.edu/wp-content/uploads/2015/12/ruralurbancodes2013c.pdf - images in analyze
