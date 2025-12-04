@@ -162,3 +162,23 @@ label {
     font-size: 12x;                
     color: #000000;                  
 }
+
+/* make two categories on analyze page*/
+
+.category-center {
+    text-align: center;
+    margin-bottom: 5px;
+}
+
+.two-column {
+    display: flex;
+    justify-content: space-between; /* pushes one left, one right */
+    width: 100%;
+    max-width: 900px;               /* keeps spacing reasonable */
+    margin: 0 auto;                 /* centers entire two-column block */
+}
+
+.two-column div {
+    width: 40%;                     /* controls column width */
+}       
+}

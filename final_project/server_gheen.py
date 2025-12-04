@@ -146,16 +146,6 @@ def deep_analyze():
 
     return render_template('compare_graphs_gheen.html', plot_data=plot_data, plot_layout=layout, category=category, rucc1=rucc1, rucc2=rucc2, graph=graphs, category_readable=category_readable, region1=region1, region2=region2)
 
-# shows page for starting k-nearest neighbors clustering
-@app.route("/clustering", methods=["GET", "POST"])
-def clusters():
-    return render_template("clustering_gheen.html")
-
-# page showing results of clustering 
-@app.route("/clusters", methods=["GET", "POST"])
-def clustering():
-    return render_template("clustering_results_gheen.html")
-
 #API call for RUCC breakdown
 @app.route("/api/county-codes", methods=["GET"])
 def api_county_codes():

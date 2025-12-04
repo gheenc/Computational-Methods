@@ -10,67 +10,75 @@
 
 
 <form action="/graphs" method="POST">
-    <label> Select What You Want to Compare </label>
-    <select name="category" id="category">
-        <option value="POS_MAX_DIST_ED">Maximum Distance to ER</option>
-        <option value="POS_MEAN_DIST_ED">Mean Distance to ER</option>
-        <option value="POS_MEDIAN_DIST_ED">Median Distance to ER</option>
-        <option value="POS_MAX_DIST_TRAUMA">Maximum Distance to Trauma Center</option>
-        <option value="POS_MEAN_DIST_TRAUMA">Mean Distance to Trauma Center</option>
-        <option value="POS_MEDIAN_DIST_TRAUMA">Median Distance to Trauma Center</option>
-        <option value="POS_MAX_DIST_MEDSURG_ICU">Maximum Distance to ICU</option>
-        <option value="POS_MEAN_DIST_MEDSURG_ICU">Mean Distance to ICU</option>
-        <option value="POS_MEDIAN_DIST_MEDSURG_ICU">Median Distance to ICU</option>
-    </select>
+    <div class="category-center">
+        <label><strong>Select What You Want to Compare</strong></label>
+        <select name="category" id="category">
+            <option value="POS_MAX_DIST_ED">Maximum Distance to ER</option>
+            <option value="POS_MEAN_DIST_ED">Mean Distance to ER</option>
+            <option value="POS_MEDIAN_DIST_ED">Median Distance to ER</option>
+            <option value="POS_MAX_DIST_TRAUMA">Maximum Distance to Trauma Center</option>
+            <option value="POS_MEAN_DIST_TRAUMA">Mean Distance to Trauma Center</option>
+            <option value="POS_MEDIAN_DIST_TRAUMA">Median Distance to Trauma Center</option>
+            <option value="POS_MAX_DIST_MEDSURG_ICU">Maximum Distance to ICU</option>
+            <option value="POS_MEAN_DIST_MEDSURG_ICU">Mean Distance to ICU</option>
+            <option value="POS_MEDIAN_DIST_MEDSURG_ICU">Median Distance to ICU</option>
+        </select>
+    </div>
     <br><br>
 
-    <label> 1st Region to Compare </label>
-    <select name="region1">
-        <option value="South">South</option>
-        <option value="Midwest">Midwest</option>
-        <option value="Northeast">Northeast</option>
-        <option value="West">West</option>
-        <option value="All" selected>All</option>
-    </select>
-    <br><br>
+    <div class="two-column">
+        <div>
+            <label><strong>1st Region to Compare</strong></label>
+            <select name="region1">
+                <option value="South">South</option>
+                <option value="Midwest">Midwest</option>
+                <option value="Northeast">Northeast</option>
+                <option value="West">West</option>
+                <option value="All" selected>All</option>
+            </select>
+            <br><br>
 
-    <label> 1st RUCC to Compare </label>
-    <select name="rucc1">
-        <option value="1">1</option>
-        <option value="2">2</option>
-        <option value="3">3</option>
-        <option value="4">4</option>
-        <option value="5">5</option>
-        <option value="6">6</option>
-        <option value="7">7</option>
-        <option value="8">8</option>
-        <option value="9">9</option>
-    </select>
-    <br><br>
+            <label><strong>1st RUCC to Compare</strong></label>
+            <select name="rucc1">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+            </select>
+        </div>
 
-    <label> 2nd Region to Compare </label>
-    <select name="region2">
-        <option value="South">South</option>
-        <option value="Midwest">Midwest</option>
-        <option value="Northeast">Northeast</option>
-        <option value="West">West</option>
-        <option value="All" selected>All</option>
-    </select>
-    <br><br>
+        <div>
+            <label><strong>2nd Region to Compare</strong></label>
+            <select name="region2">
+                <option value="South">South</option>
+                <option value="Midwest">Midwest</option>
+                <option value="Northeast">Northeast</option>
+                <option value="West">West</option>
+                <option value="All" selected>All</option>
+            </select>
+            <br><br>
 
-    <label> 2nd RUCC to Compare </label>
-    <select name="rucc2">
-        <option value="1">1</option>
-        <option value="2" selected>2</option>
-        <option value="3">3</option>
-        <option value="4">4</option>
-        <option value="5">5</option>
-        <option value="6">6</option>
-        <option value="7">7</option>
-        <option value="8">8</option>
-        <option value="9">9</option>
-    </select>
-    <br><br>
+            <label><strong>2nd RUCC to Compare</strong></label>
+            <select name="rucc2">
+                <option value="1">1</option>
+                <option value="2" selected>2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+            </select>
+        </div>
+
+    </div>
+    <br>
 
     <input type="submit" value="Analyze">
 </form>
