@@ -61,6 +61,7 @@ def dataset():
 # input what want to compare 
 @app.route("/compare", methods=["GET", "POST"])
 def graphs():
+    print(request.form)
     category = request.form.get("category")
     rucc1 = request.form.get("rucc1")
     rucc2 = request.form.get("rucc2")
@@ -85,20 +86,28 @@ def graphs():
 #show graphs 
 @app.route("/graphs", methods=["POST"])
 def deep_analyze():
+    print(request.form)
     category = request.form["category"]
     rucc1 = int(request.form["rucc1"])
     rucc2 = int(request.form["rucc2"]) # defined/pulled from deeper analysis page
-    region1 = request.form["region1"]
-    region2 = request.form["region2"]
+    region1 = request.form.get("region1")
+    region2 = request.form.get("region2")
 
     df1 = full_data[full_data['AHRF_USDA_RUCC_2013'] == rucc1]
     df2 = full_data[full_data['AHRF_USDA_RUCC_2013'] == rucc2] # pulls ruccs wanted 
 
-    df3 = df1[df1["REGION"] == region1]
-    df4 = df1[df1["REGION"] == region2]
+    if region1 == "All":
+        df1_group = df1.groupby('YEAR')[category].mean().reset_index() # groups each year and get mean for graphing 
+    else:
+        df3 = df1[df1["REGION"] == region1]
+        df1_group = df3.groupby('YEAR')[category].mean().reset_index() # groups each year and get mean for graphing 
 
-    df1_group = df3.groupby('YEAR')[category].mean().reset_index() # groups each year and get mean for graphing 
-    df2_group = df4.groupby('YEAR')[category].mean().reset_index()
+
+    if region2 == "All":
+        df2_group = df2.groupby('YEAR')[category].mean().reset_index() # groups each year and get mean for graphing 
+    else:
+        df4 = df2[df2["REGION"] == region2]
+        df2_group = df4.groupby('YEAR')[category].mean().reset_index() # groups each year and get mean for graphing 
 
     human_readable = {"POS_MAX_DIST_ED": "Maximum Distance to ER", 
         "POS_MEAN_DIST_ED": "Mean Distance to ER",
@@ -117,13 +126,13 @@ def deep_analyze():
             "x": df1_group["YEAR"].tolist(),
             "y": df1_group[category].tolist(),
             "mode": "lines+markers",
-            "name": f"RUCC {rucc1}",
+            "name": f"RUCC {rucc1} in {region1}",
         },
         {
             "x": df2_group["YEAR"].tolist(),
             "y": df2_group[category].tolist(),
             "mode": "lines+markers",
-            "name": f"RUCC {rucc2}",
+            "name": f"RUCC {rucc2} in {region2}",
         },
     ]
 
@@ -135,7 +144,7 @@ def deep_analyze():
 
     category_readable = human_readable.get(category, category)
 
-    return render_template('compare_graphs_gheen.html', plot_data=plot_data, plot_layout=layout, category=category, rucc1=rucc1, rucc2=rucc2, graph=graphs, category_readable=category_readable)
+    return render_template('compare_graphs_gheen.html', plot_data=plot_data, plot_layout=layout, category=category, rucc1=rucc1, rucc2=rucc2, graph=graphs, category_readable=category_readable, region1=region1, region2=region2)
 
 # shows page for starting k-nearest neighbors clustering
 @app.route("/clustering", methods=["GET", "POST"])
