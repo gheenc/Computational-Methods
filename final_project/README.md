@@ -3,7 +3,7 @@
 I chose to analyze the Social Determinants of Health (SDOH) dataset, which is a large collection of data collected by different federal entities conjoined together and managed by the Agency for Healthcare Research and Quality (AHRQ). The SDOH has been published from 2010-2020 and consists of almost 1,000 variable every county, zip code, and census tract in the US. *I chose to analyze on a county level because it is the highest level of the options.* 
 Specifically, I pulled variables from the Provider of Service (POS) dataset and the Area Health Resources Files (AHRF) dataset. 
 
-From the POS dataset, I used the maximum, median, and mean distance to ER, med-surgical ICU, and designated trauma center. The POS data is collected by the Centers of Medicaid and Medicare quarterly. *Who fills it out* 
+From the POS dataset, I used the maximum, median, and mean distance to ER, med-surgical ICU, and designated trauma center. The POS data is collected by the Centers of Medicaid and Medicare quarterly. *Who fills it out* It caluclates them based on the population centroid of each census tract to ensure it is not measuring the farthest distance as a place where no one lives. 
 
 From the AHRF dataset, I used the Rural-Urban Continuum Codes (RUCC) from 2013. These codes are originally developed and collected by the USDA every decade. The codes for each county in the USA are  
 
@@ -19,6 +19,9 @@ F - findable
 A - 
 I - 
 R - 
+
+The data was pretty well annotated but because the SDOH comes from many different sources, there are annotations that were missing. 
+Yes, the license is clear that these are federal agencies and thus the data is free and available. There are stipulations if one is wanting to publish, 
 
 
 # Data Cleaning
@@ -42,6 +45,11 @@ I was actually suprised that most of the analysis followed the expectation of ru
 
 # Web Front and API
 **Describe your server API and the web front-end.**
+*Switch the way the API and county counts interact. have county counts pull from api rather than api use county counts*
+*AJAX Query to have plot appear and actively change as requested*
+*debate if use map - a lot to zooom up*
+
+**Recommendations from video**
 
 # Discussion
 **Mention any surprising results or unexpected difficulties.**

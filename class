@@ -1,0 +1,37 @@
+from flask import Flask, jsonify
+import requests
+
+r = (requests.get(f"https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-states.csv", headers={"User-Agent": "MyScript"}).text)
+
+my_template = """
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<div id="myGraph"></div>
+<script>
+(
+    fetch("/api/data")
+    .then(response => response.json())
+    .then(function (data) {Plotly.newPlot("myGraph", data)})
+)
+</script>
+"""
+
+app = Flask(__name__)
+
+
+@app.route("/api/data")
+def data():
+    return jsonify([{"x": [1, 2, 3, 4, 5], "y": [1, 4, 9, 16, 25], "type": "scatter"}])
+
+
+@app.route("/")
+def index():
+    return my_template
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+
+#code API
+# https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-states.csv
+ 

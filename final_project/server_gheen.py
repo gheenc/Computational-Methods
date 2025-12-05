@@ -7,6 +7,7 @@ import plotly
 from plotly import *
 import matplotlib.pyplot as plt
 from matplotlib import *
+import requests
 
 
 app = Flask(__name__)
@@ -20,12 +21,10 @@ def images(filename):
     return send_from_directory('images', filename)
 
 # helper function pulling state and county counts
-def state_county_counts(state_name, year=2013):
-    state_data = full_data[full_data['STATE'].str.lower() == state_name.lower()]
-    state_data = state_data[state_data['YEAR'] == year]
-    state_data = state_data.fillna(0)
-    county_counts = state_data['AHRF_USDA_RUCC_2013'].astype(int).value_counts().sort_index().to_dict()
-    return county_counts 
+def state_county_counts(state_name):
+    r = (requests.get(f"http://127.0.0.1:5002/api/county-codes?state={state_name}", headers={"User-Agent": "MyScript"}))
+    return r.json()
+
 
 # landing page
 @app.route("/home")
@@ -42,16 +41,14 @@ def root():
 def index():
     return render_template("index_gheen.html")
 
-# analyze page
+# analyze page and add images
 @app.route("/analyze", methods=["POST"])
 def analyze():
     usertext = request.form["usertext"]
     counts = state_county_counts(usertext)
     analyze_text = ""
-    for category, count in counts.items():
-        analyze_text += f"Category {category}: {count}\n "
     state_image = usertext.lower().replace(" ", "_") + ".png"
-    return render_template("analyze_gheen.html", analysis=analyze_text, usertext=usertext, state_image=state_image)
+    return render_template("analyze_gheen.html", analysis=analyze_text, usertext=usertext, state_image=state_image, counts=counts)
 
 # about the dataset page
 @app.route("/dataset", methods=["GET", "POST"])
@@ -78,6 +75,8 @@ def graphs():
         "POS_MEAN_DIST_MEDSURG_ICU": "Mean Distance to ICU",
         "POS_MEDIAN_DIST_MEDSURG_ICU": "Median Distance to ICU",
         "POS_ASC_RATE":"Total Number of Ambulatory Surgery Centers"}
+
+    category = request.form.get("category") or request.args.get("category")
 
     category_readable = human_readable.get(category, "Unknown Category") # convert to human-readable
     return render_template("deeper_analysis_gheen.html", category_readable=category_readable, category=category, rucc1=rucc1, rucc2=rucc2, region1=region1, region2=region2)
@@ -152,10 +151,13 @@ def api_county_codes():
     state = request.args.get("state")
     if not state:
         return jsonify({'error':'Missing ?state= parameter'}), 400
-    counts = state_county_counts(state)
+    state_data = full_data[full_data['STATE'].str.lower() == state.lower()]
+    state_data = state_data[state_data['YEAR'] == 2013]
+    state_data = state_data.fillna(0)
+    county_category_counts = state_data['AHRF_USDA_RUCC_2013'].astype(int).value_counts().sort_index().to_dict()
     return jsonify({
         'state': state,
-        'county_category_counts': counts
+        'county_category_counts': county_category_counts
     })
 
 
