@@ -18,6 +18,16 @@
     Plotly.newPlot('comparison_plot', data, layout);
 </script>
 
+<h3>Difference-in-Differences Analysis</h3>
+<p><strong>Years Compared:</strong> {{ did_results.year_start }} → {{ did_results.year_end }}</p>
+
+<p><strong>RUCC {{ rucc1 }} Change:</strong> {{ did_results.change_g1 | round(2) }}</p>
+<p><strong>RUCC {{ rucc2 }} Change:</strong> {{ did_results.change_g2 | round(2) }}</p>
+
+<p><strong>Difference-in-Differences (DiD):</strong> 
+    {{ did_results.did | round(2) }}
+</p>
+
 <br>
 <a href="/compare" class="back-button">Go Back</a>
 <br>
