@@ -81,6 +81,14 @@ form {
 }
 
 
+ul {
+    color: black;
+    text-align: center;
+    margin-bottom: 8px;
+    font-family: serif;
+    list-style-type: none;
+}
+
 h2 {
     color: black;
     text-align: center;
@@ -181,4 +189,3 @@ label {
 .two-column div {
     width: 40%;                     /* controls column width */
 }       
-}

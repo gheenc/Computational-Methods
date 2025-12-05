@@ -8,7 +8,7 @@
 
 <h2>Rural-Metro Coding for {{usertext}}<h2></h2>
 
-<ul>
+<ul class="result-box">
     {% for rucc, count in counts.county_category_counts.items() %}
         <li><strong>RUCC {{ rucc }}</strong>: {{ count }} counties</li>
     {% endfor %}

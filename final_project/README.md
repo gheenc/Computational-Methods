@@ -1,15 +1,13 @@
 ## About the Dataset
 **Describe the dataset and why it is interesting.**
-I chose to analyze the Social Determinants of Health (SDOH) dataset, which is a large collection of data collected by different federal entities conjoined together and managed by the Agency for Healthcare Research and Quality (AHRQ). The SDOH has been published from 2010-2020 and consists of almost 1,000 variable every county, zip code, and census tract in the US. *I chose to analyze on a county level because it is the highest level of the options.* 
-Specifically, I pulled variables from the Provider of Service (POS) dataset and the Area Health Resources Files (AHRF) dataset. 
+I chose to analyze the Social Determinants of Health (SDOH) dataset, which is a large collection of data collected by different federal entities conjoined together and managed by the Agency for Healthcare Research and Quality (AHRQ). The SDOH has been published from 2010-2020 and consists of almost 1,000 variable from differing federal survey for every county, zip code, and census tract in the US. I chose to analyze on a county level because it felt the most generalizable to the state level and I was using the Rural-Urban Classification Code (RUCC) that assigns a classification to every county in the United States. Additionally, even at the highest level of organization of county, there are 3,141 counties in the 50 United States so utilizing zip code or census tract for the entire US would be a large undertaking. Overall, I think the SDOH is interesting because it pulls so many variables from all the federal agencies and is a nice way to do comprehensive research. Within the SDOH, I specificlaly pulled variables from the Provider of Service (POS) dataset and the Area Health Resources Files (AHRF) dataset. 
 
 From the POS dataset, I used the maximum, median, and mean distance to ER, med-surgical ICU, and designated trauma center. The POS data is collected by the Centers of Medicaid and Medicare quarterly. *Who fills it out* It caluclates them based on the population centroid of each census tract to ensure it is not measuring the farthest distance as a place where no one lives. 
 
 From the AHRF dataset, I used the Rural-Urban Continuum Codes (RUCC) from 2013. These codes are originally developed and collected by the USDA every decade. The codes for each county in the USA are  
 
 **Explain how you acquired it (e.g. via an API, file download, etc).**
-I acquired my data via a file download. On the SDOH website, they offer a direct file download of a xlsx file for every year at each level that is offered. 
-
+I acquired my data via a file download. On the SDOH website, they offer a direct file download of a xlsx file for every year at each level that is offered making it easy to access the whole dataset. Because it is so large, it does create a big datafile for use, especially using as many variables for the whole country over many years like I did. I downloaded all the raw data from 2013-2020 and then only called in the columns I wanted to use (9 in total *not including the total number of*). When calling in the data like this to my Flask, it was extremely slow even as a pickled file, so I made the file a paraquet.
 
 # FAIR Data
 **Discuss the FAIRness of the data provider.**
@@ -27,7 +25,31 @@ Yes, the license is clear that these are federal agencies and thus the data is f
 # Data Cleaning
 **Describe any data cleaning or other preprocessing.**
 **e.g. If some data was missing, how did you handle it?**
-Data cleaning was minimal
+The datasets I chose within the SDOH were very comprehensive and required little cleaning or imputations. 
+After pulling in the wanted columns for each year from the raw excel file, I dropped any rows that were not from the 50 states. DC is not seperated in the calculations of RUCC or in the POS survey, so I believe it's data is wrapped into Maryland and Virginia, respectively. *Puerto Rico*. For each year, I printed any rows which were missing. 
+
+2013: trauma - Alaska Aleutians East Borough
+icu and trauma - Alaska West Census Area
+
+2014: trauma - Alaska Aleutians East Borough
+icu and trauma - Alaska West Census Area
+
+2015: trauma - Alaska Aleutians East Borough, Nome Census Area, North Slope Borough, Northwest Artcitc Borough
+icu and trauma - Alaska West Census Area
+
+2016: trauma and icu - Alaska Aleutians West Census Area
+trauma - Alaska North Slope Borough 
+
+2017: trauma and icu - Alaska West Census Area
+trauma - Alaska North Slope Borough
+
+2018: trauma and icu - Alaska West Census Area
+
+2019:trauma and icu - Alaska West Census Area
+
+2020: trauma and ice - Alaksa West Census Area
+everything including RCC - Alaska Valdez-Cordova Census Area
+RUCC - Chugach Census Area, Cooper River Census Area - have distance to hospitals but do not have RUCC codes. There are 4 hospitals in Chugach Census and 1 in Copper River. 
 
 In 2019, Alaska split some counties and thus 2 new ones were created that did not have 2013 RUCC codes. *What shall I do with this*
 
