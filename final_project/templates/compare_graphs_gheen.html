@@ -17,16 +17,46 @@
 
     Plotly.newPlot('comparison_plot', data, layout);
 </script>
-
-<h3>Difference-in-Differences Analysis</h3>
-<p><strong>Years Compared:</strong> {{ did_results.year_start }} → {{ did_results.year_end }}</p>
-
-<p><strong>RUCC {{ rucc1 }} Change:</strong> {{ did_results.change_g1 | round(2) }}</p>
-<p><strong>RUCC {{ rucc2 }} Change:</strong> {{ did_results.change_g2 | round(2) }}</p>
-
-<p><strong>Difference-in-Differences (DiD):</strong> 
-    {{ did_results.did | round(2) }}
 </p>
+
+<h3>Two-Way ANOVA Results</h3>
+
+<p>
+    <strong>Main Effect of Year:</strong>
+    <span style="color: {{ 'green' if p_year < 0.05 else 'red' }}">
+        p = {{ "%.4f"|format(p_year) }}
+        {% if p_year < 0.05 %}
+            (Significant)
+        {% else %}
+            (Not Significant)
+        {% endif %}
+    </span>
+</p>
+
+<p>
+    <strong>Main Effect of RUCC:</strong>
+    <span style="color: {{ 'green' if p_rucc < 0.05 else 'red' }}">
+        p = {{ "%.4f"|format(p_rucc) }}
+        {% if p_rucc < 0.05 %}
+            (Significant)
+        {% else %}
+            (Not Significant)
+        {% endif %}
+    </span>
+</p>
+
+<p>
+    <strong>Interaction (Year × RUCC):</strong>
+    <span style="color: {{ 'green' if p_interaction < 0.05 else 'red' }}">
+        p = {{ "%.4f"|format(p_interaction) }}
+        {% if p_interaction < 0.05 %}
+            (Significant Difference in Change Over Time Between RUCCs)
+        {% else %}
+            (No Significant Difference in Change Over Time Between RUCCs)
+        {% endif %}
+    </span>
+</p>
+
 
 <br>
 <a href="/compare" class="back-button">Go Back</a>

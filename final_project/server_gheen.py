@@ -8,6 +8,9 @@ from plotly import *
 import matplotlib.pyplot as plt
 from matplotlib import *
 import requests
+import statsmodels.api as sm
+import statsmodels.formula.api as smf
+
 
 
 app = Flask(__name__)
@@ -25,13 +28,9 @@ def state_county_counts(state_name):
     r = (requests.get(f"http://127.0.0.1:5002/api/county-codes?state={state_name}", headers={"User-Agent": "MyScript"}))
     return r.json()
 
-# helper function for analysis 
+# helper function for analysis of difference in difference
 def compute_did(df1_group, df2_group, category):
-    """
-    Computes the Difference-in-Differences given two grouped dataframes:
-    df1_group: RUCC 1 group (YEAR + category)
-    df2_group: RUCC 2 group (YEAR + category)
-    """
+
     # Ensure sorted by YEAR
     df1_group = df1_group.sort_values("YEAR")
     df2_group = df2_group.sort_values("YEAR")
@@ -65,6 +64,27 @@ def compute_did(df1_group, df2_group, category):
         "did": did,
     }
 
+# helper function for anova
+def run_two_way_anova(df1, df2, category):
+    # Add RUCC labels so the model knows which group each row is in
+    df1 = df1.copy()
+    df2 = df2.copy()
+    df1["RUCC_GROUP"] = "Group1"
+    df2["RUCC_GROUP"] = "Group2"
+
+    # Combine into one dataframe
+    df = pd.concat([df1, df2], ignore_index=True)
+
+    # Convert categorical variables
+    df["YEAR"] = df["YEAR"].astype(int).astype("category")
+    df["RUCC_GROUP"] = df["RUCC_GROUP"].astype("category")
+
+    # Build the two-way ANOVA model with interaction
+    formula = f"{category} ~ YEAR * RUCC_GROUP"
+    model = smf.ols(formula, data=df).fit()
+    anova_table = sm.stats.anova_lm(model, typ=2)  # Type II ANOVA
+
+    return model, anova_table
 
 # landing page
 @app.route("/home")
@@ -134,6 +154,19 @@ def deep_analyze():
     df1 = full_data[full_data['AHRF_USDA_RUCC_2013'] == rucc1]
     df2 = full_data[full_data['AHRF_USDA_RUCC_2013'] == rucc2]
 
+    model, anova_table = run_two_way_anova(df1, df2, category)
+
+    # Extract p-values
+    p_year = anova_table.loc["YEAR", "PR(>F)"]
+    p_rucc = anova_table.loc["RUCC_GROUP", "PR(>F)"]
+    p_interaction = anova_table.loc["YEAR:RUCC_GROUP", "PR(>F)"]
+
+    # Interpret the interaction (Difference-in-Differences)
+    if p_interaction < 0.05:
+        did_interpretation = "The change over time is significantly different between the two RUCC groups."
+    else:
+        did_interpretation = "No significant difference in change over time between the two RUCC groups."
+
     # -------- RUCC 1 ----------
     if region1 == "All":
         df1_group = df1.groupby('YEAR')[category].mean().reset_index()
@@ -146,7 +179,7 @@ def deep_analyze():
     else:
         df2_group = df2[df2["REGION"] == region2].groupby('YEAR')[category].mean().reset_index()
 
-    # 🔥 ADDED: compute Difference-in-Differences
+    #  ADDED: compute Difference-in-Differences
     did_results = compute_did(df1_group, df2_group, category)
 
     # Plotly-ready data
@@ -185,17 +218,25 @@ def deep_analyze():
     category_readable = human_readable.get(category, category)
 
     return render_template(
-        'compare_graphs_gheen.html',
-        plot_data=plot_data,
-        plot_layout=layout,
-        category=category,
-        category_readable=category_readable,
-        rucc1=rucc1,
-        rucc2=rucc2,
-        region1=region1,
-        region2=region2,
-        did_results=did_results,  # 🔥 PASS RESULTS TO TEMPLATE
-    )
+    'compare_graphs_gheen.html',
+    plot_data=plot_data,
+    plot_layout=layout,
+    category=category,
+    rucc1=rucc1,
+    rucc2=rucc2,
+    graph=graphs,
+    category_readable=category_readable,
+    region1=region1,
+    region2=region2,
+    anova_table=anova_table.to_html(classes="table table-striped"),
+    p_year=p_year,
+    p_rucc=p_rucc,
+    p_interaction=p_interaction,
+    did_interpretation=did_interpretation,
+    did_results=did_results  
+)
+
+
 
 #API call for RUCC breakdown
 @app.route("/api/county-codes", methods=["GET"])
