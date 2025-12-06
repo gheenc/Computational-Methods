@@ -28,42 +28,6 @@ def state_county_counts(state_name):
     r = (requests.get(f"http://127.0.0.1:5002/api/county-codes?state={state_name}", headers={"User-Agent": "MyScript"}))
     return r.json()
 
-# helper function for analysis of difference in difference
-def compute_did(df1_group, df2_group, category):
-
-    # Ensure sorted by YEAR
-    df1_group = df1_group.sort_values("YEAR")
-    df2_group = df2_group.sort_values("YEAR")
-
-    # Extract first and last year
-    year_start = df1_group["YEAR"].iloc[0]
-    year_end = df1_group["YEAR"].iloc[-1]
-
-    # Get means for each year and category
-    g1_start = df1_group[df1_group["YEAR"] == year_start][category].values[0]
-    g1_end = df1_group[df1_group["YEAR"] == year_end][category].values[0]
-    g2_start = df2_group[df2_group["YEAR"] == year_start][category].values[0]
-    g2_end = df2_group[df2_group["YEAR"] == year_end][category].values[0]
-
-    # Compute changes
-    change_g1 = g1_end - g1_start
-    change_g2 = g2_end - g2_start
-
-    # Difference-in-differences
-    did = change_g1 - change_g2
-
-    return {
-        "year_start": year_start,
-        "year_end": year_end,
-        "g1_start": g1_start,
-        "g1_end": g1_end,
-        "g2_start": g2_start,
-        "g2_end": g2_end,
-        "change_g1": change_g1,
-        "change_g2": change_g2,
-        "did": did,
-    }
-
 # helper function for anova
 def run_two_way_anova(df1, df2, category):
     # Add RUCC labels so the model knows which group each row is in
@@ -155,7 +119,7 @@ def deep_analyze():
     df2 = full_data[full_data['AHRF_USDA_RUCC_2013'] == rucc2]
 
     model, anova_table = run_two_way_anova(df1, df2, category)
-
+    
     # Extract p-values
     p_year = anova_table.loc["YEAR", "PR(>F)"]
     p_rucc = anova_table.loc["RUCC_GROUP", "PR(>F)"]
@@ -179,8 +143,6 @@ def deep_analyze():
     else:
         df2_group = df2[df2["REGION"] == region2].groupby('YEAR')[category].mean().reset_index()
 
-    #  ADDED: compute Difference-in-Differences
-    did_results = compute_did(df1_group, df2_group, category)
 
     # Plotly-ready data
     plot_data = [
@@ -231,11 +193,7 @@ def deep_analyze():
     anova_table=anova_table.to_html(classes="table table-striped"),
     p_year=p_year,
     p_rucc=p_rucc,
-    p_interaction=p_interaction,
-    did_interpretation=did_interpretation,
-    did_results=did_results  
-)
-
+    p_interaction=p_interaction)
 
 
 #API call for RUCC breakdown
