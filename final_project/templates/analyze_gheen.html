@@ -21,21 +21,10 @@
 alt="Map for {{usertext}}"
 class="analyze-image">
 
-<div class="legend-box">
-    <h3>Category Legend</h3>
-    <ul class="legend-list">
-        <li><strong>0</strong>: County Not Classified</li>
-        <li><strong>1</strong>: Metro Areas of 1 million + population</li>
-        <li><strong>2</strong>: Metro Areas of 250,000-1,000,000 population</li>
-        <li><strong>3</strong>: Metro Areas of fewer than 250,000 population</li>
-        <li><strong>4</strong>: Urban 20,000+ population, adjacent to a metro area</li>
-        <li><strong>5</strong>: Urban 20,000+ population, not adjacent to a metro area</li>
-        <li><strong>6</strong>: Urban 2,500-19,999 population, adjacent to a metro area</li>
-        <li><strong>7</strong>: Urban 2,500-19,999 population, not adjacent to a metro area</li>
-        <li><strong>8</strong>: Rural less than 2,500 population, adjacent to metro area</li>
-        <li><strong>9</strong>: Rural less than 2,500 population, not adjacent to metro area</li>
-    </ul>
-</div>
+
+<img src="{{url_for ('images', filename=legend)}}"
+alt="Legend of RUCC Codes"
+class="legend">
 
 <br>
 <a href="/index" class="back-button">Go Back</a>

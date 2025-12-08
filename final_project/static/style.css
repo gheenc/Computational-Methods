@@ -134,6 +134,11 @@ h2 {
     min-height: 100px;
     height: auto;
 }
+.legend {
+    display: block;
+    margin: 0 auto;
+    padding-top: 10px;
+}
 
 .legend-box {
     width: 100%;

@@ -6,6 +6,8 @@ From the POS dataset, I used the maximum, median, and mean distance to ER, med-s
 
 From the AHRF dataset, I used the Rural-Urban Continuum Codes (RUCC) from 2013. These codes are originally developed and collected by the USDA every decade. The codes for each county in the USA are  
 
+DC IS INCLUDED - IT IS A 1 METRO 
+
 **Explain how you acquired it (e.g. via an API, file download, etc).**
 I acquired my data via a file download. On the SDOH website, they offer a direct file download of a xlsx file for every year at each level that is offered making it easy to access the whole dataset. Because it is so large, it does create a big datafile for use, especially using as many variables for the whole country over many years like I did. I downloaded all the raw data from 2013-2020 and then only called in the columns I wanted to use (9 in total *not including the total number of*). When calling in the data like this to my Flask, it was extremely slow even as a pickled file, so I made the file a paraquet.
 

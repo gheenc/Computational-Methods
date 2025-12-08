@@ -72,7 +72,8 @@ def analyze():
     counts = state_county_counts(usertext)
     analyze_text = ""
     state_image = usertext.lower().replace(" ", "_") + ".png"
-    return render_template("analyze_gheen.html", analysis=analyze_text, usertext=usertext, state_image=state_image, counts=counts)
+    legend = "legend.png"
+    return render_template("analyze_gheen.html", analysis=analyze_text, usertext=usertext, state_image=state_image, counts=counts, legend=legend)
 
 # about the dataset page
 @app.route("/dataset", methods=["GET", "POST"])
