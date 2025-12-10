@@ -71,9 +71,10 @@ def analyze():
     usertext = request.form["usertext"]
     counts = state_county_counts(usertext)
     analyze_text = ""
-    state_image = usertext.lower().replace(" ", "_") + ".png"
-    legend = "legend.png"
-    return render_template("analyze_gheen.html", analysis=analyze_text, usertext=usertext, state_image=state_image, counts=counts, legend=legend)
+    show_image = usertext != "District of Columbia"
+    state_image = usertext.lower().replace(" ", "_") + ".png" if show_image else None
+    legend = "legend.png" if show_image else None
+    return render_template("analyze_gheen.html", analysis=analyze_text, usertext=usertext, state_image=state_image, counts=counts, legend=legend, show_image=show_image)
 
 # about the dataset page
 @app.route("/dataset", methods=["GET", "POST"])
