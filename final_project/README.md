@@ -1,15 +1,30 @@
 ## About the Dataset
 **Describe the dataset and why it is interesting.**
-I chose to analyze the Social Determinants of Health (SDOH) dataset, which is a large collection of data collected by different federal entities conjoined together and managed by the Agency for Healthcare Research and Quality (AHRQ). The SDOH has been published from 2010-2020 and consists of almost 1,000 variable from differing federal survey for every county, zip code, and census tract in the US. I chose to analyze on a county level because it felt the most generalizable to the state level and I was using the Rural-Urban Classification Code (RUCC) that assigns a classification to every county in the United States. Additionally, even at the highest level of organization of county, there are 3,141 counties in the 50 United States so utilizing zip code or census tract for the entire US would be a large undertaking. Overall, I think the SDOH is interesting because it pulls so many variables from all the federal agencies and is a nice way to do comprehensive research. Within the SDOH, I specificlaly pulled variables from the Provider of Service (POS) dataset and the Area Health Resources Files (AHRF) dataset. 
+I chose to analyze the Social Determinants of Health (SDOH) dataset, which is a large collection of data collected by different federal entities conjoined together and managed by the Agency for Healthcare Research and Quality (AHRQ). The SDOH has been published from 2010-2020 and consists of almost 1,000 variable from differing federal survey for every county, zip code, and census tract in the US [1]. I chose to analyze on a county level. I also used the Rural-Urban Classification Code (RUCC) that assigns a classification to every county in the United States. There are 3,141 counties in the 50 United States so utilizing zip code or census tract for the entire US would be a large undertaking. Overall, I think the SDOH is interesting because it pulls so many variables from all the federal agencies and is a nice way to do comprehensive research. Within the SDOH, I specifically pulled variables from the Provider of Service (POS) dataset and the Area Health Resources Files (AHRF) dataset. 
+*add about the dataset to website*
 
-From the POS dataset, I used the maximum, median, and mean distance to ER, med-surgical ICU, and designated trauma center. The POS data is collected by the Centers of Medicaid and Medicare quarterly. *Who fills it out* It caluclates them based on the population centroid of each census tract to ensure it is not measuring the farthest distance as a place where no one lives. 
+From the POS dataset, I used the maximum, median, and mean distance to emergency rooms (ER), medical-surgical ICUs (ICU), and designated trauma center (trauma). The POS data is collected by the Centers of Medicaid and Medicare quarterly. The POS must be completed during the provider recertification process that happens every 5 years at risk of not receiving full Medicare funding, so the dataset is very robust. It caluclates the distances based on the population centroid of each census tract to ensure it is not measuring the farthest distance as a place where no one lives.
 
-From the AHRF dataset, I used the Rural-Urban Continuum Codes (RUCC) from 2013. These codes are originally developed and collected by the USDA every decade. The codes for each county in the USA are  
+From the AHRF dataset, I used the Rural-Urban Continuum Codes (RUCC) from 2013. These codes are originally developed and collected by the USDA every decade. The codes for each county in the USA are on a scale from 1-9 with 1 being the most metro and 9 being the most rural. They codes are reanalyzed every 10 years following the census, so there are updated codes from 2023, but they changed the classification level (higher population required for each level) so I decided to continue using the 2013 codes when they would have been in effect for the data collected. The SDOH dataset has data from 2010-2020, but for the same reason, I only analyzed data from 2013-2020. While there are codes for Puerto Rico and some other territories, I only analyzed data from the 50 states and DC. 
 
-DC IS INCLUDED - IT IS A 1 METRO 
+The 2013 RUCC codes have the following classifications: 
+1-Metro: Areas of 1+ million population
+2-Metro: Areas of 250,000 -1,000,000 population
+3-Metro: Areas of fewer than 250,000 population
+4-Urban: 20,000+ population, adjacent to a metro area
+5-Urban: 20,000+ population, not adjacent to a metro area
+6-Urban: 2,500-19,999, adjacent to a metro area
+7-Urban: 2,500-19,999 population, not adjacent to a metro area
+8-Rural: less than 2,500, adjacent to a metro area
+9-Rural: less than 2,5000, not adjacent to a metro area [2]
+
+*Breakdown of counties?*
+*NC picture of county maps*
+
+Ultimately, I thought this data and question was interesting following research I conducted to answer the final question in our problem set #2 about why one cannot/should not use technology to fix every problem. I found an article from the Government Accountability Office that said rural counties were seeing their healthcare centers close at a higher rate than metro counties, leading to rural populations who are already typically older and have more chronic disease to travel further for healthcare [3]. I wanted to see if we could see this same trend in the publically available datasets. 
 
 **Explain how you acquired it (e.g. via an API, file download, etc).**
-I acquired my data via a file download. On the SDOH website (https://www.ahrq.gov/sdoh/data-analytics/sdoh-data.html), they offer a direct file download of a xlsx file for every year at each level (county, zip, census tract) that is offered, making it easy to access the whole dataset. Because it is so large, it does create a big datafile for use, especially using as many variables for the whole country over many years like I did. I downloaded all the raw data from 2013-2020 and then only called in the columns I was initially interested in. When calling in the data like this to my Flask, it was extremely slow even as a pickled file, so I made the file a paraquet. I also have it load only one time at the top of my server so it is not continually having to reload. 
+I acquired my data via a file download. On the SDOH website (https://www.ahrq.gov/sdoh/data-analytics/sdoh-data.html), they offer a direct file download of a xlsx file for every year at each level (county, zip, census tract) that is offered, making it easy to access the whole dataset. Because it is so large, it does create a big datafile for use.I downloaded all the raw data from 2013-2020 and then only called in the columns I was initially interested in. When calling in the data like this to my Flask, it was extremely slow even as a pickled file, so I made the file a paraquet. I also have it load only one time at the top of my server so it is not continually having to reload. 
 
 # FAIR Data
 **Discuss the FAIRness of the data provider.**
@@ -17,56 +32,41 @@ I acquired my data via a file download. On the SDOH website (https://www.ahrq.go
 **Include: Was the data well-annotated with metadata? Was the license clear?**
 Overall I found the data to be very fair.
 
+F-
 SDOH is a well-known dataset and it is posted in a easy to acces format on the AHRQ SDOH website. I will say that I'm not sure if it is a personal issue, but I sometimes have a hard  time finding the actual raw data. While it is easy to find AHRQ and their work on SDOH, when you Google AHRQ SDOH data, it brings you to their homepage with already built analyses and tools. I have come to just bookmarking the page because the raw data is not obvious on their website (but again that could be a personal issue).
 
-The data is very accessible as it is very  open to anyone wanting to research SDOHs or even just curious. One downside in my opinion is that they lack an API to query, which would be helpful for a multi-year large dataset. 
+A-
+The data is very accessible as it is very  open to anyone wanting to research SDOHs or even just curious. It is also available as a simple Excel download, so no complex software is required making it a more accessible system for the general public. One downside is that they lack an API to query, which would be helpful for such a multi-year large dataset. 
 
-The dataset retains very good standard naming procedures, making it interoperable and reusable. 
-F - findable
-A - 
-I - 
-R - 
+I
+The dataset retains very good standard naming procedures: they start with the entity that orginally collected the data then a full variable name and that remains consistent across all levels (county, zip code, and census tract) and years. It is only available in an Excel file, so it is not interopable with other computer systems to the degree it would be if it were available as a CSV or JSON download.
 
-The data was pretty well annotated but because the SDOH comes from many different sources, there are annotations that were missing. 
-Yes, the license is clear that these are federal agencies and thus the data is free and available. There are stipulations if one is wanting to publish a large amount, but it is mostly about how to cite them. 
+R
+Again, the dataset uses very clean and clear variables that stay consistent throughout all years, making it very easy to research across multiple years and to repeat any analyses. There are no standards shared about data collection or methods, however. To find these, you would have to go back to the original source and inquiry with them and their information, which adds another level of research to any repeated future project.  
+
+Metadata/License
+Each year has a very detailed code notebook that consists of which social determinant it is concerned with, who collected the data, the variable name, what it actually is about, and the years it was collected. This and the very clear names leads to very good metadata, but as stated they lack any of the information about how, who, where, or when the actual data was collected without going back to the orignial source. 
+Because the data is from federal agencies it is free and available to use. There are stipulations if one is wanting to publish a large amount, but it is mostly about how to cite them. 
 
 
 # Data Cleaning
 **Describe any data cleaning or other preprocessing.**
 **e.g. If some data was missing, how did you handle it?**
-The datasets I chose within the SDOH were very comprehensive and required little cleaning or imputations. 
-After pulling in the wanted columns for each year from the raw excel file, I dropped any rows that were not from the 50 states. DC is not seperated in the calculations of RUCC or in the POS survey, so I believe it's data is wrapped into Maryland and Virginia, respectively. *Puerto Rico*. For each year, I printed any rows which were missing. Overall, the only rows with missing data were from Alaska. The Alaska West Census Area did not have values to a designated-trauma center or ICU for any years. *Look if there are centers*; Alaska East Borough did not have data about distance to designated trauma centers for 2013, 2014, or 2015; Alaska North Slope Borough did not have data about distance to trauma to 2015, 2016, 2017; and multiple counties did not have data for distance to designated trauma centers in 2015. Additionally, in Alaska, they created two new counties - Chugach Census and Copper River - in 2019 from the Valdex-Crodova Census Area. Because of this the two new counties did not have RUCC classification but they did have distance to ER, designated trauma centers, and ICUs because there are 4 hospitals in Chugach county and 1 in Copper River. Because of the reclassification however, Valdez-Cordova did not have any information about ER, ICU, or trauma centers. 
+The datasets I chose within the SDOH were very comprehensive and required little cleaning or imputations.
 
-2013: trauma - Alaska Aleutians East Borough
-icu and trauma - Alaska West Census Area
+After pulling in the wanted columns for each year from the raw excel file, I dropped any rows that were not from the 50 states or DC. I did this by creating a variable called "allowed states" and consistently called that variable for each year so only the rows where STATE == one of the allowed states it was kept. I then had the data print all values in STATE and the length so I could visually ensure only all 50 states and DC were kept and thus the length would be 51. For each year, I printed any rows which were missing. Overall, the only rows with missing data were from Alaska. The Alaska West Census Area did not have values to a designated-trauma center or ICU for any years.I attempted to do outside research to determine if this county has any healthcare that was being overlooked, but I was not able to determine with any confidence what their healthcare availability is like. I validated a county in Tennessee and a list of their designated trauma centers in the data set that it did not require the healthcare entitiy to be within the county borders and it did not [4]. Because of this I am not sure why they would have metrics of distance, except this county is the little line of islands that make the arm of Alaska, so they are very remote. Because of this data collection or distance measuring could be an issue. The only other missing data was from other counties in Alaska that would randomly not have a value for distance to either a designated trauma center or an ICU (the specific counties, years, and variables that were missing can be seen in data_cleaning.ipynb). When this happened, I left the values blank and they would not be included in the analyses for that year. 
+Because the RUCC codes are created once in 2013, they stay consistent throughout the dataset and would only appear missing if a county was created. Alaska did create two new counties - Chugach Census and Copper River - in 2019 from the Valdez-Crodova Census Area. Because of this the two new counties did not have RUCC classification but they did have distance to ER, designated trauma centers, and ICUs because there are 4 hospitals in Chugach county and 1 in Copper River. Because of the reclassification however, Valdez-Cordova did not have any information about ER, ICU, or trauma centers. Because the new counties were not classified and the ratings of classification changed in 2023, I chose to leave them blank as well and not include them in the analysis when they appear, which was only for 2020. 
 
-2014: trauma - Alaska Aleutians East Borough
-icu and trauma - Alaska West Census Area
+*Map of Alaska*
 
-2015: trauma - Alaska Aleutians East Borough, Nome Census Area, North Slope Borough, Northwest Artcitc Borough
-icu and trauma - Alaska West Census Area
+None of the data was standardized prior to analysis. The RUCC scores are categorical so they could not be standardized. Difference within the distance variables is what is telling the story - standardizing it would take away any insights we might be able to see. For the main analyses (regression and ANOVA), the variables were not being compared in way that expressing them in different units would have a meaninful impact on how they are interpretted. 
 
-2016: trauma and icu - Alaska Aleutians West Census Area
-trauma - Alaska North Slope Borough 
-
-2017: trauma and icu - Alaska West Census Area
-trauma - Alaska North Slope Borough
-
-2018: trauma and icu - Alaska West Census Area
-
-2019:trauma and icu - Alaska West Census Area
-
-2020: trauma and ice - Alaksa West Census Area
-everything including RCC - Alaska Valdez-Cordova Census Area
-RUCC - Chugach Census Area, Cooper River Census Area - have distance to hospitals but do not have RUCC codes. There are 4 hospitals in Chugach Census and 1 in Copper River. 
-
-In 2019, Alaska split some counties and thus 2 new ones were created that did not have 2013 RUCC codes. *What shall I do with this*
-
-Data cleaning was surprisingly minimal for 10 years of data. The data used that is collected via the Provider of Service file is collected by the Center for Medicare and Medicaid as part of the Provider Certification process so it is updated each time a provider is recertified which is every 5 years and must be done to continue receiving their Medicare billing privileges. So, this makes for a very robust dataset for us. The RUCC codes were instituted in 2013 and did not change throughout the life of the dataset except in the very rare cases where a county was created or deleted. Which did happen in 2019 when Alaska created two new counties (Copper River and Chugach Census Areas) from a former county Valdez-Cordovo. In this instance, the RUCC columns for the two counties were empty because they had not been classified yet so although they did have data about distances to healthcare, it was not included in any analyses. All other missing data variables were from Alaska, for example there were never any values for distance to trauma or medsurg ICU for Aleutians West Census Area which are these islands over here. From my research, I don’t believe there are any centers that met the criteria to be considered a trauma or ICU within the county but I know other counties in the dataset also do not have a designated center within their borders so I’m not sure if it’s because it’s islands and that messes up how to calculate distance. I doubled checked this assumption that the medical center had to be within the county borders by look at Tennessee map of trauma centers and looking in the dataset for a county without a trauma center. I confirmed with Union county that there are reported distances to trauma centers despite not have a trauma center within the county border (https://www.tn.gov/hfc/division-of-licensure-and-regulation/trauma.html). But regardless, any missing values, I imputed N/A and the were not considered when analyses were done stratified by RUCC. Again, this mostly only affected Alaska and would usually lead to a random year that the county was not in the analyses but it was also usually pretty consistent across the 8 years analyzed meaning the effect of healthcare becoming further or closer was never considered for that data point. 
-
-*Did not put data in standard format because one is categorical and distance is what is telling the story - we wanted to see if they were far from each other. They were also already in the same units*
 # Summary Statistics
 **Discuss summary statistics and how they do or do not reflect the characteristics of the data. (e.g. are they skewed by outliers, is missing data a problem? are they misleading because of non-continuous variables? etc?)**
+All summary statistics can be found in data_cleaning.ipynb
+
+To analyze if there were any outliers I made interactive box and whisker plots of each variable considered for each county classification in 2013 and 2020. *it would be beneficial to do one for each year*
+This allowed me to ensure there were no random outliers that would have made me question the data integrity or if there was a potential data input error. The majority of the outliers were from Alaska. 
 
 # Analysis 
 **Discuss the analyses you chose to run.**
@@ -76,11 +76,46 @@ Data cleaning was surprisingly minimal for 10 years of data. The data used that 
 I was actually suprised that most of the analysis followed the expectation of rural counties being farther from healthcare. I thought I would find some exceptions to this though but I did not. 
 
 **How did you validate your analyses?**
+To validate the county breakdown and API 
+
+To validate the ANOVA and regression I used the Excel data analysis toolpack. Because Alaska had the missing data due to 
 
 # Web Front and API
 **Describe your server API and the web front-end.**
+The landing page of my web page begins with a map of the country and the RUCC classification of each county developed by UNC. It also states the title of the project and lets the user know only the 50 states and DC are available for analysis. 
+*Photo of landing page*
+
+The user can then select from three options: breakdown of RUCC by state, distance to healthcare by RUCC, and about the dataset.
+*Photo of the three button*
+
+The breakdown of RUCC by state allows the user to input any selected state to learn how that state's counties are classified. After a state is selected, it displays a numerical breakdown of how many counties are present in the state for each classification, a photo of the state and it's counties colored according to their classification and a legend that tells each classification's color and metrics. The html also includes a maximum width and height so that each photo can conform to the best ratio for the state's size. 
+*Photo of Vermont*
+
+This analyze page also pulls from the website's API. The API queries the original dataset for whatever state the user selected and returns the county classification breakdown.
+*Photo of Vermont API*
+
+The About the Dataset page gives a brief overview of SDOH and the variables used. 
+*Photo of about the Dataset*
+
+Distance to Healthcare is where the heart of the analysis lives. Here the user can choose from one of the 9 variables they wish to analyze, and which two RUCCs they would like to compare. They can also stratify by region if they would like to compare classifications between region or only look within one region. I added which states are classified within each region for better understanding for the user. For all my analyzes I only focused on the interaction of RUCC in all the US.
+*Photo of input distance*
+
+Once the user has chosen a variable, two RUCCs, and regions if they wish, they click the analyze button and a graph generates along with a ANOVA and linear regression anaysis. The graph generates as a Plotly graph so it can be interactive to users. The graph shows as a line graph of the mean distance wanted for each RUCC wanted for every year from 2013-2020. This allows the user to visually appreciate if there were any changes in distance needed to travel for each classification and the difference between the two classifications.
+*Photo of Graph*
+
+It then displays the results of the ANOVA and linear analyses. Any insignificant analyses are shown in red and any significant analyses are shown in green. 
+*Photo of analyses*
+
 
 **Recommendations from video**
+I recieved three comments on my video.
+
+The first asked if I considered looking at total number of ERs and other healthcare services, and I did. This was the initial metric I wanted to use for my analyses but after looking at the data, I felt it was misleading. 
+
+I also received a comment asking if I considered using 10 decimals for the p values as opposed ot 5. I did increase this following the comment but I'm not sure much significance was gained. I also think any more decimals would be hard to visually appreciate and become overwhelming for the viewer, so I ultimately put it back. 
+*Photo of 10 decimals*
+
+The last comment I received asked if I had considered running a linear regression. When I had initially pondered the correct analysis to run, linear regression had been an option. Because RUCC is continuous, however, I believed benefit could be gained from an ANOVA. 
 
 # Discussion
 **Mention any surprising results or unexpected difficulties.**
@@ -90,7 +125,8 @@ I considered being able to analyze multiple RUCC between each other but I didn't
 [1]Social Determinants of Health Database. Content last reviewed June 2023. Agency for Healthcare Research and Quality, Rockville, MD.
 https://www.ahrq.gov/sdoh/data-analytics/sdoh-data.html - dataset
 [2]https://www.shepscenter.unc.edu/wp-content/uploads/2015/12/ruralurbancodes2013c.pdf - images in analyze
-
+[3] https://www.gao.gov/blog/why-health-care-harder-access-rural-america
+[4] (https://www.tn.gov/hfc/division-of-licensure-and-regulation/trauma.html)
 
 ## Code Appendix
 Sources: Sserver.py: [1] I adapted code by Robert McDougal demonstrating flask[2] Used ChatGPT to develop API call [3] Used https://www.w3schools.com/Css/css_editor.asp as a template for the CSS and used ChatGPT to edit to my needs [4] Used ChatGPT to understand how to call in a CSS sheet and have buttons go to other pages [5] Used ChatGPT to determine which statistical test would be best, how to implement in python and display on html. [6] Used ChatGPT to turn statistically significant results green and not statistically significant results red on displayed html pages [7] Used ChatGPT to turn data into paraquet form to be faster than calling in data as Excel or pickle form [8] Used ChatGPT to implement difference of difference statistical test and two way ANOVA in python [9] Used ChatGPT to call in human readable version of variables for better graph display [10] Used ChatGPT to call in a plotly graph 
