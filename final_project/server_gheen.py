@@ -28,6 +28,24 @@ def state_county_counts(state_name):
     r = (requests.get(f"http://127.0.0.1:5002/api/county-codes?state={state_name}", headers={"User-Agent": "MyScript"}))
     return r.json()
 
+# helper function for linear regression
+def run_linear_regression(df1, df2, category):
+    df1 = df1.copy()
+    df2 = df2.copy()
+    df1["RUCC_GROUP"] = "Group1"
+    df2["RUCC_GROUP"] = "Group2"
+
+    df = pd.concat([df1, df2], ignore_index=True)
+
+    # YEAR as continuous for slope comparison
+    df["YEAR"] = df["YEAR"].astype(int)
+    df["RUCC_GROUP"] = df["RUCC_GROUP"].astype("category")
+
+    formula = f"{category} ~ YEAR * RUCC_GROUP"
+    reg_model = smf.ols(formula, data=df).fit()
+
+    return reg_model
+
 # helper function for anova
 def run_two_way_anova(df1, df2, category):
     # Add RUCC labels so the model knows which group each row is in
@@ -110,7 +128,6 @@ def graphs():
 #show graphs 
 @app.route("/graphs", methods=["POST"])
 def deep_analyze():
-    print(request.form)
     category = request.form["category"]
     rucc1 = int(request.form["rucc1"])
     rucc2 = int(request.form["rucc2"])
@@ -127,6 +144,22 @@ def deep_analyze():
     p_rucc = anova_table.loc["RUCC_GROUP", "PR(>F)"]
     p_interaction = anova_table.loc["YEAR:RUCC_GROUP", "PR(>F)"]
 
+    # add linear regression
+    reg_model = run_linear_regression(df1, df2, category)
+    reg_summary = reg_model.summary().as_html()
+
+    # Extract beta coefficients and pvalues for linear regression
+    beta_0 = reg_model.params["Intercept"]
+    beta_1 = reg_model.params["YEAR"]
+    beta_2 = reg_model.params["RUCC_GROUP[T.Group2]"]
+    beta_3 = reg_model.params["YEAR:RUCC_GROUP[T.Group2]"]
+
+    p_0 = reg_model.pvalues["Intercept"]
+    p_1 = reg_model.pvalues["YEAR"]
+    p_2 = reg_model.pvalues["RUCC_GROUP[T.Group2]"]
+    p_3 = reg_model.pvalues["YEAR:RUCC_GROUP[T.Group2]"]
+
+    
     # Interpret the interaction (Difference-in-Differences)
     if p_interaction < 0.05:
         did_interpretation = "The change over time is significantly different between the two RUCC groups."
@@ -195,7 +228,12 @@ def deep_analyze():
     anova_table=anova_table.to_html(classes="table table-striped"),
     p_year=p_year,
     p_rucc=p_rucc,
-    p_interaction=p_interaction)
+    p_interaction=p_interaction,
+    beta_0=beta_0, beta_1=beta_1,
+    beta_2=beta_2, beta_3=beta_3,
+    p_0=p_0, p_1=p_1, p_2=p_2, p_3=p_3
+)
+
 
 
 #API call for RUCC breakdown

@@ -19,12 +19,12 @@
 </script>
 </p>
 
-<h3>Two-Way ANOVA Results</h3>
+<h2>Two-Way ANOVA Results</h2>
 
 <p>
     <strong>Main Effect of Year:</strong>
     <span style="color: {{ 'green' if p_year < 0.05 else 'red' }}">
-        p = {{ "%.4f"|format(p_year) }}
+        p = {{ "%.10f"|format(p_year) }}
         {% if p_year < 0.05 %}
             (Significant)
         {% else %}
@@ -36,7 +36,7 @@
 <p>
     <strong>Main Effect of RUCC:</strong>
     <span style="color: {{ 'green' if p_rucc < 0.05 else 'red' }}">
-        p = {{ "%.4f"|format(p_rucc) }}
+        p = {{ "%.10f"|format(p_rucc) }}
         {% if p_rucc < 0.05 %}
             (Significant)
         {% else %}
@@ -48,7 +48,7 @@
 <p>
     <strong>Interaction (Year × RUCC):</strong>
     <span style="color: {{ 'green' if p_interaction < 0.05 else 'red' }}">
-        p = {{ "%.4f"|format(p_interaction) }}
+        p = {{ "%.10f"|format(p_interaction) }}
         {% if p_interaction < 0.05 %}
             (Significant Difference in Change Over Time Between RUCCs)
         {% else %}
@@ -57,6 +57,27 @@
     </span>
 </p>
 
+<h2>Linear Regression Results</h2>
+<p>
+<strong>β2 (Difference in Rural vs Metro):</strong>
+<span style="color: {{ 'green' if p_3 < 0.05 else 'red' }}">
+    {{ "%.4f"|format(beta_2) }} (p = {{ "%.4f"|format(p_3) }})
+</span>
+</p>
+
+<p>
+<strong>β1 (Difference in Years):</strong>
+<span style="color: {{ 'green' if p_3 < 0.05 else 'red' }}">
+    {{ "%.4f"|format(beta_1) }} (p = {{ "%.4f"|format(p_3) }})
+</span>
+</p>
+
+<p>
+<strong>β₃ (Difference Across Years for Rural vs Metro):</strong>
+<span style="color: {{ 'green' if p_3 < 0.05 else 'red' }}">
+    {{ "%.4f"|format(beta_3) }} (p = {{ "%.4f"|format(p_3) }})
+</span>
+</p>
 
 <br>
 <a href="/compare" class="back-button">Go Back</a>

@@ -9,19 +9,26 @@ From the AHRF dataset, I used the Rural-Urban Continuum Codes (RUCC) from 2013. 
 DC IS INCLUDED - IT IS A 1 METRO 
 
 **Explain how you acquired it (e.g. via an API, file download, etc).**
-I acquired my data via a file download. On the SDOH website, they offer a direct file download of a xlsx file for every year at each level that is offered making it easy to access the whole dataset. Because it is so large, it does create a big datafile for use, especially using as many variables for the whole country over many years like I did. I downloaded all the raw data from 2013-2020 and then only called in the columns I wanted to use (9 in total *not including the total number of*). When calling in the data like this to my Flask, it was extremely slow even as a pickled file, so I made the file a paraquet.
+I acquired my data via a file download. On the SDOH website (https://www.ahrq.gov/sdoh/data-analytics/sdoh-data.html), they offer a direct file download of a xlsx file for every year at each level (county, zip, census tract) that is offered, making it easy to access the whole dataset. Because it is so large, it does create a big datafile for use, especially using as many variables for the whole country over many years like I did. I downloaded all the raw data from 2013-2020 and then only called in the columns I was initially interested in. When calling in the data like this to my Flask, it was extremely slow even as a pickled file, so I made the file a paraquet. I also have it load only one time at the top of my server so it is not continually having to reload. 
 
 # FAIR Data
 **Discuss the FAIRness of the data provider.**
 **FAIR is a journey not a destination, so when considering each aspect find something that it does well and something that could be done better**
 **Include: Was the data well-annotated with metadata? Was the license clear?**
+Overall I found the data to be very fair.
+
+SDOH is a well-known dataset and it is posted in a easy to acces format on the AHRQ SDOH website. I will say that I'm not sure if it is a personal issue, but I sometimes have a hard  time finding the actual raw data. While it is easy to find AHRQ and their work on SDOH, when you Google AHRQ SDOH data, it brings you to their homepage with already built analyses and tools. I have come to just bookmarking the page because the raw data is not obvious on their website (but again that could be a personal issue).
+
+The data is very accessible as it is very  open to anyone wanting to research SDOHs or even just curious. One downside in my opinion is that they lack an API to query, which would be helpful for a multi-year large dataset. 
+
+The dataset retains very good standard naming procedures, making it interoperable and reusable. 
 F - findable
 A - 
 I - 
 R - 
 
 The data was pretty well annotated but because the SDOH comes from many different sources, there are annotations that were missing. 
-Yes, the license is clear that these are federal agencies and thus the data is free and available. There are stipulations if one is wanting to publish, 
+Yes, the license is clear that these are federal agencies and thus the data is free and available. There are stipulations if one is wanting to publish a large amount, but it is mostly about how to cite them. 
 
 
 # Data Cleaning
@@ -57,6 +64,7 @@ In 2019, Alaska split some counties and thus 2 new ones were created that did no
 
 Data cleaning was surprisingly minimal for 10 years of data. The data used that is collected via the Provider of Service file is collected by the Center for Medicare and Medicaid as part of the Provider Certification process so it is updated each time a provider is recertified which is every 5 years and must be done to continue receiving their Medicare billing privileges. So, this makes for a very robust dataset for us. The RUCC codes were instituted in 2013 and did not change throughout the life of the dataset except in the very rare cases where a county was created or deleted. Which did happen in 2019 when Alaska created two new counties (Copper River and Chugach Census Areas) from a former county Valdez-Cordovo. In this instance, the RUCC columns for the two counties were empty because they had not been classified yet so although they did have data about distances to healthcare, it was not included in any analyses. All other missing data variables were from Alaska, for example there were never any values for distance to trauma or medsurg ICU for Aleutians West Census Area which are these islands over here. From my research, I don’t believe there are any centers that met the criteria to be considered a trauma or ICU within the county but I know other counties in the dataset also do not have a designated center within their borders so I’m not sure if it’s because it’s islands and that messes up how to calculate distance. I doubled checked this assumption that the medical center had to be within the county borders by look at Tennessee map of trauma centers and looking in the dataset for a county without a trauma center. I confirmed with Union county that there are reported distances to trauma centers despite not have a trauma center within the county border (https://www.tn.gov/hfc/division-of-licensure-and-regulation/trauma.html). But regardless, any missing values, I imputed N/A and the were not considered when analyses were done stratified by RUCC. Again, this mostly only affected Alaska and would usually lead to a random year that the county was not in the analyses but it was also usually pretty consistent across the 8 years analyzed meaning the effect of healthcare becoming further or closer was never considered for that data point. 
 
+*Did not put data in standard format because one is categorical and distance is what is telling the story - we wanted to see if they were far from each other. They were also already in the same units*
 # Summary Statistics
 **Discuss summary statistics and how they do or do not reflect the characteristics of the data. (e.g. are they skewed by outliers, is missing data a problem? are they misleading because of non-continuous variables? etc?)**
 
@@ -71,9 +79,6 @@ I was actually suprised that most of the analysis followed the expectation of ru
 
 # Web Front and API
 **Describe your server API and the web front-end.**
-*Switch the way the API and county counts interact. have county counts pull from api rather than api use county counts*
-*AJAX Query to have plot appear and actively change as requested*
-*debate if use map - a lot to zooom up*
 
 **Recommendations from video**
 
