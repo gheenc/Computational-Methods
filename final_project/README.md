@@ -3,7 +3,10 @@
 I chose to analyze the Social Determinants of Health (SDOH) dataset, which is a large collection of data collected by different federal entities conjoined together and managed by the Agency for Healthcare Research and Quality (AHRQ). The SDOH has been published from 2010-2020 and consists of almost 1,000 variable from differing federal survey for every county, zip code, and census tract in the US [1]. I chose to analyze on a county level. I also used the Rural-Urban Classification Code (RUCC) that assigns a classification to every county in the United States. There are 3,141 counties in the 50 United States so utilizing zip code or census tract for the entire US would be a large undertaking. Overall, I think the SDOH is interesting because it pulls so many variables from all the federal agencies and is a nice way to do comprehensive research. Within the SDOH, I specifically pulled variables from the Provider of Service (POS) dataset and the Area Health Resources Files (AHRF) dataset. 
 *add about the dataset to website*
 
-From the POS dataset, I used the maximum, median, and mean distance to emergency rooms (ER), medical-surgical ICUs (ICU), and designated trauma center (trauma). The POS data is collected by the Centers of Medicaid and Medicare quarterly. The POS must be completed during the provider recertification process that happens every 5 years at risk of not receiving full Medicare funding, so the dataset is very robust. It caluclates the distances based on the population centroid of each census tract to ensure it is not measuring the farthest distance as a place where no one lives.
+From the POS dataset, I used the maximum, median, and mean distance to emergency rooms (ER), medical-surgical ICUs (ICU), and designated trauma center (trauma) in miles. The POS data is collected by the Centers of Medicaid and Medicare quarterly. The POS must be completed during the provider recertification process that happens every 5 years at risk of not receiving full Medicare funding, so the dataset is very robust. It caluclates the distances based on the population centroid of each census tract to ensure it is not measuring the farthest distance as a place where no one lives. *cite POS website?*
+
+I chose to three methods of measurement to ensure my analyses were robust. Means can easily be skewed by outliers so sometimes median is actually better at telling a more comprehensive story. I also thought maximum would be an interesting metric because this has potential to show an interesting story, especially surrounding the question of if distance needed to travel is increasing. 
+By using three methods of measurements, I could appreciate if the results were in a different method and there was information loss in any others that were disguising significance. 
 
 From the AHRF dataset, I used the Rural-Urban Continuum Codes (RUCC) from 2013. These codes are originally developed and collected by the USDA every decade. The codes for each county in the USA are on a scale from 1-9 with 1 being the most metro and 9 being the most rural. They codes are reanalyzed every 10 years following the census, so there are updated codes from 2023, but they changed the classification level (higher population required for each level) so I decided to continue using the 2013 codes when they would have been in effect for the data collected. The SDOH dataset has data from 2010-2020, but for the same reason, I only analyzed data from 2013-2020. While there are codes for Puerto Rico and some other territories, I only analyzed data from the 50 states and DC. 
 
@@ -23,6 +26,7 @@ The 2013 RUCC codes have the following classifications:
 
 Ultimately, I thought this data and question was interesting following research I conducted to answer the final question in our problem set #2 about why one cannot/should not use technology to fix every problem. I found an article from the Government Accountability Office that said rural counties were seeing their healthcare centers close at a higher rate than metro counties, leading to rural populations who are already typically older and have more chronic disease to travel further for healthcare [3]. I wanted to see if we could see this same trend in the publically available datasets. 
 
+All raw data is available either as an Excel that was too large for GitHub so is available upon request or in the paraquet or pickle version in GitHub. 
 **Explain how you acquired it (e.g. via an API, file download, etc).**
 I acquired my data via a file download. On the SDOH website (https://www.ahrq.gov/sdoh/data-analytics/sdoh-data.html), they offer a direct file download of a xlsx file for every year at each level (county, zip, census tract) that is offered, making it easy to access the whole dataset. Because it is so large, it does create a big datafile for use.I downloaded all the raw data from 2013-2020 and then only called in the columns I was initially interested in. When calling in the data like this to my Flask, it was extremely slow even as a pickled file, so I made the file a paraquet. I also have it load only one time at the top of my server so it is not continually having to reload. 
 
@@ -59,26 +63,55 @@ Because the RUCC codes are created once in 2013, they stay consistent throughout
 
 *Map of Alaska*
 
-None of the data was standardized prior to analysis. The RUCC scores are categorical so they could not be standardized. Difference within the distance variables is what is telling the story - standardizing it would take away any insights we might be able to see. For the main analyses (regression and ANOVA), the variables were not being compared in way that expressing them in different units would have a meaninful impact on how they are interpretted. 
+None of the data was standardized prior to analysis. The RUCC scores are categorical so they could not be standardized. Difference within the distance variables is what is telling the story - standardizing it would take away any insights we might be able to see. For the main analyses (regression and ANOVA), the variables were not being compared in way that expressing them in different units would have a meaningful impact on how they are interpretted. 
 
 # Summary Statistics
 **Discuss summary statistics and how they do or do not reflect the characteristics of the data. (e.g. are they skewed by outliers, is missing data a problem? are they misleading because of non-continuous variables? etc?)**
 All summary statistics can be found in data_cleaning.ipynb
 
+Summary statistics of county distribution and population
+*Population table*
+
 To analyze if there were any outliers I made interactive box and whisker plots of each variable considered for each county classification in 2013 and 2020. *it would be beneficial to do one for each year*
-This allowed me to ensure there were no random outliers that would have made me question the data integrity or if there was a potential data input error. The majority of the outliers were from Alaska. 
+*Box and Whisker Plot from one year of one variable*
+
+This allowed me to ensure there were no random outliers that would have made me question the data integrity or if there was a potential data input error. The majority of the outliers were from Alaska. Because Alaska is so rural, they had some of the largest distances to travel to healthcare, especially in the rural counties. I did not change or drop these outliers because it is the story for Alaska - that they have to travel that far to healthcare - so I think they are beneficial to leave. This is what inspired me to add the stratification based on region, because if one wanted a analyses with potentially less outliers, they could focus on the South or Northeast regions only. 
+
+I also analyzed the equivilent of the box and whisker plots in full number format but doing .describe() on each variable while they were seperated by RUCC codes. By looking at the mean of each RUCC code, we see that the avergae distance to each healthcare entity increases as you move from the metro to the more rural classification, as is expected. 
+*Mean of something table*
+
+I thought it was interesting that many of the values were actually seperated by a similar distribution. We also see the no matter the classification the difference between the numbers at the 25% percentile and numbers at the 75% percentile are similar, until a certain point. This may indicate that the difference between the populations within a classification who are relatively close to healthcare and relatively far from healthcare within that classification are actually very similar, it is just the base number that changes. So for example, within a 1 metro area the difference between someone being in the top 25% closest to healthcare on average is about 4 miles closer than someone in the 25% of the population farthest from healthcare no matter the RUCC classification - what changes when changing classification is how even the closest 25% are so in classification 1 it is the difference in between 6 miles from a trauma center to 20 miles from a trauma center but in classification 6 it is the difference in being 10 miles and 35 miles from a trauma center.
+
+In this view, I was also able to appreciate the real world significance of the values. For example, the mean distance to an ER were very small even at the 75th quartile, which is great for healthcare availability. With mean distance to ER, we can also see the difference between the 25th quartile and the 75th quartile of the 1 metro classification counties is only 3 miles. While 3 miles is still a genuine amount to cross in an emergency, it is not quite the distribution I was expecting to see. We can also see that the mean distance to ER for RUCC classifications for counties 1-7 are similar and the difference between the 75th quartile of classification 1 and classification 7 is only 3 miles. Again, while these are different they are not quite as meaningful as I expected to see. We do still see maximum numbers that get quite high and would be a meaningful distance to cross in case of emergency, so we cannot discount that these exist as well and how they are represented throughout the classification breakdown. 
+*Table*
 
 # Analysis 
 **Discuss the analyses you chose to run.**
 **Why these questions?**
 **What were the results?**
 **Any surprises?**
-I was actually suprised that most of the analysis followed the expectation of rural counties being farther from healthcare. I thought I would find some exceptions to this though but I did not. 
+Due to the categorical nature of RUCC categories, I chose to run a two-way ANOVA that analyzed the analyses on the difference in years, difference in RUCC categories, and ultimately, the interaction between both that would answer the intital research question of if rural hospitals are seeing having a drastic increase in distance needed to travel to access healthcare compared to rural counties.
+
+The first aspect of the ANOVA looks at the main effect of year, so if there is a statistically significant difference in distance needed to travel to reach healthcare between years. It is worth nothing that doing an ANOVA causes the years to be treated as categorical rather than continuous. Ultimately, for many of the analyses, year was not significant, meaning there was not a difference of distance throughout the years. There were some analyses that returned significant specifically for the trauma variables in which the distance to trauma centers actually decreased, meaning the trauma centers were closer and easier to access. This was suprising to me as it is totally contrary to the hypothesis. I am curious if this is due to more trauma centers being built or expanded or if there is some background reason relating to the trauma center designation, of which I am unsure, that is causing existing centers to be upgraded to trauma centers.
+
+The second aspect of the ANOVA looks at the main effect of the RUCC classification, so if there is a significant difference in distance needed to travel to reach healthcare between the RUCC classifications. For this analysis, there was found to be a significant difference between the RUCC counties distance majority of the time. There were 36 interactions that were not significant, mostly within the maximum measurements. One interesting aspect of this interaction being significat (that I was able to determine thanks to the interactability of Plotly graphs) is that a lot of the times they were deemed significant, the number would not actually be that different from each other, similar to discussed in the summary statistics. 
+
+The last analysis was a two-way ANOVA of the interaction between year and RUCC codes and if that created a significant difference in the distance. Overall, all the results were not significiant and they were very rarely ever even approaching significance. This means that it is very unlikely that rural counties are seeing a recent increase in the distance needed to travel to reach an er, icu, or trauma center no matter the measurement method used compared to metro counties. This did not support our hypothesis.
+
+*picture of matrix of analyses*
+
+One of my commenters asked if I had considered using a linear regression. This would cause the years to be treated as continuous rather than categorical. Following this recommendation, I added a linear regression to run alongside the ANOVA. An interesting future work would be to consider if this model provides any additional insights into the relationship AND if the results differ from the ANOVA. From the few analyses I ran, I did not see any significant values. 
+
+Methods of measurment - I noticed more similaries across the type of healthcare rather than the measurement being used. Ultimately, I saw similar results no matter the measurment method being used. 
 
 **How did you validate your analyses?**
+All validations are available in an Excel that was too large to push to GitHub, but can be made available upon request. 
+
 To validate the county breakdown and API 
 
-To validate the ANOVA and regression I used the Excel data analysis toolpack. Because Alaska had the missing data due to 
+To validate the ANOVA and regression I used the Excel data analysis toolpack. Because Alaska had the missing data due to the addition of the two counties, Excel did not like that there were blank or N/A cells, so I had to run the analysis without Alaska. For this reason it is not a very robust validation and I do think the data analysis through Excel offers lots of potential for human error or misunderstanding, but, nevertheless, the p values were very similar and more importantly remained insignificant. 
+
+I also validated that the data was being pulled and graphed correctly by aggregating the means and graphing it in Excel. The output was exact same as the graphs generated from my data. 
 
 # Web Front and API
 **Describe your server API and the web front-end.**
@@ -100,7 +133,7 @@ The About the Dataset page gives a brief overview of SDOH and the variables used
 Distance to Healthcare is where the heart of the analysis lives. Here the user can choose from one of the 9 variables they wish to analyze, and which two RUCCs they would like to compare. They can also stratify by region if they would like to compare classifications between region or only look within one region. I added which states are classified within each region for better understanding for the user. For all my analyzes I only focused on the interaction of RUCC in all the US.
 *Photo of input distance*
 
-Once the user has chosen a variable, two RUCCs, and regions if they wish, they click the analyze button and a graph generates along with a ANOVA and linear regression anaysis. The graph generates as a Plotly graph so it can be interactive to users. The graph shows as a line graph of the mean distance wanted for each RUCC wanted for every year from 2013-2020. This allows the user to visually appreciate if there were any changes in distance needed to travel for each classification and the difference between the two classifications.
+Once the user has chosen a variable, two RUCCs, and regions if they wish, they click the analyze button and a graph generates along with a ANOVA and linear regression anaysis. The graph generates as a Plotly graph so it can be interactive to users. The graph shows as a line graph of the mean distance wanted for each RUCC wanted for every year from 2013-2020. This allows the user to visually appreciate if there were any changes in distance needed to travel for each classification and the difference between the two classifications. The axes are dynamic to allow the best setting to display the graphs adequately, but this is something the user should take caution in if quickly comparing differnent graphs. 
 *Photo of Graph*
 
 It then displays the results of the ANOVA and linear analyses. Any insignificant analyses are shown in red and any significant analyses are shown in green. 
@@ -111,15 +144,19 @@ It then displays the results of the ANOVA and linear analyses. Any insignificant
 I recieved three comments on my video.
 
 The first asked if I considered looking at total number of ERs and other healthcare services, and I did. This was the initial metric I wanted to use for my analyses but after looking at the data, I felt it was misleading. 
+*Two graphs*
 
 I also received a comment asking if I considered using 10 decimals for the p values as opposed ot 5. I did increase this following the comment but I'm not sure much significance was gained. I also think any more decimals would be hard to visually appreciate and become overwhelming for the viewer, so I ultimately put it back. 
 *Photo of 10 decimals*
 
-The last comment I received asked if I had considered running a linear regression. When I had initially pondered the correct analysis to run, linear regression had been an option. Because RUCC is continuous, however, I believed benefit could be gained from an ANOVA. 
+The last comment I received was addressed above in the analysis section. 
 
 # Discussion
 **Mention any surprising results or unexpected difficulties.**
 I considered being able to analyze multiple RUCC between each other but I didn't know how to do this without making the user face appear clunky. 
+
+Surprises: trauma - more being built or more being designated
+Difficulty: validating, determing statistics, lots of variables with the 3x3 measurement methds, especially because did not see any significance, would be cool to zoom in on one region and look deeper at one measurment method.
 
 ## Sources 
 [1]Social Determinants of Health Database. Content last reviewed June 2023. Agency for Healthcare Research and Quality, Rockville, MD.
