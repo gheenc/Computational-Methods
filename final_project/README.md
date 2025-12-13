@@ -1,7 +1,7 @@
-## About the Dataset
+# About the Dataset
 **Describe the dataset and why it is interesting.**
 I chose to analyze the Social Determinants of Health (SDOH) dataset, which is a large collection of data collected by different federal entities conjoined together and managed by the Agency for Healthcare Research and Quality (AHRQ). The SDOH has been published from 2010-2020 and consists of almost 1,000 variable from differing federal survey for every county, zip code, and census tract in the US [1]. I chose to analyze on a county level. I also used the Rural-Urban Classification Code (RUCC) that assigns a classification to every county in the United States. There are 3,141 counties in the 50 United States so utilizing zip code or census tract for the entire US would be a large undertaking. Overall, I think the SDOH is interesting because it pulls so many variables from all the federal agencies and is a nice way to do comprehensive research. Within the SDOH, I specifically pulled variables from the Provider of Service (POS) dataset and the Area Health Resources Files (AHRF) dataset. 
-*add about the dataset to website*
+
 
 From the POS dataset, I used the maximum, median, and mean distance to emergency rooms (ER), medical-surgical ICUs (ICU), and designated trauma center (trauma) in miles. The POS data is collected by the Centers of Medicaid and Medicare quarterly. The POS must be completed during the provider recertification process that happens every 5 years at risk of not receiving full Medicare funding, so the dataset is very robust. It caluclates the distances based on the population centroid of each census tract to ensure it is not measuring the farthest distance as a place where no one lives. *cite POS website?*
 
@@ -21,7 +21,7 @@ The 2013 RUCC codes have the following classifications:
 8-Rural: less than 2,500, adjacent to a metro area
 9-Rural: less than 2,5000, not adjacent to a metro area [2]
 
-*Breakdown of counties?*
+!['Map of County Classification for US'](report_images/us_map_counties.png)
 *NC picture of county maps*
 
 Ultimately, I thought this data and question was interesting following research I conducted to answer the final question in our problem set #2 about why one cannot/should not use technology to fix every problem. I found an article from the Government Accountability Office that said rural counties were seeing their healthcare centers close at a higher rate than metro counties, leading to rural populations who are already typically older and have more chronic disease to travel further for healthcare [3]. I wanted to see if we could see this same trend in the publically available datasets. 
