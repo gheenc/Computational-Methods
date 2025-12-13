@@ -62,14 +62,21 @@
 <p>
 <strong>β1 (Difference in Years):</strong>
 <span style="color: {{ 'green' if p_3 < 0.05 else 'red' }}">
-    {{ "%.4f"|format(beta_1) }} (p = {{ "%.4f"|format(p_3) }})
+    {{ "%.10f"|format(beta_1) }} (p = {{ "%.10f"|format(p_3) }})
+</span>
+</p>
+
+<p>
+<strong>β1 (Difference in Groups):</strong>
+<span style="color: {{ 'green' if p_3 < 0.05 else 'red' }}">
+    {{ "%.10f"|format(beta_2) }} (p = {{ "%.10f"|format(p_3) }})
 </span>
 </p>
 
 <p>
 <strong>β₃ (Difference Across Years for Rural vs Metro):</strong>
 <span style="color: {{ 'green' if p_3 < 0.05 else 'red' }}">
-    {{ "%.4f"|format(beta_3) }} (p = {{ "%.4f"|format(p_3) }})
+    {{ "%.10f"|format(beta_3) }} (p = {{ "%.10f"|format(p_3) }})
 </span>
 </p>
 

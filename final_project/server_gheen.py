@@ -32,8 +32,8 @@ def state_county_counts(state_name):
 def run_linear_regression(df1, df2, category):
     df1 = df1.copy()
     df2 = df2.copy()
-    df1["RUCC_GROUP"] = "Group1"
-    df2["RUCC_GROUP"] = "Group2"
+    df1["RUCC_GROUP"] = 0
+    df2["RUCC_GROUP"] = 1
 
     df = pd.concat([df1, df2], ignore_index=True)
 
@@ -151,13 +151,13 @@ def deep_analyze():
     # Extract beta coefficients and pvalues for linear regression
     beta_0 = reg_model.params["Intercept"]
     beta_1 = reg_model.params["YEAR"]
-    beta_2 = reg_model.params["RUCC_GROUP[T.Group2]"]
-    beta_3 = reg_model.params["YEAR:RUCC_GROUP[T.Group2]"]
+    beta_2 = reg_model.params["RUCC_GROUP[T.1]"]
+    beta_3 = reg_model.params["YEAR:RUCC_GROUP[T.1]"] # compares back to reference group
 
     p_0 = reg_model.pvalues["Intercept"]
     p_1 = reg_model.pvalues["YEAR"]
-    p_2 = reg_model.pvalues["RUCC_GROUP[T.Group2]"]
-    p_3 = reg_model.pvalues["YEAR:RUCC_GROUP[T.Group2]"]
+    p_2 = reg_model.pvalues["RUCC_GROUP[T.1]"]
+    p_3 = reg_model.pvalues["YEAR:RUCC_GROUP[T.1]"]
 
     
     # Interpret the interaction (Difference-in-Differences)
