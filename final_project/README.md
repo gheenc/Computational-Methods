@@ -61,7 +61,7 @@ The datasets I chose within the SDOH were very comprehensive and required little
 After pulling in the wanted columns for each year from the raw excel file, I dropped any rows that were not from the 50 states or DC. I did this by creating a variable called "allowed states" and consistently called that variable for each year so only the rows where STATE == one of the allowed states it was kept. I then had the data print all values in STATE and the length so I could visually ensure only all 50 states and DC were kept and thus the length would be 51. For each year, I printed any rows which were missing. Overall, the only rows with missing data were from Alaska. The Alaska West Census Area did not have values to a designated-trauma center or ICU for any years.I attempted to do outside research to determine if this county has any healthcare that was being overlooked, but I was not able to determine with any confidence what their healthcare availability is like. I validated a county in Tennessee and a list of their designated trauma centers in the data set that it did not require the healthcare entitiy to be within the county borders and it did not [4]. Because of this I am not sure why they would have metrics of distance, except this county is the little line of islands that make the arm of Alaska, so they are very remote. Because of this data collection or distance measuring could be an issue. The only other missing data was from other counties in Alaska that would randomly not have a value for distance to either a designated trauma center or an ICU (the specific counties, years, and variables that were missing can be seen in data_cleaning.ipynb). When this happened, I left the values blank and they would not be included in the analyses for that year. 
 Because the RUCC codes are created once in 2013, they stay consistent throughout the dataset and would only appear missing if a county was created. Alaska did create two new counties - Chugach Census and Copper River - in 2019 from the Valdez-Crodova Census Area. Because of this the two new counties did not have RUCC classification but they did have distance to ER, designated trauma centers, and ICUs because there are 4 hospitals in Chugach county and 1 in Copper River. Because of the reclassification however, Valdez-Cordova did not have any information about ER, ICU, or trauma centers. Because the new counties were not classified and the ratings of classification changed in 2023, I chose to leave them blank as well and not include them in the analysis when they appear, which was only for 2020. 
 
-![Map of Alaska Counties](report_images\alaska.png)
+![Map of Alaska Counties](report_images/alaska.png)
 
 I then made one big dataframe of all years extracted. I made sure the year and RUCC classifications were integers. I did look at the summary statistics for the whole dataframe, but because all the RUCC codes and years were integrated, I found more benefit from the stratified summary statistics. Looking at each variable stratified by RUCC classification, there are a couple of things that can be appreciated. 
 
@@ -73,15 +73,16 @@ None of the data was standardized prior to analysis. The RUCC scores are categor
 **Discuss summary statistics and how they do or do not reflect the characteristics of the data. (e.g. are they skewed by outliers, is missing data a problem? are they misleading because of non-continuous variables? etc?)**
 All summary statistics can be found in data_cleaning.ipynb
 
-Summary statistics of county distribution and population
-*Population table*
+I first looked at the of the number of counties were within each classification and how many people resided within each classification. This helped conceptualize how many people would be affected by the healthcare metrics of that classification and also how many people would indirectly be contributing to the datapoints. We can see from the table below that overall there are 3,141 counties in the 50 United States (fun fact the most common county name is Washington County). We can see that the most common county classification are 1 (Metro - 1+ million population), 7 (Urban - 2,500-19,999 population, not adjacent to a metro area), and 9 (Rural - less than 2,5000, not adjacent to a metro area) each with about 430 counties classified as each.The most rare classification is 5 (Urban - 20,000+ not adjacent to metro area). The largest amount of people live in classification 1, meaning the availability of healthcare within this county classification will affect the largest amount of people. 
 
-To analyze if there were any outliers I made interactive box and whisker plots of each variable considered for each county classification in 2013 and 2020. *it would be beneficial to do one for each year*
-*Box and Whisker Plot from one year of one variable*
+![Distribution of Classifications and population within each](report_images/population_table.png)
 
-This allowed me to ensure there were no random outliers that would have made me question the data integrity or if there was a potential data input error. The majority of the outliers were from Alaska. Because Alaska is so rural, they had some of the largest distances to travel to healthcare, especially in the rural counties. I did not change or drop these outliers because it is the story for Alaska - that they have to travel that far to healthcare - so I think they are beneficial to leave. This is what inspired me to add the stratification based on region, because if one wanted a analyses with potentially less outliers, they could focus on the South or Northeast regions only. 
+To analyze if there were any outliers I made interactive box and whisker plots with Plotly of each variable considered for each county classification each year. The hover ability allowed me to ensure there were no random outliers that would have made me question the data integrity or if there was a potential data input error because if a value was very oddly high for only one year, this would be odd to me. The majority of the outliers were from Alaska. Because Alaska is so rural, they had some of the largest distances to travel to healthcare, especially in the rural counties. I did not change or drop these outliers because it is the story for Alaska - that they have to travel that far to healthcare - so I think they are beneficial to leave. This is what inspired me to add the stratification based on region, because if one wanted a analyses with potentially less outliers, they could focus on the South, Midwest, or Northeast regions only. 
 
-I also analyzed the equivilent of the box and whisker plots in full number format but doing .describe() on each variable while they were seperated by RUCC codes. By looking at the mean of each RUCC code, we see that the avergae distance to each healthcare entity increases as you move from the metro to the more rural classification, as is expected. 
+!['Box and Whisker Plot of Mean ER distance in 2013 stratified by RUCC classification'](report_images/box_whisker.png)
+Here is an example of one of the box and whisker plots caputure the classifications within one year for one variable. All the high outlying points are Alaska. 
+
+I also analyzed the equivilent of the box and whisker plots in full number format by doing .describe() on each variable while they were stratified by RUCC codes. By looking at the mean of each RUCC code, we see that the average distance to each healthcare entity increases as you move from the metro to the more rural classification, as is expected. 
 *Mean of something table*
 
 I thought it was interesting that many of the values were actually seperated by a similar distribution. We also see the no matter the classification the difference between the numbers at the 25% percentile and numbers at the 75% percentile are similar, until a certain point. This may indicate that the difference between the populations within a classification who are relatively close to healthcare and relatively far from healthcare within that classification are actually very similar, it is just the base number that changes. So for example, within a 1 metro area the difference between someone being in the top 25% closest to healthcare on average is about 4 miles closer than someone in the 25% of the population farthest from healthcare no matter the RUCC classification - what changes when changing classification is how even the closest 25% are so in classification 1 it is the difference in between 6 miles from a trauma center to 20 miles from a trauma center but in classification 6 it is the difference in being 10 miles and 35 miles from a trauma center.
@@ -90,77 +91,77 @@ In this view, I was also able to appreciate the real world significance of the v
 *Table*
 
 # Analysis 
-**Discuss the analyses you chose to run.**
-**Why these questions?**
-**What were the results?**
-**Any surprises?**
-Due to the categorical nature of RUCC categories, I chose to run a two-way ANOVA that analyzed the analyses on the difference in years, difference in RUCC categories, and ultimately, the interaction between both that would answer the intital research question of if rural hospitals are seeing having a drastic increase in distance needed to travel to access healthcare compared to rural counties.
+**Discuss the analyses you chose to run. Why these questions? What were the results? Any surprises?**
+Due to the categorical nature of RUCC categories, I chose to run a two-way ANOVA that analyzed the difference in years, difference in RUCC categories, and ultimately, the interaction between both that would answer the intital research question of if rural hospitals are having a drastic increase in distance needed to travel to access healthcare compared to rural counties.
 
 The first aspect of the ANOVA looks at the main effect of year, so if there is a statistically significant difference in distance needed to travel to reach healthcare between years. It is worth nothing that doing an ANOVA causes the years to be treated as categorical rather than continuous. Ultimately, for many of the analyses, year was not significant, meaning there was not a difference of distance throughout the years. There were some analyses that returned significant specifically for the trauma variables in which the distance to trauma centers actually decreased, meaning the trauma centers were closer and easier to access. This was suprising to me as it is totally contrary to the hypothesis. I am curious if this is due to more trauma centers being built or expanded or if there is some background reason relating to the trauma center designation, of which I am unsure, that is causing existing centers to be upgraded to trauma centers.
 
-The second aspect of the ANOVA looks at the main effect of the RUCC classification, so if there is a significant difference in distance needed to travel to reach healthcare between the RUCC classifications. For this analysis, there was found to be a significant difference between the RUCC counties distance majority of the time. There were 36 interactions that were not significant, mostly within the maximum measurements. One interesting aspect of this interaction being significat (that I was able to determine thanks to the interactability of Plotly graphs) is that a lot of the times they were deemed significant, the number would not actually be that different from each other, similar to discussed in the summary statistics. 
+The second aspect of the ANOVA looks at the main effect of the RUCC classification, so if there is a significant difference in distance needed to travel to reach healthcare between the RUCC classifications. For this analysis, there was found to be a significant difference between the RUCC counties distance majority of the time. There were 36 interactions that were not significant, mostly within the maximum measurements. One interesting aspect of this interaction being significant (that I was able to determine thanks to the interactability of Plotly graphs) is that a lot of the times they were deemed significant, the number would not actually be that different from each other, so for example, the difference of 6 miles between classification 8 and 9 on the mean distance to a trauma center. The method of measurment also did not have any meaningful influence on what was deemed significant or not.
 
-The last analysis was a two-way ANOVA of the interaction between year and RUCC codes and if that created a significant difference in the distance. Overall, all the results were not significiant and they were very rarely ever even approaching significance. This means that it is very unlikely that rural counties are seeing a recent increase in the distance needed to travel to reach an er, icu, or trauma center no matter the measurement method used compared to metro counties. This did not support our hypothesis.
+The last analysis was a two-way ANOVA of the interaction between year and RUCC codes and if that created a significant difference in the distance. Overall, all the results were not significiant and they were very rarely ever even approaching significance. This means that it is very unlikely that rural counties are seeing a recent increase in the distance needed to travel to reach an er, icu, or trauma center no matter the measurement method used compared to metro counties. Ultimately, this did not support our hypothesis.
 
-*picture of matrix of analyses*
+!['ANOVA Analyses results'](report_images/matrix.png)
+Here is an example of the results of all interactions between classifcations and year for mean distance to ER. 
 
-One of my commenters asked if I had considered using a linear regression. This would cause the years to be treated as continuous rather than categorical. Following this recommendation, I added a linear regression to run alongside the ANOVA. An interesting future work would be to consider if this model provides any additional insights into the relationship AND if the results differ from the ANOVA. From the few analyses I ran, I did not see any significant values. 
-
-Methods of measurment - I noticed more similaries across the type of healthcare rather than the measurement being used. Ultimately, I saw similar results no matter the measurment method being used. 
+One of my commenters asked if I had considered using a linear regression. This would cause the years to be treated as continuous rather than categorical. Following this recommendation, I added a linear regression to run alongside the ANOVA. An interesting future work would be to consider if this model provides any additional insights into the relationship AND if the results differ from the ANOVA when treating year continuously instead. From the few analyses I ran, I did not see any significant values but I was not able to consider each interaction the way I did for the ANOVA. I do like the added benefit of having both analyses not only because it would allow an in-depth analysis of how handling a variable in different ways could affect a result (it could be a great connection to our Clinical Informatics subjects like information loss and data semantics) but it also allows for an anlaysis of if there is a difference and the magnitude of the difference. 
 
 **How did you validate your analyses?**
 All validations are available in an Excel that was too large to push to GitHub, but can be made available upon request. 
 
-To validate the county breakdown and API 
+To validate the county breakdown and API I quiered the original dataset for a small state and a large state to ensure the webpage was displaying the same data that was in the dataset. I also cross checked the dataset RUCC values to other published examples of the 2013 RUCC codes.  
 
 To validate the ANOVA and regression I used the Excel data analysis toolpack. Because Alaska had the missing data due to the addition of the two counties, Excel did not like that there were blank or N/A cells, so I had to run the analysis without Alaska. For this reason it is not a very robust validation and I do think the data analysis through Excel offers lots of potential for human error or misunderstanding, but, nevertheless, the p values were very similar and more importantly remained insignificant. 
 
-I also validated that the data was being pulled and graphed correctly by aggregating the means and graphing it in Excel. The output was exact same as the graphs generated from my data. 
+I also validated that the data was being pulled and graphed correctly by manually aggregating the means and graphing it in Excel. The output was exact same as the graphs generated from my data. 
+![Graph to Validate Data being Pulled](report_images/validation.png)
 
 # Web Front and API
 **Describe your server API and the web front-end.**
 The landing page of my web page begins with a map of the country and the RUCC classification of each county developed by UNC. It also states the title of the project and lets the user know only the 50 states and DC are available for analysis. 
-*Photo of landing page*
+!['Webpage Landing Page'](report_images/landing_page.png)
 
 The user can then select from three options: breakdown of RUCC by state, distance to healthcare by RUCC, and about the dataset.
-*Photo of the three button*
+!['Three Choices on the Webpage'](report_images/buttons.png)
 
-The breakdown of RUCC by state allows the user to input any selected state to learn how that state's counties are classified. After a state is selected, it displays a numerical breakdown of how many counties are present in the state for each classification, a photo of the state and it's counties colored according to their classification and a legend that tells each classification's color and metrics. The html also includes a maximum width and height so that each photo can conform to the best ratio for the state's size. 
-*Photo of Vermont*
+The breakdown of RUCC by state option allows the user to input any selected state to learn how that state's counties are classified. After a state is selected, it displays a numerical breakdown of how many counties are present in the state for each classification, a photo of the state, and it's counties colored according to their classification and a legend that tells each classification's color and metrics. The html also includes a maximum width and height so that each photo can conform to the best ratio for the state's size. 
+!['Options to Analyze state's RUCC classifications'](report_images/rucc_dropdown.png)
+!['RUCC Classification results of Vermont'](report_images/vermont.png)
 
 This analyze page also pulls from the website's API. The API queries the original dataset for whatever state the user selected and returns the county classification breakdown.
-*Photo of Vermont API*
+!['API RUCC Classification of Vermont'](report_images/vermont_api.png)
 
 The About the Dataset page gives a brief overview of SDOH and the variables used. 
-*Photo of about the Dataset*
+!['About the Dataset Page'](report_images/about_dataset.png)
 
-Distance to Healthcare is where the heart of the analysis lives. Here the user can choose from one of the 9 variables they wish to analyze, and which two RUCCs they would like to compare. They can also stratify by region if they would like to compare classifications between region or only look within one region. I added which states are classified within each region for better understanding for the user. For all my analyzes I only focused on the interaction of RUCC in all the US.
-*Photo of input distance*
+Distance to Healthcare is where the heart of the analysis lives. Here the user can choose from one of the 9 variables they wish to analyze, and which two RUCCs they would like to compare. They can also stratify by region if they would like to compare classifications between region or only look within one region. I added which states are classified within each region for better understanding for the user.
+!['Analyze Page'](report_images/analyze_page.png)
 
-Once the user has chosen a variable, two RUCCs, and regions if they wish, they click the analyze button and a graph generates along with a ANOVA and linear regression anaysis. The graph generates as a Plotly graph so it can be interactive to users. The graph shows as a line graph of the mean distance wanted for each RUCC wanted for every year from 2013-2020. This allows the user to visually appreciate if there were any changes in distance needed to travel for each classification and the difference between the two classifications. The axes are dynamic to allow the best setting to display the graphs adequately, but this is something the user should take caution in if quickly comparing differnent graphs. 
-*Photo of Graph*
+Here is a view with all the options of variables. I considered being able to analyze multiple RUCC between each other but I didn't know how to do this without making the user face appear clunky. 
+!['Analyze Page Options'](report_images/analyze_options.png)
+
+Once the user has chosen a variable, two RUCCs, and regions if they wish, they click the analyze button and a graph generates along with a ANOVA and linear regression anaysis. The graph generates as a Plotly graph so it can be interactive to users. The headers are also smart so they fill in as whatever variable and RUCC classification the user has chosen. The graph shows as a line graph of the means of distance wanted for each RUCC wanted for every year from 2013-2020. This allows the user to visually appreciate if there were any changes in distance needed to travel for each classification and the difference between the two classifications. The axes are dynamic to allow the best setting to display the graphs adequately, but this is something the user should take caution in if quickly comparing differnent graphs that they might be on different axes. 
+!['Analyze Page Results'](report_images/mean_er_graph.png)
 
 It then displays the results of the ANOVA and linear analyses. Any insignificant analyses are shown in red and any significant analyses are shown in green. 
-*Photo of analyses*
+!['Analyze Page Results'](report_images/anova_results.png)
 
 
 **Recommendations from video**
 I recieved three comments on my video.
 
-The first asked if I considered looking at total number of ERs and other healthcare services, and I did. This was the initial metric I wanted to use for my analyses but after looking at the data, I felt it was misleading. 
-*Two graphs*
+The first asked if I considered looking at total number of ERs and other healthcare services, and I did. This was the initial metric I wanted to use for my analyses but after looking at the data, I felt it was misleading. The more metro counties have moreand the rural counties have less, especially 5 because it is the most "rare" county classification and therefore are serving less people. The dataset also offers rates so number of hospitals and ICU per 1,000 population, but I found this analysis to be misleading as well. I think this is an example of when per capita rates can be misleading because the rural counties appear to have a lot more healthcare options than the metro ones because a 9 classification with 2,000 citizens and 2 hospitals becomes the same rate as a metro classification with 2,000,000 citizens and 2,000 hospitals [5].
+!['Analyze Page Results'](report_images/total_pop.png)
+!['Analyze Page Results'](report_images/total_rate.png)
 
-I also received a comment asking if I considered using 10 decimals for the p values as opposed ot 5. I did increase this following the comment but I'm not sure much significance was gained. I also think any more decimals would be hard to visually appreciate and become overwhelming for the viewer, so I ultimately put it back. 
-*Photo of 10 decimals*
+I also received a comment asking if I considered using 10 decimals for the p values as opposed ot 5. I did increase this following the comment but I'm not sure much significance was gained. I also think any more decimals would be hard to visually appreciate and become overwhelming for the viewer, so I am honestly not sure if it is a change I will retain, but I appreciate the thought given. 
 
 The last comment I received was concerning the idea to include a linear regression as well. I originally used an ANOVA due to the categorical nature of the RUCC codes. I retained all aspects of my ANOVA but added a linear regression display of the year interaction, showing the beta correlation if year was handled continuously rather than categorically. Then the beta correlation of the full interaction between RUCC codes, year and the distance. 
 
 # Discussion
 **Mention any surprising results or unexpected difficulties.**
-I considered being able to analyze multiple RUCC between each other but I didn't know how to do this without making the user face appear clunky. 
+I was surpised at the decrease in distance to reach a trauma center which was in direct opposition to what I thought we were going to find in the data. Ultimately, this is a good thing and means more people are within a reasonable distance is they need help. I was also surprised in the details gleamed from looking at the raw numbers of the data. Many of the classifications had 75% of their population living within 30 miles maximum to multiple types of healthcare, which in dire situations is incredible. This is not the reality I thought most people were living in, but it cannot be forgotten that this data is the average man's story, so I'm not fully convinced yet that everyone lives that close to healthcare that they can access in case of emergency. 
 
-Surprises: trauma - more being built or more being designated
-Difficulty: validating, determing statistics, lots of variables with the 3x3 measurement methds, especially because did not see any significance, would be cool to zoom in on one region and look deeper at one measurment method.
+I faced some difficulties with the amount of analyses I set out to do. Ultimately, I had 9 variables in which I attempting to compare 9 classifications in every combination against one another throughout the whole country. Because of the magnitude of this, I don't think I was able to appreciate the metrics of the difference in measurement methods or in the differing type of healthcare. As a result, I feel like I had to go very shallow in my analysis rather than deep into a couple of variables. While the mean, median, and maximum distances measure different things and tell different stories, my analysis suggests that the underlying story is the same that the distance did not change must throughout the years, but were different in between the RUCC codes, but ultimately one was not having a more dramatic decrease in healthcare access than another. So, I think in any future endeavors, one could pick one measurment method and feel confident in their ability to find a significant finding if it is present. It would also be interesting to hone in on one region or state because that would allow you to really appreciate what is an outlier and what would be confounding variables to consider. 
 
 ## Sources 
 [1]Social Determinants of Health Database. Content last reviewed June 2023. Agency for Healthcare Research and Quality, Rockville, MD.
@@ -168,8 +169,12 @@ https://www.ahrq.gov/sdoh/data-analytics/sdoh-data.html - dataset
 [2]https://www.shepscenter.unc.edu/wp-content/uploads/2015/12/ruralurbancodes2013c.pdf - images in analyze
 [3] https://www.gao.gov/blog/why-health-care-harder-access-rural-america
 [4] (https://www.tn.gov/hfc/division-of-licensure-and-regulation/trauma.html)
+[5] Silva, W. T. A. F. (2020). Per capita death and infection rates should be avoided in international comparisons. Public Health, 186, 18
 
 ## Code Appendix
+
+
+
 Sources: Server.py: [1] I adapted code by Robert McDougal demonstrating flask[2] Used ChatGPT to develop API call [3] Used https://www.w3schools.com/Css/css_editor.asp as a template for the CSS and used ChatGPT to edit to my needs [4] Used ChatGPT to understand how to call in a CSS sheet and have buttons go to other pages [5] Used ChatGPT to determine which statistical test would be best, how to implement in python and display on html. [6] Used ChatGPT to turn statistically significant results green and not statistically significant results red on displayed html pages [7] Used ChatGPT to turn data into paraquet form to be faster than calling in data as Excel or pickle form [8] Used ChatGPT to implement difference of difference statistical test and two way ANOVA in python [9] Used ChatGPT to call in human readable version of variables for better graph display [10] Used ChatGPT to call in a plotly graph 
 Data_cleaning.ipynb [1] Used ChatGPT to implement scrolling bars
 Home.html: [1]Used ChatGPT to call in images to display on html pages [2] Used ChatGPT to call in style sheet
