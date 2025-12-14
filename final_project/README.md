@@ -123,7 +123,7 @@ The landing page of my web page begins with a map of the country and the RUCC cl
 The user can then select from three options: breakdown of RUCC by state, distance to healthcare by RUCC, and about the dataset.
 !['Three Choices on the Webpage'](report_images/buttons.png)
 
-The breakdown of RUCC by state option allows the user to input any selected state to learn how that state's counties are classified. After a state is selected, it displays a numerical breakdown of how many counties are present in the state for each classification, a photo of the state, and it's counties colored according to their classification and a legend that tells each classification's color and metrics. The html also includes a maximum width and height so that each photo can conform to the best ratio for the state's size. 
+The breakdown of RUCC by state option allows the user to input any selected state to learn how that state's counties are classified. The states are listed as a dropdown menu, thus eliminating any error that could occur from misspellings, use of abbreviations, etc. It also allows the user to peruse their options and choose whatever they like that is available. After a state is selected, it displays a numerical breakdown of how many counties are present in the state for each classification, a photo of the state, and it's counties colored according to their classification and a legend that tells each classification's color and metrics. The html also includes a maximum width and height so that each photo can conform to the best ratio for the state's size. 
 !['Options to Analyze state's RUCC classifications'](report_images/rucc_dropdown.png)
 !['RUCC Classification results of Vermont'](report_images/vermont.png)
 
@@ -139,7 +139,7 @@ Distance to Healthcare is where the heart of the analysis lives. Here the user c
 Here is a view with all the options of variables. I considered being able to analyze multiple RUCC between each other but I didn't know how to do this without making the user face appear clunky. 
 !['Analyze Page Options'](report_images/analyze_options.png)
 
-Once the user has chosen a variable, two RUCCs, and regions if they wish, they click the analyze button and a graph generates along with a ANOVA and linear regression anaysis. The graph generates as a Plotly graph so it can be interactive to users. The headers are also smart so they fill in as whatever variable and RUCC classification the user has chosen. The graph shows as a line graph of the means of distance wanted for each RUCC wanted for every year from 2013-2020. This allows the user to visually appreciate if there were any changes in distance needed to travel for each classification and the difference between the two classifications. The axes are dynamic to allow the best setting to display the graphs adequately, but this is something the user should take caution in if quickly comparing differnent graphs that they might be on different axes. 
+Once the user has chosen a variable, two RUCCs, and regions if they wish, they click the analyze button and a graph generates along with a ANOVA and linear regression anaysis. The graph generates as a Plotly graph so it can be interactive to users. All 9 variables and all 9 RUCC classifications are able to be graphed. The headers are also smart so they fill in as whatever variable and RUCC classification the user has chosen. The graph shows as a line graph of the means of distance wanted for each RUCC wanted for every year from 2013-2020. This allows the user to visually appreciate if there were any changes in distance needed to travel for each classification and the difference between the two classifications. The axes are dynamic to allow the best setting to display the graphs adequately, but this is something the user should take caution in if quickly comparing differnent graphs that they might be on different axes. 
 !['Analyze Page Results'](report_images/mean_er_graph.png)
 
 It then displays the results of the ANOVA and linear analyses. Any insignificant analyses are shown in red and any significant analyses are shown in green. 
@@ -172,8 +172,1716 @@ https://www.ahrq.gov/sdoh/data-analytics/sdoh-data.html - dataset
 [5] Silva, W. T. A. F. (2020). Per capita death and infection rates should be avoided in international comparisons. Public Health, 186, 18
 
 ## Code Appendix
+server.py
+```python
+# pip install pyarrow
+
+import pandas as pd
+from flask import *
+from collections import Counter
+import plotly 
+from plotly import *
+import matplotlib.pyplot as plt
+from matplotlib import *
+import requests
+import statsmodels.api as sm
+import statsmodels.formula.api as smf
 
 
+
+app = Flask(__name__)
+
+#call in raw data once
+full_data = pd.read_parquet(r"C:\Users\carol\compmethods-cg2288\final_project\clean_data.parquet")
+
+#bring in images
+@app.route('/images/<path:filename>')
+def images(filename):
+    return send_from_directory('images', filename)
+
+# helper function pulling state and county counts
+def state_county_counts(state_name):
+    r = (requests.get(f"http://127.0.0.1:5002/api/county-codes?state={state_name}", headers={"User-Agent": "MyScript"}))
+    return r.json()
+
+# helper function for linear regression
+def run_linear_regression(df1, df2, category):
+    df1 = df1.copy()
+    df2 = df2.copy()
+    df1["RUCC_GROUP"] = 0
+    df2["RUCC_GROUP"] = 1
+
+    df = pd.concat([df1, df2], ignore_index=True)
+
+    # YEAR as continuous for slope comparison
+    df["YEAR"] = df["YEAR"].astype(int)
+    df["RUCC_GROUP"] = df["RUCC_GROUP"].astype("category")
+
+    formula = f"{category} ~ YEAR * RUCC_GROUP"
+    reg_model = smf.ols(formula, data=df).fit()
+
+    return reg_model
+
+# helper function for anova
+def run_two_way_anova(df1, df2, category):
+    # Add RUCC labels so the model knows which group each row is in
+    df1 = df1.copy()
+    df2 = df2.copy()
+    df1["RUCC_GROUP"] = "Group1"
+    df2["RUCC_GROUP"] = "Group2"
+
+    # Combine into one dataframe
+    df = pd.concat([df1, df2], ignore_index=True)
+
+    # Convert categorical variables
+    df["YEAR"] = df["YEAR"].astype(int).astype("category")
+    df["RUCC_GROUP"] = df["RUCC_GROUP"].astype("category")
+
+    # Build the two-way ANOVA model with interaction
+    formula = f"{category} ~ YEAR * RUCC_GROUP"
+    model = smf.ols(formula, data=df).fit()
+    anova_table = sm.stats.anova_lm(model, typ=2)  # Type II ANOVA
+
+    return model, anova_table
+
+# landing page
+@app.route("/home")
+def home():
+    return render_template("home_gheen.html")
+
+# redirect to home
+@app.route('/')
+def root():
+    return redirect("/home")
+
+# index page
+@app.route("/index")
+def index():
+    return render_template("index_gheen.html")
+
+# analyze page and add images
+@app.route("/analyze", methods=["POST"])
+def analyze():
+    usertext = request.form["usertext"]
+    counts = state_county_counts(usertext)
+    analyze_text = ""
+    show_image = usertext != "District of Columbia"
+    state_image = usertext.lower().replace(" ", "_") + ".png" if show_image else None
+    legend = "legend.png" if show_image else None
+    return render_template("analyze_gheen.html", analysis=analyze_text, usertext=usertext, state_image=state_image, counts=counts, legend=legend, show_image=show_image)
+
+# about the dataset page
+@app.route("/dataset", methods=["GET", "POST"])
+def dataset():
+    return render_template("dataset_gheen.html")
+
+#input what to compare
+@app.route("/compare", methods=["GET", "POST"])
+def graphs():
+    print(request.form)
+    category = request.form.get("category")
+    rucc1 = request.form.get("rucc1")
+    rucc2 = request.form.get("rucc2")
+    region1 = request.form.get("region1")
+    region2 = request.form.get("region2")
+
+    human_readable = {"POS_MAX_DIST_ED": "Maximum Distance to ER", 
+        "POS_MEAN_DIST_ED": "Mean Distance to ER",
+        "POS_MEDIAN_DIST_ED": "Median Distance to ER",
+        "POS_MAX_DIST_TRAUMA": "Maximum Distance to Trauma Center",
+        "POS_MEAN_DIST_TRAUMA": "Mean Distance to Trauma Center",
+        "POS_MEDIAN_DIST_TRAUMA": "Median Distance to Trauma Center",
+        "POS_MAX_DIST_MEDSURG_ICU": "Maximum Distance to ICU",
+        "POS_MEAN_DIST_MEDSURG_ICU": "Mean Distance to ICU",
+        "POS_MEDIAN_DIST_MEDSURG_ICU": "Median Distance to ICU",
+        "POS_ASC_RATE":"Total Number of Ambulatory Surgery Centers"}
+
+    category = request.form.get("category") or request.args.get("category")
+
+    category_readable = human_readable.get(category, "Unknown Category") # convert to human-readable
+    return render_template("deeper_analysis_gheen.html", category_readable=category_readable, category=category, rucc1=rucc1, rucc2=rucc2, region1=region1, region2=region2)
+
+#show graphs 
+@app.route("/graphs", methods=["POST"])
+def deep_analyze():
+    category = request.form["category"]
+    rucc1 = int(request.form["rucc1"])
+    rucc2 = int(request.form["rucc2"])
+    region1 = request.form.get("region1")
+    region2 = request.form.get("region2")
+
+    df1 = full_data[full_data['AHRF_USDA_RUCC_2013'] == rucc1]
+    df2 = full_data[full_data['AHRF_USDA_RUCC_2013'] == rucc2]
+
+    model, anova_table = run_two_way_anova(df1, df2, category)
+    
+    # Extract p-values
+    p_year = anova_table.loc["YEAR", "PR(>F)"]
+    p_rucc = anova_table.loc["RUCC_GROUP", "PR(>F)"]
+    p_interaction = anova_table.loc["YEAR:RUCC_GROUP", "PR(>F)"]
+
+    # add linear regression
+    reg_model = run_linear_regression(df1, df2, category)
+    reg_summary = reg_model.summary().as_html()
+
+    # Extract beta coefficients and pvalues for linear regression
+    beta_0 = reg_model.params["Intercept"]
+    beta_1 = reg_model.params["YEAR"]
+    beta_2 = reg_model.params["RUCC_GROUP[T.1]"]
+    beta_3 = reg_model.params["YEAR:RUCC_GROUP[T.1]"] # compares back to reference group
+
+    p_0 = reg_model.pvalues["Intercept"]
+    p_1 = reg_model.pvalues["YEAR"]
+    p_2 = reg_model.pvalues["RUCC_GROUP[T.1]"]
+    p_3 = reg_model.pvalues["YEAR:RUCC_GROUP[T.1]"]
+
+    
+    # Interpret the interaction (Difference-in-Differences)
+    if p_interaction < 0.05:
+        did_interpretation = "The change over time is significantly different between the two RUCC groups."
+    else:
+        did_interpretation = "No significant difference in change over time between the two RUCC groups."
+
+    # -------- RUCC 1 ----------
+    if region1 == "All":
+        df1_group = df1.groupby('YEAR')[category].mean().reset_index()
+    else:
+        df1_group = df1[df1["REGION"] == region1].groupby('YEAR')[category].mean().reset_index()
+
+    # -------- RUCC 2 ----------
+    if region2 == "All":
+        df2_group = df2.groupby('YEAR')[category].mean().reset_index()
+    else:
+        df2_group = df2[df2["REGION"] == region2].groupby('YEAR')[category].mean().reset_index()
+
+
+    # Plotly-ready data
+    plot_data = [
+        {
+            "x": df1_group["YEAR"].tolist(),
+            "y": df1_group[category].tolist(),
+            "mode": "lines+markers",
+            "name": f"RUCC {rucc1} in {region1}",
+        },
+        {
+            "x": df2_group["YEAR"].tolist(),
+            "y": df2_group[category].tolist(),
+            "mode": "lines+markers",
+            "name": f"RUCC {rucc2} in {region2}",
+        },
+    ]
+
+    layout = {
+        "xaxis": {"title": "Year"},
+        "yaxis": {"title": "Distance in Miles"},
+        "hovermode": "x unified",
+    }
+
+    human_readable = {"POS_MAX_DIST_ED": "Maximum Distance to ER", 
+        "POS_MEAN_DIST_ED": "Mean Distance to ER",
+        "POS_MEDIAN_DIST_ED": "Median Distance to ER",
+        "POS_MAX_DIST_TRAUMA": "Maximum Distance to Trauma Center",
+        "POS_MEAN_DIST_TRAUMA": "Mean Distance to Trauma Center",
+        "POS_MEDIAN_DIST_TRAUMA": "Median Distance to Trauma Center",
+        "POS_MAX_DIST_MEDSURG_ICU": "Maximum Distance to ICU",
+        "POS_MEAN_DIST_MEDSURG_ICU": "Mean Distance to ICU",
+        "POS_MEDIAN_DIST_MEDSURG_ICU": "Median Distance to ICU",
+        "POS_ASC_RATE":"Total Number of Ambulatory Surgery Centers"}
+
+    category_readable = human_readable.get(category, category)
+
+    return render_template(
+    'compare_graphs_gheen.html',
+    plot_data=plot_data,
+    plot_layout=layout,
+    category=category,
+    rucc1=rucc1,
+    rucc2=rucc2,
+    graph=graphs,
+    category_readable=category_readable,
+    region1=region1,
+    region2=region2,
+    anova_table=anova_table.to_html(classes="table table-striped"),
+    p_year=p_year,
+    p_rucc=p_rucc,
+    p_interaction=p_interaction,
+    beta_0=beta_0, beta_1=beta_1,
+    beta_2=beta_2, beta_3=beta_3,
+    p_0=p_0, p_1=p_1, p_2=p_2, p_3=p_3
+)
+
+
+
+#API call for RUCC breakdown
+@app.route("/api/county-codes", methods=["GET"])
+def api_county_codes():
+    state = request.args.get("state")
+    if not state:
+        return jsonify({'error':'Missing ?state= parameter'}), 400
+    state_data = full_data[full_data['STATE'].str.lower() == state.lower()]
+    state_data = state_data[state_data['YEAR'] == 2013]
+    state_data = state_data.fillna(0)
+    county_category_counts = state_data['AHRF_USDA_RUCC_2013'].astype(int).value_counts().sort_index().to_dict()
+    return jsonify({
+        'state': state,
+        'county_category_counts': county_category_counts
+    })
+
+
+if __name__ == "__main__":
+    app.run(debug=True, port=5002)
+
+```
+home.html
+```python
+<html>
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<h1>Welcome to Rural Healthcare Analysis</h1>
+<p>Explore distance needed to travel to reach healthcare based on the 2013 Rural-Urban Continuum Codes (RUCC):</p>
+<p class="note">*Only data from the 50  US state and DC is available for analysis</p>
+
+<img src="{{ url_for('images', filename='us_map_counties.png') }}"
+     alt="Distribution of Rural and Metro Counties Image"
+     class="home-image">
+
+
+
+<div style="text-align: center; margin-top: 20px;">
+    <a href="/index">
+        <button>Breakdown of RUCC by State</button>
+    </a>
+</div>
+
+<div style="text-align: center; margin-top: 20px;">
+    <a href="/compare">
+        <button>Distance to Healthcare by RUCC</button>
+    </a>
+</div>
+
+<div style="text-align: center; margin-top: 20px;">
+    <a href="/dataset">
+        <button>About the Dataset</button>
+    </a>
+</div>
+
+
+</body>
+</html>
+```
+dataset_gheen.html
+```python
+<html>
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<h1>About the Datasets Used</h1>
+
+
+
+<p><strong>SDOH</strong></p>
+<p> I chose to analyze the Social Determinants of Health (SDOH) dataset, 
+    which is a large collection of data collected by different federal entities conjoined together and managed by the 
+    Agency for Healthcare Research and Quality (AHRQ). The SDOH has been published from 2010-2020 and consists of almost 
+    1,000 variable from differing federal surveys for every county, zip code, and census tract in the US [1]. 
+    This webpage specifically uses values from the category level datasets from 2013-2020. </p>
+<p><strong>Distance Data</strong></p>
+    <p>The specific variables used within this webpage are collected by the Provider of Service survey which is distributed by the Centers for Medicaid and Medicare upon provider recertification.
+    All distance data is measured from the center of the most populated census tract within the county.</p>
+<p><strong>RUCC Codes</strong></p>
+    <p>The Rural Urban Classifications are developed by the USDA. They are republished every 10 years; this webpage uses the 2013 values.
+    </p>
+
+
+
+
+<div style="text-align: center; margin-top: 20px;">
+    <a href="/home">
+        <button>Back to Home</button>
+    </a>
+</div>
+
+
+</body>
+</html>
+```
+deeper_analysis_gheen.html
+```python
+<html>
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+
+<h1>What Would You Like to Compare?</h1>
+<p class="subheader"><strong>Compare Distance to ER, Trauma Centers, or ICUs for RUCCs from 2013-2020</strong></p>
+
+
+<form action="/graphs" method="POST">
+    <div class="category-center">
+        <label><strong>Select What You Want to Compare</strong></label>
+        <select name="category" id="category">
+            <option value="POS_MAX_DIST_ED"selected>Maximum Distance to ER</option>
+            <option value="POS_MEAN_DIST_ED">Mean Distance to ER</option>
+            <option value="POS_MEDIAN_DIST_ED">Median Distance to ER</option>
+            <option value="POS_MAX_DIST_TRAUMA">Maximum Distance to Trauma Center</option>
+            <option value="POS_MEAN_DIST_TRAUMA">Mean Distance to Trauma Center</option>
+            <option value="POS_MEDIAN_DIST_TRAUMA">Median Distance to Trauma Center</option>
+            <option value="POS_MAX_DIST_MEDSURG_ICU">Maximum Distance to ICU</option>
+            <option value="POS_MEAN_DIST_MEDSURG_ICU">Mean Distance to ICU</option>
+            <option value="POS_MEDIAN_DIST_MEDSURG_ICU">Median Distance to ICU</option>
+        </select>
+    </div>
+    <br><br>
+
+    <div class="two-column">
+        <div>
+            <label><strong>1st Region to Compare</strong></label>
+            <select name="region1">
+                <option value="South">South</option>
+                <option value="Midwest">Midwest</option>
+                <option value="Northeast">Northeast</option>
+                <option value="West">West</option>
+                <option value="All" selected>All</option>
+            </select>
+            <br><br>
+
+            <label><strong>1st RUCC to Compare</strong></label>
+            <select name="rucc1">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+            </select>
+        </div>
+
+        <div>
+            <label><strong>2nd Region to Compare</strong></label>
+            <select name="region2">
+                <option value="South">South</option>
+                <option value="Midwest">Midwest</option>
+                <option value="Northeast">Northeast</option>
+                <option value="West">West</option>
+                <option value="All" selected>All</option>
+            </select>
+            <br><br>
+
+            <label><strong>2nd RUCC to Compare</strong></label>
+            <select name="rucc2">
+                <option value="1">1</option>
+                <option value="2"selected>2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7"\>7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+            </select>
+        </div>
+
+    </div>
+    <br>
+
+    
+    <input type="submit" value="Analyze">
+</form>
+
+</body>
+</html>
+
+
+<div style="text-align: center; margin-top: 20px;">
+    <a href="/home">
+        <button>Back to Home</button>
+    </a>
+</div>
+
+
+<p class=note> South: Alabama, Arkansas, Delaware, District of Columbia, Florida, Georgia, Kentucky,
+ Louisiana, Maryland, Mississippi, North Carolina, Oklahoma, 
+ South Carolina,  Tennessee, Texas, Virginia, West Virginia</p>
+
+
+<p class=note>West: Alaska, Arizona, California, Colorado, Hawaii, Idaho, Montana, 
+ Nevada, New Mexico, Oregon, Utah, Washington, Wyoming</p>
+ 
+<p class=note>Northeast: Connecticut, Maine, Massachusetts, New Hampshire, New Jersey, 
+  New York, Pennsylvania, Rhode Island, Vermont</p>
+
+
+<p class=note>Midwest: Illinois, Indiana, Iowa, Kansas, Michigan, Minnesota, Missouri,
+ Nebraska, North Dakota, Ohio, South Dakota, Wisconsin </p>
+
+
+</body>
+</html>
+```
+compare_graphs_gheen.html
+```python
+<html>
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+
+<h1>Comparing {{category_readable}}</h1>
+
+<h2> RUCC {{rucc1}} in {{region1}} and RUCC {{rucc2}} in {{region2}}</h2>
+
+<div id="comparison_plot" style="width: 80%; height: 500px;"></div>
+
+<script>
+    var data = {{ plot_data | tojson }};
+    var layout = {{ plot_layout | tojson }};
+
+    Plotly.newPlot('comparison_plot', data, layout);
+</script>
+</p>
+
+<h2>Two-Way ANOVA Results</h2>
+
+<p>
+    <strong>Main Effect of Year:</strong>
+    <span style="color: {{ 'green' if p_year < 0.05 else 'red' }}">
+        p = {{ "%.10f"|format(p_year) }}
+        {% if p_year < 0.05 %}
+            (Significant)
+        {% else %}
+            (Not Significant)
+        {% endif %}
+    </span>
+</p>
+
+<p>
+    <strong>Main Effect of RUCC:</strong>
+    <span style="color: {{ 'green' if p_rucc < 0.05 else 'red' }}">
+        p = {{ "%.10f"|format(p_rucc) }}
+        {% if p_rucc < 0.05 %}
+            (Significant)
+        {% else %}
+            (Not Significant)
+        {% endif %}
+    </span>
+</p>
+
+<p>
+    <strong>Interaction (Year × RUCC):</strong>
+    <span style="color: {{ 'green' if p_interaction < 0.05 else 'red' }}">
+        p = {{ "%.10f"|format(p_interaction) }}
+        {% if p_interaction < 0.05 %}
+            (Significant Difference in Change Over Time Between RUCCs)
+        {% else %}
+            (No Significant Difference in Change Over Time Between RUCCs)
+        {% endif %}
+    </span>
+</p>
+
+<h2>Linear Regression Results</h2>
+
+<p>
+<strong>β1 (Difference in Years):</strong>
+<span style="color: {{ 'green' if p_3 < 0.05 else 'red' }}">
+    {{ "%.10f"|format(beta_1) }} (p = {{ "%.10f"|format(p_3) }})
+</span>
+</p>
+
+
+<p>
+<strong>β₃ (Difference Across Years for Rural vs Metro):</strong>
+<span style="color: {{ 'green' if p_3 < 0.05 else 'red' }}">
+    {{ "%.10f"|format(beta_3) }} (p = {{ "%.10f"|format(p_3) }})
+</span>
+</p>
+
+<br>
+<a href="/compare" class="back-button">Go Back</a>
+<br>
+
+<br>
+<a href="/home">
+    <button>Back to Home</button>
+</a>
+<br>
+
+</body>
+</html>
+```
+index_gheen.html
+```python
+<html>
+<head>
+    <link rel="stylesheet" href="{{url_for('static', filename='style.css')}}">
+</head>
+<body>
+
+<h1>RUCC Coding by State</h1>
+<p><strong>Select a State to Learn the Rural-Metro Coding of the Counties:</strong></p>
+
+<form action="/analyze" method="POST">
+    <select name="usertext">
+        <option value="Alabama">Alabama</option>
+        <option value="Alaska">Alaska</option>
+        <option value="Arizona">Arizona</option>
+        <option value="Arkansas">Arkansas</option>
+        <option value="California">California</option>
+        <option value="Colorado">Colorado</option>
+        <option value="Connecticut">Connecticut</option>
+        <option value="Delaware">Delaware</option>
+        <option value="District of Columbia">District of Columbia</option>
+        <option value="Florida">Florida</option>
+        <option value="Georgia">Georgia</option>
+        <option value="Hawaii">Hawaii</option>
+        <option value="Idaho">Idaho</option>
+        <option value="Illinois">Illinois</option>
+        <option value="Indiana">Indiana</option>
+        <option value="Iowa">Iowa</option>
+        <option value="Kansas">Kansas</option>
+        <option value="Kentucky">Kentucky</option>
+        <option value="Louisiana">Louisiana</option>
+        <option value="Maine">Maine</option>
+        <option value="Maryland">Maryland</option>
+        <option value="Massachusetts">Massachusetts</option>
+        <option value="Michigan">Michigan</option>
+        <option value="Minnesota">Minnesota</option>
+        <option value="Mississippi">Mississippi</option>
+        <option value="Missouri">Missouri</option>
+        <option value="Montana">Montana</option>
+        <option value="Nebraska">Nebraska</option>
+        <option value="Nevada">Nevada</option>
+        <option value="New Hampshire">New Hampshire</option>
+        <option value="New Jersey">New Jersey</option>
+        <option value="New mMxico">New Mexico</option>
+        <option value="New York">New York</option>
+        <option value="North Carolina">North Carolina</option>
+        <option value="North Dakota">North Dakota</option>
+        <option value="Ohio">Ohio</option>
+        <option value="Oklahoma">Oklahoma</option>
+        <option value="Oregon">Oregon</option>
+        <option value="Pennsylvania">Pennsylvania</option>
+        <option value="Rhode Island">Rhode Island</option>
+        <option value="South Carolina">South Carolina</option>
+        <option value="South Dakota">South Dakota</option>
+        <option value="Tennessee">Tennessee</option>
+        <option value="Texas">Texas</option>
+        <option value="Utah">Utah</option>
+        <option value="Vermont">Vermont</option>
+        <option value="Virginia">Virginia</option>
+        <option value="Washington">Washington</option>
+        <option value="West Virginia">West Virginia</option>
+        <option value="Wisconsin">Wisconsin</option>
+        <option value="Wyoming">Wyoming</option>
+    </select>
+    <br><br>
+    <input type="submit" value="Analyze">
+</form>
+
+<div style="text-align: center; margin-top: 20px;">
+    <a href="/home">
+        <button>Back to Home</button>
+    </a>
+</div>
+
+</body>
+</html>
+```
+analyze_gheen.html
+```python
+<html>
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<h1>Rural-Metro Codings</h1>
+
+<h2>Rural-Metro Coding for {{usertext}}<h2></h2>
+
+<ul class="result-box">
+    {% for rucc, count in counts.county_category_counts.items() %}
+        <li><strong>RUCC {{ rucc }}</strong>: {{ count }} counties</li>
+    {% endfor %}
+</ul>
+
+{% if show_image %}
+<pre class="result-box">{{ analysis }}</pre>
+
+<img src="{{url_for ('images', filename=state_image)}}"
+alt="Map for {{usertext}}"
+class="analyze-image">
+
+
+<img src="{{url_for ('images', filename=legend)}}"
+alt="Legend of RUCC Codes"
+class="legend">
+{% endif %}
+
+<br>
+<a href="/index" class="back-button">Go Back</a>
+<br>
+
+<br>
+<a href="/home">
+    <button>Back to Home</button>
+</a>
+<br>
+
+</body>
+</html>
+```
+data_cleaning.ipynb
+```python
+# %%
+import pandas as pd
+import numpy as np
+import pickle
+import plotly.express as px
+
+# %%
+# import wanted 2020 data and columns
+data_2020 = pd.read_excel("raw_data.xlsx", 
+                          sheet_name= '2020',
+                          usecols= ['STATE', 'YEAR', 'REGION', 'COUNTY', 'ACS_TOT_POP_WT','AHRF_USDA_RUCC_2013', 'ACS_TOT_POP_US_ABOVE1','POS_MEDIAN_DIST_ED', 'POS_MEAN_DIST_ED','POS_MAX_DIST_ED', 'POS_MEDIAN_DIST_MEDSURG_ICU', 'POS_MEAN_DIST_MEDSURG_ICU', 'POS_MAX_DIST_MEDSURG_ICU', 'POS_MEDIAN_DIST_TRAUMA', 'POS_MEAN_DIST_TRAUMA', 'POS_MAX_DIST_TRAUMA', 'POS_ASC_RATE', 'POS_TOT_HOSP_MEDSURG_ICU', 'POS_HOSP_MEDSURG_ICU_RATE', 'POS_TOT_HOSP_ED','POS_HOSP_ED_RATE'])
+data_2020.head()
+
+# %%
+# drop columns that are not the 50 states
+print(data_2020["STATE"].unique())
+
+allowed_states = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado',
+ 'Connecticut', 'Delaware', 'District of Columbia', 'Florida', 'Georgia',
+ 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky',
+ 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota',
+ 'Mississippi', 'Missouri','Montana', 'Nebraska', 'Nevada', 'New Hampshire',
+ 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota',
+ 'Ohio', 'Oklahoma','Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina',
+ 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia',
+ 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming']  
+
+data_2020 = data_2020[data_2020["STATE"].isin(allowed_states)]
+print(data_2020["STATE"].unique())
+
+print(len(data_2020["STATE"].unique()))
+
+
+
+
+# %%
+# Count how many missing values exist before filling
+missing_count = data_2020.isna().sum().sum()
+
+# get location of each missing value
+missing_locations = data_2020.isna()
+rows, cols = np.where(missing_locations)
+for r, c in zip(rows, cols):
+    print(f"Missing value at row {r}, column '{data_2020.columns[c]}'")
+
+# Fill all missing values with "NA"
+data1 = data_2020.fillna("NA")
+
+print(f"Filled {missing_count} missing values with 'NA'.")
+
+# %%
+# find what had missing data 
+print(data_2020.iloc[0]["STATE"])
+print(data_2020.iloc[0]["COUNTY"])
+print(data_2020.iloc[1]["STATE"])
+print(data_2020.iloc[1]["COUNTY"])
+print(data_2020.iloc[2724]["STATE"])
+print(data_2020.iloc[2724]["COUNTY"])
+print(data_2020.iloc[2735]["STATE"])
+print(data_2020.iloc[2735]["COUNTY"])
+
+# %%
+# repeat for 2019 data 
+data_2019 = pd.read_excel("raw_data.xlsx", 
+                          sheet_name= '2019',
+                          usecols= ['STATE', 'YEAR', 'REGION', 'COUNTY', 'ACS_TOT_POP_WT','AHRF_USDA_RUCC_2013', 'ACS_TOT_POP_US_ABOVE1','POS_MEDIAN_DIST_ED', 'POS_MEAN_DIST_ED','POS_MAX_DIST_ED', 'POS_MEDIAN_DIST_MEDSURG_ICU', 'POS_MEAN_DIST_MEDSURG_ICU', 'POS_MAX_DIST_MEDSURG_ICU', 'POS_MEDIAN_DIST_TRAUMA', 'POS_MEAN_DIST_TRAUMA', 'POS_MAX_DIST_TRAUMA', 'POS_ASC_RATE', 'POS_TOT_HOSP_MEDSURG_ICU', 'POS_HOSP_MEDSURG_ICU_RATE', 'POS_TOT_HOSP_ED','POS_HOSP_ED_RATE'])
+data_2019.head()
+
+
+# %%
+# drop columns that are not the 50 states
+data_2019 = data_2019[data_2019["STATE"].isin(allowed_states)]
+print(data_2019["STATE"].unique())
+
+print(len(data_2019["STATE"].unique()))
+
+# Count how many missing values exist before filling
+missing_count = data_2019.isna().sum().sum()
+
+# get location of each missing value
+missing_locations = data_2019.isna()
+rows, cols = np.where(missing_locations)
+for r, c in zip(rows, cols):
+    print(f"Missing value at row {r}, column '{data_2019.columns[c]}'")
+
+# Fill all missing values with "NA"
+data1 = data_2019.fillna("NA")
+
+print(f"Filled {missing_count} missing values with 'NA'.")
+
+print(data_2019.iloc[68]["STATE"])
+print(data_2019.iloc[68]["COUNTY"])
+
+
+
+# %%
+# repeat for 2018 data 
+data_2018 = pd.read_excel("raw_data.xlsx", 
+                          sheet_name= '2018',
+                          usecols= ['STATE', 'YEAR', 'REGION', 'COUNTY', 'ACS_TOT_POP_WT','AHRF_USDA_RUCC_2013', 'ACS_TOT_POP_US_ABOVE1','POS_MEDIAN_DIST_ED', 'POS_MEAN_DIST_ED','POS_MAX_DIST_ED', 'POS_MEDIAN_DIST_MEDSURG_ICU', 'POS_MEAN_DIST_MEDSURG_ICU', 'POS_MAX_DIST_MEDSURG_ICU', 'POS_MEDIAN_DIST_TRAUMA', 'POS_MEAN_DIST_TRAUMA', 'POS_MAX_DIST_TRAUMA', 'POS_ASC_RATE', 'POS_TOT_HOSP_MEDSURG_ICU', 'POS_HOSP_MEDSURG_ICU_RATE', 'POS_TOT_HOSP_ED','POS_HOSP_ED_RATE'])
+data_2018.head()
+
+
+# %%
+# drop columns that are not the 50 states
+data_2018 = data_2018[data_2018["STATE"].isin(allowed_states)]
+print(data_2018["STATE"].unique())
+
+print(len(data_2018["STATE"].unique()))
+
+# Count how many missing values exist before filling
+missing_count = data_2018.isna().sum().sum()
+
+# get location of each missing value
+missing_locations = data_2018.isna()
+rows, cols = np.where(missing_locations)
+for r, c in zip(rows, cols):
+    print(f"Missing value at row {r}, column '{data_2018.columns[c]}'")
+
+# Fill all missing values with "NA"
+data1 = data_2018.fillna("NA")
+
+print(f"Filled {missing_count} missing values with 'NA'.")
+
+print(data_2018.iloc[68]["STATE"])
+print(data_2018.iloc[68]["COUNTY"])
+print(data_2018.iloc[1816]["STATE"])
+print(data_2018.iloc[1816]["COUNTY"])
+
+
+
+# %%
+# repeat for 2017 data 
+
+data_2017 = pd.read_excel("raw_data.xlsx", 
+                          sheet_name= '2017',
+                          usecols= ['STATE', 'YEAR', 'REGION', 'COUNTY', 'ACS_TOT_POP_WT','AHRF_USDA_RUCC_2013', 'ACS_TOT_POP_US_ABOVE1','POS_MEDIAN_DIST_ED', 'POS_MEAN_DIST_ED','POS_MAX_DIST_ED', 'POS_MEDIAN_DIST_MEDSURG_ICU', 'POS_MEAN_DIST_MEDSURG_ICU', 'POS_MAX_DIST_MEDSURG_ICU', 'POS_MEDIAN_DIST_TRAUMA', 'POS_MEAN_DIST_TRAUMA', 'POS_MAX_DIST_TRAUMA', 'POS_ASC_RATE', 'POS_TOT_HOSP_MEDSURG_ICU', 'POS_HOSP_MEDSURG_ICU_RATE', 'POS_TOT_HOSP_ED','POS_HOSP_ED_RATE'])
+data_2017.head()
+
+
+# %%
+# drop columns that are not the 50 states
+data_2017 = data_2017[data_2017["STATE"].isin(allowed_states)]
+print(data_2017["STATE"].unique())
+
+print(len(data_2017["STATE"].unique()))
+
+# Count how many missing values exist before filling
+missing_count = data_2017.isna().sum().sum()
+
+# get location of each missing value
+missing_locations = data_2017.isna()
+rows, cols = np.where(missing_locations)
+for r, c in zip(rows, cols):
+    print(f"Missing value at row {r}, column '{data_2017.columns[c]}'")
+
+# Fill all missing values with "NA"
+data1 = data_2017.fillna("NA")
+
+print(f"Filled {missing_count} missing values with 'NA'.")
+
+print(data_2017.iloc[68]["STATE"])
+print(data_2017.iloc[68]["COUNTY"])
+print(data_2017.iloc[85]["STATE"])
+print(data_2017.iloc[85]["COUNTY"])
+
+
+
+
+# %%
+# repeat for 2016 data 
+
+data_2016 = pd.read_excel("raw_data.xlsx", 
+                          sheet_name= '2016',
+                          usecols= ['STATE', 'YEAR', 'REGION', 'COUNTY', 'ACS_TOT_POP_WT','AHRF_USDA_RUCC_2013', 'ACS_TOT_POP_US_ABOVE1','POS_MEDIAN_DIST_ED', 'POS_MEAN_DIST_ED','POS_MAX_DIST_ED', 'POS_MEDIAN_DIST_MEDSURG_ICU', 'POS_MEAN_DIST_MEDSURG_ICU', 'POS_MAX_DIST_MEDSURG_ICU', 'POS_MEDIAN_DIST_TRAUMA', 'POS_MEAN_DIST_TRAUMA', 'POS_MAX_DIST_TRAUMA', 'POS_ASC_RATE', 'POS_TOT_HOSP_MEDSURG_ICU', 'POS_HOSP_MEDSURG_ICU_RATE', 'POS_TOT_HOSP_ED','POS_HOSP_ED_RATE'])
+data_2016.head()
+
+
+# %%
+# drop columns that are not the 50 states
+data_2016 = data_2016[data_2016["STATE"].isin(allowed_states)]
+print(data_2016["STATE"].unique())
+
+print(len(data_2016["STATE"].unique()))
+
+# Count how many missing values exist before filling
+missing_count = data_2016.isna().sum().sum()
+
+# get location of each missing value
+missing_locations = data_2016.isna()
+rows, cols = np.where(missing_locations)
+for r, c in zip(rows, cols):
+    print(f"Missing value at row {r}, column '{data_2016.columns[c]}'")
+
+# Fill all missing values with "NA"
+data1 = data_2016.fillna("NA")
+
+print(f"Filled {missing_count} missing values with 'NA'.")
+
+print((data_2016.iloc[68]["STATE"]), (data_2016.iloc[68]["COUNTY"]))
+print((data_2016.iloc[85]["STATE"]), (data_2016.iloc[85]["COUNTY"]))
+
+
+
+
+# %%
+# repeat for 2015 data 
+
+data_2015 = pd.read_excel("raw_data.xlsx", 
+                          sheet_name= '2015',
+                          usecols= ['STATE', 'YEAR', 'REGION', 'COUNTY', 'ACS_TOT_POP_WT','AHRF_USDA_RUCC_2013', 'ACS_TOT_POP_US_ABOVE1','POS_MEDIAN_DIST_ED', 'POS_MEAN_DIST_ED','POS_MAX_DIST_ED', 'POS_MEDIAN_DIST_MEDSURG_ICU', 'POS_MEAN_DIST_MEDSURG_ICU', 'POS_MAX_DIST_MEDSURG_ICU', 'POS_MEDIAN_DIST_TRAUMA', 'POS_MEAN_DIST_TRAUMA', 'POS_MAX_DIST_TRAUMA', 'POS_ASC_RATE', 'POS_TOT_HOSP_MEDSURG_ICU', 'POS_HOSP_MEDSURG_ICU_RATE', 'POS_TOT_HOSP_ED','POS_HOSP_ED_RATE'])
+data_2015.head()
+
+
+# %%
+# drop columns that are not the 50 states
+data_2015 = data_2015[data_2015["STATE"].isin(allowed_states)]
+print(data_2015["STATE"].unique())
+
+print(len(data_2015["STATE"].unique()))
+
+# Count how many missing values exist before filling
+missing_count = data_2015.isna().sum().sum()
+
+# get location of each missing value
+missing_locations = data_2015.isna()
+rows, cols = np.where(missing_locations)
+for r, c in zip(rows, cols):
+    print(f"Missing value at row {r}, column '{data_2015.columns[c]}'")
+
+# Fill all missing values with "NA"
+data1 = data_2015.fillna("NA")
+
+print(f"Filled {missing_count} missing values with 'NA'.")
+
+print((data_2015.iloc[67]["STATE"]), (data_2015.iloc[67]["COUNTY"]))
+print((data_2015.iloc[68]["STATE"]), (data_2016.iloc[68]["COUNTY"]))
+print((data_2015.iloc[84]["STATE"]), (data_2016.iloc[84]["COUNTY"]))
+print((data_2015.iloc[85]["STATE"]), (data_2016.iloc[85]["COUNTY"]))
+print((data_2015.iloc[86]["STATE"]), (data_2016.iloc[86]["COUNTY"]))
+
+
+
+
+
+# %%
+# repeat for 2014 data 
+
+data_2014 = pd.read_excel("raw_data.xlsx", 
+                          sheet_name= '2014',
+                          usecols= ['STATE', 'YEAR', 'REGION', 'COUNTY', 'ACS_TOT_POP_WT','AHRF_USDA_RUCC_2013', 'ACS_TOT_POP_US_ABOVE1','POS_MEDIAN_DIST_ED', 'POS_MEAN_DIST_ED','POS_MAX_DIST_ED', 'POS_MEDIAN_DIST_MEDSURG_ICU', 'POS_MEAN_DIST_MEDSURG_ICU', 'POS_MAX_DIST_MEDSURG_ICU', 'POS_MEDIAN_DIST_TRAUMA', 'POS_MEAN_DIST_TRAUMA', 'POS_MAX_DIST_TRAUMA', 'POS_ASC_RATE', 'POS_TOT_HOSP_MEDSURG_ICU', 'POS_HOSP_MEDSURG_ICU_RATE', 'POS_TOT_HOSP_ED','POS_HOSP_ED_RATE'])
+data_2014.head()
+
+
+# %%
+# drop columns that are not the 50 states
+data_2014 = data_2014[data_2014["STATE"].isin(allowed_states)]
+print(data_2014["STATE"].unique())
+
+print(len(data_2014["STATE"].unique()))
+
+# Count how many missing values exist before filling
+missing_count = data_2014.isna().sum().sum()
+
+# get location of each missing value
+missing_locations = data_2014.isna()
+rows, cols = np.where(missing_locations)
+for r, c in zip(rows, cols):
+    print(f"Missing value at row {r}, column '{data_2014.columns[c]}'")
+
+# Fill all missing values with "NA"
+data1 = data_2014.fillna("NA")
+
+print(f"Filled {missing_count} missing values with 'NA'.")
+
+print((data_2014.iloc[67]["STATE"]), (data_2014.iloc[67]["COUNTY"]))
+print((data_2014.iloc[68]["STATE"]), (data_2014.iloc[68]["COUNTY"]))
+
+
+
+
+# %%
+# repeat for 2013 data 
+
+data_2013 = pd.read_excel("raw_data.xlsx", 
+                          sheet_name= '2013',
+                          usecols= ['STATE', 'YEAR', 'REGION', 'COUNTY', 'ACS_TOT_POP_WT','AHRF_USDA_RUCC_2013', 'ACS_TOT_POP_US_ABOVE1','POS_MEDIAN_DIST_ED', 'POS_MEAN_DIST_ED','POS_MAX_DIST_ED', 'POS_MEDIAN_DIST_MEDSURG_ICU', 'POS_MEAN_DIST_MEDSURG_ICU', 'POS_MAX_DIST_MEDSURG_ICU', 'POS_MEDIAN_DIST_TRAUMA', 'POS_MEAN_DIST_TRAUMA', 'POS_MAX_DIST_TRAUMA', 'POS_ASC_RATE', 'POS_TOT_HOSP_MEDSURG_ICU', 'POS_HOSP_MEDSURG_ICU_RATE', 'POS_TOT_HOSP_ED','POS_HOSP_ED_RATE'])
+data_2013.head()
+
+
+# %%
+# drop columns that are not the 50 states
+data_2013 = data_2013[data_2013["STATE"].isin(allowed_states)]
+print(data_2013["STATE"].unique())
+
+print(len(data_2013["STATE"].unique()))
+
+# Count how many missing values exist before filling
+missing_count = data_2013.isna().sum().sum()
+
+# get location of each missing value
+missing_locations = data_2013.isna()
+rows, cols = np.where(missing_locations)
+for r, c in zip(rows, cols):
+    print(f"Missing value at row {r}, column '{data_2013.columns[c]}'")
+
+# Fill all missing values with "NA"
+data1 = data_2013.fillna("NA")
+
+print(f"Filled {missing_count} missing values with 'NA'.")
+
+print((data_2013.iloc[2722]["STATE"]), (data_2013.iloc[67]["COUNTY"]))
+print((data_2013.iloc[2723]["STATE"]), (data_2013.iloc[68]["COUNTY"]))
+
+
+
+
+# %%
+# repeat for 2012 data 
+
+data_2012 = pd.read_excel("raw_data.xlsx", 
+                          sheet_name= '2012',
+                          usecols= ['STATE', 'YEAR', 'REGION', 'COUNTY', 'ACS_TOT_POP_WT','AHRF_USDA_RUCC_2013', 'ACS_TOT_POP_US_ABOVE1','POS_MEDIAN_DIST_ED', 'POS_MEAN_DIST_ED','POS_MAX_DIST_ED', 'POS_MEDIAN_DIST_MEDSURG_ICU', 'POS_MEAN_DIST_MEDSURG_ICU', 'POS_MAX_DIST_MEDSURG_ICU', 'POS_MEDIAN_DIST_TRAUMA', 'POS_MEAN_DIST_TRAUMA', 'POS_MAX_DIST_TRAUMA', 'POS_ASC_RATE', 'POS_TOT_HOSP_MEDSURG_ICU', 'POS_HOSP_MEDSURG_ICU_RATE', 'POS_TOT_HOSP_ED','POS_HOSP_ED_RATE'])
+data_2012.head()
+
+
+# %%
+# drop columns that are not the 50 states
+data_2012 = data_2012[data_2012["STATE"].isin(allowed_states)]
+print(data_2012["STATE"].unique())
+
+print(len(data_2012["STATE"].unique()))
+
+# Count how many missing values exist before filling
+missing_count = data_2012.isna().sum().sum()
+
+# get location of each missing value
+missing_locations = data_2012.isna()
+rows, cols = np.where(missing_locations)
+for r, c in zip(rows, cols):
+    print(f"Missing value at row {r}, column '{data_2012.columns[c]}'")
+
+# Fill all missing values with "NA"
+data1 = data_2012.fillna("NA")
+
+print(f"Filled {missing_count} missing values with 'NA'.")
+
+print((data_2012.iloc[67]["STATE"]), (data_2012.iloc[67]["COUNTY"]))
+print((data_2012.iloc[68]["STATE"]), (data_2012.iloc[68]["COUNTY"]))
+
+
+
+
+# %%
+# repeat for 2011 data 
+
+data_2011 = pd.read_excel("raw_data.xlsx", 
+                          sheet_name= '2011',
+                          usecols= ['STATE', 'YEAR', 'REGION', 'COUNTY', 'ACS_TOT_POP_WT','AHRF_USDA_RUCC_2013', 'ACS_TOT_POP_US_ABOVE1','POS_MEDIAN_DIST_ED', 'POS_MEAN_DIST_ED','POS_MAX_DIST_ED', 'POS_MEDIAN_DIST_MEDSURG_ICU', 'POS_MEAN_DIST_MEDSURG_ICU', 'POS_MAX_DIST_MEDSURG_ICU', 'POS_MEDIAN_DIST_TRAUMA', 'POS_MEAN_DIST_TRAUMA', 'POS_MAX_DIST_TRAUMA', 'POS_ASC_RATE', 'POS_TOT_HOSP_MEDSURG_ICU', 'POS_HOSP_MEDSURG_ICU_RATE', 'POS_TOT_HOSP_ED','POS_HOSP_ED_RATE'])
+data_2011.head()
+
+
+# %%
+# drop columns that are not the 50 states
+data_2011 = data_2011[data_2011["STATE"].isin(allowed_states)]
+print(data_2011["STATE"].unique())
+
+print(len(data_2011["STATE"].unique()))
+
+# Count how many missing values exist before filling
+missing_count = data_2011.isna().sum().sum()
+
+# get location of each missing value
+missing_locations = data_2011.isna()
+rows, cols = np.where(missing_locations)
+for r, c in zip(rows, cols):
+    print(f"Missing value at row {r}, column '{data_2011.columns[c]}'")
+
+# Fill all missing values with "NA"
+data1 = data_2011.fillna("NA")
+
+print(f"Filled {missing_count} missing values with 'NA'.")
+
+print((data_2011.iloc[67]["STATE"]), (data_2011.iloc[67]["COUNTY"]))
+print((data_2011.iloc[68]["STATE"]), (data_2011.iloc[68]["COUNTY"]))
+print((data_2011.iloc[69]["STATE"]), (data_2011.iloc[69]["COUNTY"]))
+print((data_2011.iloc[74]["STATE"]), (data_2011.iloc[74]["COUNTY"]))
+print((data_2011.iloc[78]["STATE"]), (data_2011.iloc[78]["COUNTY"]))
+print((data_2011.iloc[80]["STATE"]), (data_2011.iloc[80]["COUNTY"]))
+print((data_2011.iloc[81]["STATE"]), (data_2011.iloc[81]["COUNTY"]))
+print((data_2011.iloc[90]["STATE"]), (data_2011.iloc[90]["COUNTY"]))
+
+
+
+
+# %%
+# repeat for 2010 data 
+
+data_2010 = pd.read_excel("raw_data.xlsx", 
+                          sheet_name= '2010',
+                          usecols= ['STATE', 'YEAR', 'REGION', 'COUNTY', 'ACS_TOT_POP_WT','AHRF_USDA_RUCC_2013', 'ACS_TOT_POP_US_ABOVE1','POS_MEDIAN_DIST_ED', 'POS_MEAN_DIST_ED','POS_MAX_DIST_ED', 'POS_MEDIAN_DIST_MEDSURG_ICU', 'POS_MEAN_DIST_MEDSURG_ICU', 'POS_MAX_DIST_MEDSURG_ICU', 'POS_MEDIAN_DIST_TRAUMA', 'POS_MEAN_DIST_TRAUMA', 'POS_MAX_DIST_TRAUMA', 'POS_ASC_RATE', 'POS_TOT_HOSP_MEDSURG_ICU', 'POS_HOSP_MEDSURG_ICU_RATE', 'POS_TOT_HOSP_ED','POS_HOSP_ED_RATE'])
+data_2010.head()
+
+
+# %%
+# drop columns that are not the 50 states
+data_2010 = data_2010[data_2010["STATE"].isin(allowed_states)]
+print(data_2010["STATE"].unique())
+
+print(len(data_2010["STATE"].unique()))
+
+# Count how many missing values exist before filling
+missing_count = data_2010.isna().sum().sum()
+
+# get location of each missing value
+missing_locations = data_2010.isna()
+rows, cols = np.where(missing_locations)
+for r, c in zip(rows, cols):
+    print(f"Missing value at row {r}, column '{data_2010.columns[c]}'")
+
+# Fill all missing values with "NA"
+data1 = data_2010.fillna("NA")
+
+print(f"Filled {missing_count} missing values with 'NA'.")
+
+print((data_2010.iloc[67]["STATE"]), (data_2010.iloc[67]["COUNTY"]))
+print((data_2010.iloc[68]["STATE"]), (data_2010.iloc[68]["COUNTY"]))
+print((data_2010.iloc[69]["STATE"]), (data_2010.iloc[69]["COUNTY"]))
+print((data_2010.iloc[74]["STATE"]), (data_2010.iloc[74]["COUNTY"]))
+print((data_2010.iloc[78]["STATE"]), (data_2010.iloc[78]["COUNTY"]))
+print((data_2010.iloc[80]["STATE"]), (data_2010.iloc[80]["COUNTY"]))
+print((data_2010.iloc[81]["STATE"]), (data_2010.iloc[81]["COUNTY"]))
+print((data_2010.iloc[90]["STATE"]), (data_2010.iloc[90]["COUNTY"]))
+
+
+
+
+
+# %%
+# summary stats of total number, maxiumum, mean, medium distance to er, trauma, and icu; total number of ambulatory surgery centers
+
+# %%
+# mak eone big dataframe 
+
+df_cleaned = pd.concat([data_2020, data_2019, data_2018, data_2017, data_2016, data_2015, data_2014, data_2013], ignore_index=True)
+
+df_cleaned['YEAR'] = df_cleaned['YEAR'].astype('Int64')
+df_cleaned['AHRF_USDA_RUCC_2013'] = df_cleaned['AHRF_USDA_RUCC_2013'].astype('Int64')
+
+df_cleaned.head()
+
+
+# %%
+df_cleaned[df_cleaned['AHRF_USDA_RUCC_2013'].isna()]
+
+
+# %%
+df_cleaned['AHRF_USDA_RUCC_2013'].describe()
+
+# %%
+pd.set_option('display.max_columns', None)
+pd.set_option('display.width', 9999)
+
+
+# %%
+df_cleaned.describe()
+
+# %%
+df_cleaned[df_cleaned["YEAR"] == 2013].describe()
+
+# %%
+df_cleaned[df_cleaned["YEAR"] == 2020].describe()
+
+
+# %%
+df_cleaned.groupby('AHRF_USDA_RUCC_2013').describe()
+
+
+# %%
+df_cleaned[df_cleaned["YEAR"] == 2013] \
+    .groupby("AHRF_USDA_RUCC_2013") \
+    .describe()
+
+
+# %%
+df_cleaned[df_cleaned["YEAR"] == 2020] \
+    .groupby("AHRF_USDA_RUCC_2013") \
+    .describe()
+
+
+# %%
+df_cleaned[df_cleaned["YEAR"] == 2013] \
+    .groupby("AHRF_USDA_RUCC_2013")["ACS_TOT_POP_US_ABOVE1"] \
+    .sum()
+
+# %%
+df_cleaned[df_cleaned["YEAR"] == 2020] \
+    .groupby("AHRF_USDA_RUCC_2013")["ACS_TOT_POP_US_ABOVE1"] \
+    .sum()
+
+
+# %%
+for col in df_cleaned.columns:
+    print(f"--- {col} ---")
+    print(df_cleaned[col].describe())
+    print()
+
+# %%
+df_cleaned["REGION"].unique()
+
+# %%
+south_states = df_cleaned[df_cleaned['REGION'] == 'South']['STATE'].unique()
+print("South:", south_states)
+
+west_states = df_cleaned[df_cleaned['REGION'] == 'West']['STATE'].unique()
+print("West:", west_states)
+
+northeast_states = df_cleaned[df_cleaned['REGION'] == 'Northeast']['STATE'].unique()
+print("Northeast:", northeast_states)
+
+midwest_states = df_cleaned[df_cleaned['REGION'] == 'Midwest']['STATE'].unique()
+print("Midwest:", midwest_states)
+
+
+# %%
+df_cleaned.to_parquet("clean_data.parquet")
+
+
+# %%
+years = (2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020)
+for year in years:
+    df_year = df_cleaned[df_cleaned["YEAR"] == year]
+    fig = px.box(
+        df_year,
+        x="AHRF_USDA_RUCC_2013",
+        y="POS_MAX_DIST_MEDSURG_ICU",
+        points="all",
+        title=f"Maximum Distance to ICU by RUCC for All Counties ({year})",
+        labels={
+            "AHRF_USDA_RUCC_2013": "RUCC Code",
+            "POS_MAX_DIST_MEDSURG_ICU": "Maximum Distance to ICU (miles)"},
+        hover_data={
+            "COUNTY": True,
+            "STATE": True,
+            "POS_MAX_DIST_MEDSURG_ICU": True,
+            "AHRF_USDA_RUCC_2013": False,
+        }
+    )
+    fig.show()
+
+# %%
+years = (2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020)
+for year in years:
+    df_year = df_cleaned[df_cleaned["YEAR"] == year]
+    fig = px.box(
+        df_year,
+        x="AHRF_USDA_RUCC_2013",
+        y="POS_MEDIAN_DIST_MEDSURG_ICU",
+        points="all",
+        title=f"Median Distance to ICU by RUCC for All Counties ({year})",
+        labels={
+            "AHRF_USDA_RUCC_2013": "RUCC Code",
+            "POS_MEDIAN_DIST_MEDSURG_ICU": "Median Distance to ICU (miles)"},
+        hover_data={
+            "COUNTY": True,
+            "STATE": True,
+            "POS_MEDIAN_DIST_MEDSURG_ICU": True,
+            "AHRF_USDA_RUCC_2013": False,
+        }
+    )
+    fig.show()
+
+# %%
+years = (2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020)
+for year in years:
+    df_year = df_cleaned[df_cleaned["YEAR"] == year]
+    fig = px.box(
+        df_year,
+        x="AHRF_USDA_RUCC_2013",
+        y="POS_MEAN_DIST_MEDSURG_ICU",
+        points="all",
+        title=f"Mean Distance to ICU by RUCC for All Counties ({year})",
+        labels={
+            "AHRF_USDA_RUCC_2013": "RUCC Code",
+            "POS_MEAN_DIST_MEDSURG_ICU": "Mean Distance to ICU (miles)"},
+        hover_data={
+            "COUNTY": True,
+            "STATE": True,
+            "POS_MEAN_DIST_MEDSURG_ICU": True,
+            "AHRF_USDA_RUCC_2013": False,
+        }
+    )
+    fig.show()
+
+# %%
+years = (2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020)
+for year in years:
+    df_year = df_cleaned[df_cleaned["YEAR"] == year]
+    fig = px.box(
+        df_year,
+        x="AHRF_USDA_RUCC_2013",
+        y="POS_MEAN_DIST_ED",
+        points="all",
+        title=f"Mean Distance to ER by RUCC for All Counties ({year})",
+        labels={
+            "AHRF_USDA_RUCC_2013": "RUCC Code",
+            "POS_MEAN_DIST_ED": "Mean Distance to ER (miles)"},
+        hover_data={
+            "COUNTY": True,
+            "STATE": True,
+            "POS_MEAN_DIST_ED": True,
+            "AHRF_USDA_RUCC_2013": False,
+        }
+    )
+    fig.show()
+
+# %%
+years = (2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020)
+for year in years:
+    df_year = df_cleaned[df_cleaned["YEAR"] == year]
+    fig = px.box(
+        df_year,
+        x="AHRF_USDA_RUCC_2013",
+        y="POS_MEDIAN_DIST_ED",
+        points="all",
+        title=f"Median Distance to ER by RUCC for All Counties ({year})",
+        labels={
+            "AHRF_USDA_RUCC_2013": "RUCC Code",
+            "POS_MEDIAN_DIST_ED": "Median Distance to ER (miles)"},
+        hover_data={
+            "COUNTY": True,
+            "STATE": True,
+            "POS_MEDIAN_DIST_ED": True,
+            "AHRF_USDA_RUCC_2013": False,
+        }
+    )
+    fig.show()
+
+# %%
+years = (2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020)
+for year in years:
+    df_year = df_cleaned[df_cleaned["YEAR"] == year]
+    fig = px.box(
+        df_year,
+        x="AHRF_USDA_RUCC_2013",
+        y="POS_MAX_DIST_ED",
+        points="all",
+        title=f"Maximum Distance to ER by RUCC for All Counties ({year})",
+        labels={
+            "AHRF_USDA_RUCC_2013": "RUCC Code",
+            "POS_MAX_DIST_ED": "Maxium Distance to ER (miles)"},
+        hover_data={
+            "COUNTY": True,
+            "STATE": True,
+            "POS_MAX_DIST_ED": True,
+            "AHRF_USDA_RUCC_2013": False,
+        }
+    )
+    fig.show()
+
+# %%
+years = (2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020)
+for year in years:
+    df_year = df_cleaned[df_cleaned["YEAR"] == year]
+    fig = px.box(
+        df_year,
+        x="AHRF_USDA_RUCC_2013",
+        y="POS_MEAN_DIST_TRAUMA",
+        points="all",
+        title=f"Mean Distance to Trauma by RUCC for All Counties ({year})",
+        labels={
+            "AHRF_USDA_RUCC_2013": "RUCC Code",
+            "POS_MEAN_DIST_TRAUMA": "Mean Distance to Trauma (miles)"},
+        hover_data={
+            "COUNTY": True,
+            "STATE": True,
+            "POS_MEAN_DIST_TRAUMA": True,
+            "AHRF_USDA_RUCC_2013": False,
+        }
+    )
+    fig.show()
+
+# %%
+years = (2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020)
+for year in years:
+    df_year = df_cleaned[df_cleaned["YEAR"] == year]
+    fig = px.box(
+        df_year,
+        x="AHRF_USDA_RUCC_2013",
+        y="POS_MEDIAN_DIST_TRAUMA",
+        points="all",
+        title=f"Median Distance to Trauma by RUCC for All Counties ({year})",
+        labels={
+            "AHRF_USDA_RUCC_2013": "RUCC Code",
+            "POS_MEDIAN_DIST_TRAUMA": "Median Distance to Trauma (miles)"},
+        hover_data={
+            "COUNTY": True,
+            "STATE": True,
+            "POS_MEDIAN_DIST_TRAUMA": True,
+            "AHRF_USDA_RUCC_2013": False,
+        }
+    )
+    fig.show()
+
+# %%
+years = (2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020)
+for year in years:
+    df_year = df_cleaned[df_cleaned["YEAR"] == year]
+    fig = px.box(
+        df_year,
+        x="AHRF_USDA_RUCC_2013",
+        y="POS_MAXIMUM_DIST_TRAUMA",
+        points="all",
+        title=f"Maximum Distance to Trauma by RUCC for All Counties ({year})",
+        labels={
+            "AHRF_USDA_RUCC_2013": "RUCC Code",
+            "POS_MAXIMUM_DIST_TRAUMA": "Maximum Distance to Trauma (miles)"},
+        hover_data={
+            "COUNTY": True,
+            "STATE": True,
+            "POS_MAXIMUM_DIST_TRAUMA": True,
+            "AHRF_USDA_RUCC_2013": False,
+        }
+    )
+    fig.show()
+
+# %%
+# Filter for 2020 only
+df_2020 = df_cleaned[(df_cleaned["YEAR"] == 2013)& (df_cleaned["AHRF_USDA_RUCC_2013"] == 9)]
+
+# Create interactive boxplot
+fig = px.box(
+    df_2020,
+    x="AHRF_USDA_RUCC_2013",          # RUCC groups across the x-axis
+    y="POS_MEAN_DIST_ED",             # your mean distance column
+    points="all",                     # show all counties as points
+    title="Mean Distance to ER for All Counties of RUCC 9 (2013)",
+    labels={
+        "AHRF_USDA_RUCC_2013": "RUCC Code",
+        "POS_MEAN_DIST_ED": "Mean Distance to ER (miles)"},
+    hover_data={
+        "COUNTY": True,
+        "STATE": True,
+        "POS_MEAN_DIST_ED": True,
+        "AHRF_USDA_RUCC_2013": False,  # hides RUCC from tooltip if you want
+    }
+
+)
+
+fig.update_layout(
+    width=600,   # narrower than default (~1000px)
+    height=500
+)
+
+fig.show()
+
+# %%
+# Filter for 2020 only
+df_2020 = df_cleaned[(df_cleaned["YEAR"] == 2020)& (df_cleaned["AHRF_USDA_RUCC_2013"] == 9)]
+
+# Create interactive boxplot
+fig = px.box(
+    df_2020,
+    x="AHRF_USDA_RUCC_2013",          # RUCC groups across the x-axis
+    y="POS_MEAN_DIST_ED",             # your mean distance column
+    points="all",                     # show all counties as points
+    title="Mean Distance to ER for All Counties of RUCC 9 (2020)",
+    labels={
+        "AHRF_USDA_RUCC_2013": "RUCC Code",
+        "POS_MEAN_DIST_ED": "Mean Distance to ER (miles)"},
+    hover_data={
+        "COUNTY": True,
+        "STATE": True,
+        "POS_MEAN_DIST_ED": True,
+        "AHRF_USDA_RUCC_2013": False,  # hides RUCC from tooltip if you want
+    }
+
+)
+
+fig.update_layout(
+    width=600,   # narrower than default (~1000px)
+    height=500
+)
+
+fig.show()
+
+# %%
+df_hospital = (
+    df_cleaned
+    .groupby(["AHRF_USDA_RUCC_2013", "YEAR"])[["POS_TOT_HOSP_ED","POS_HOSP_ED_RATE"]]
+    .sum()
+    .reset_index())
+
+# %%
+df_hospital.head()
+
+# %%
+import plotly.express as px
+df_hospital["YEAR"] = df_hospital["YEAR"].astype(str)
+df_hospital["AHRF_USDA_RUCC_2013"] = df_hospital["AHRF_USDA_RUCC_2013"].astype(str)
+
+fig = px.bar(
+    df_hospital,
+    x="YEAR",
+    y="POS_TOT_HOSP_ED",
+    color="AHRF_USDA_RUCC_2013",
+    barmode="group",
+    title="Total Number of Hospitals by RUCC Classification (2013–2020)",
+    labels={
+        "AHRF_USDA_RUCC_2013": "RUCC Code",
+        "POS_TOT_HOSP_ED": "Total Hospitals",
+        "YEAR": "Year"
+    }
+)
+
+fig.show()
+
+# %%
+import plotly.express as px
+df_hospital["YEAR"] = df_hospital["YEAR"].astype(str)
+df_hospital["AHRF_USDA_RUCC_2013"] = df_hospital["AHRF_USDA_RUCC_2013"].astype(str)
+
+fig = px.bar(
+    df_hospital,
+    x="YEAR",
+    y="POS_HOSP_ED_RATE",
+    color="AHRF_USDA_RUCC_2013",
+    barmode="group",
+    title="Rate of Hospitals by RUCC Classification (2013–2020)",
+    labels={
+        "AHRF_USDA_RUCC_2013": "RUCC Code",
+        "POS_HOSP_ED_RATE": "Hospital Rate (100,000 population)",
+        "YEAR": "Year"
+    }
+)
+
+fig.show()
+
+# %%
+```
+style.css
+```python
+/*home*/
+
+.home-image {
+    display: block;
+    margin: 0 auto;
+    height: 500px;
+    width: 600px;
+    border-radius: 10px;
+}
+
+/*index*/
+
+body {
+    background-color: lightblue;
+    font-family: Verdana, sans-serif;
+    margin: 0;
+    padding: 20px;
+}
+
+h1 {
+    color: white;
+    text-align: center;
+    margin-bottom: 20px;
+    font-family: Verdana, sans-serif;
+    border-bottom: 2px solid whitesmoke;
+    padding-bottom: 10px;
+}
+
+p {
+    font-size: 16px;
+    color: #000000;
+    text-align: center;
+    font-family: serif;
+}
+p.note {
+    font-size: 12px;
+    color: #000000;
+    text-align: center;
+    font-family: serif
+}
+
+/* Subheader on graph comparison*/
+p.subheader {
+    font-size: 20px;
+    color: #000000;
+    text-align: center;
+    font-family: serif;
+    margin-bottom: 40px;
+}
+
+/* Text area where user types */
+textarea {
+    width: 100%;
+    height: 10em;
+    font-size: 1rem;
+    padding: 10px;
+    border: 1px solid #577;
+    border-radius: 5px;
+}
+
+/* Submit button */
+input[type="submit"] {
+    padding: 0.6em 1.2em;
+    background-color: navy;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-top: 10px;
+}
+
+input[type="submit"]:hover {
+    background-color: #000080;
+}
+
+form {
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+
+ul {
+    color: black;
+    text-align: center;
+    margin-bottom: 8px;
+    font-family: serif;
+    list-style-type: none;
+}
+
+h2 {
+    color: black;
+    text-align: center;
+    margin-bottom: 8px;
+    font-family: serif;
+    font-weight: bold;
+}
+
+.result-box {
+    border-radius: 5px;
+    margin: 0 auto 20px auto;
+    width: 90%;
+    font-family: Verdana;
+    overflow-x: auto;
+    font-size: 14px;
+    text-align: center;
+}
+
+/* Back button styling */
+.back-button {
+    display: inline-block;
+    text-decoration: none;
+    background-color: navy;
+    color: white;
+    padding: 0.5em 1em;
+    border-radius: 5px;
+    margin-top: 10px;
+    font-size: 1rem;
+    margin: 0
+}
+
+.back-button:hover {
+    background-color: #000080;
+}
+
+.analyze-image {
+    display: block;
+    margin: 0 auto;             
+    border-radius: 10px;
+    max-width: 500px;
+    max-height: 350px;
+    min-width: 100px;
+    min-height: 100px;
+    height: auto;
+}
+.legend {
+    display: block;
+    margin: 0 auto;
+    padding-top: 10px;
+}
+
+.legend-box {
+    width: 100%;
+    padding: 5px 10px;
+    box-sizing: border-box;
+    border-top: 1px solid #ccc;
+}
+
+.legend-box h3 {
+    font-size: 10px;  /* smaller heading */
+    margin: 0 0 5px 0;
+    text-align: center;
+}
+
+.legend-list {
+    display: flex;
+    flex-wrap: wrap;       /* wraps to next line if needed */
+    justify-content: center; /* center horizontally */
+    font-size: 10px;       /* smaller text */
+    list-style: none;      /* remove bullets */
+    padding: 0;
+    margin: 0;
+}
+
+.legend-list li {
+    margin: 0 10px;        /* space between items */
+    white-space: nowrap;   /* prevent line breaks inside items */
+}
+
+/*label fonts*/
+
+label {
+    font-family: sans-serif;
+    font-size: 12x;                
+    color: #000000;                  
+}
+
+/* make two categories on analyze page*/
+
+.category-center {
+    text-align: center;
+    margin-bottom: 5px;
+}
+
+.two-column {
+    display: flex;
+    justify-content: space-between; /* pushes one left, one right */
+    width: 100%;
+    max-width: 900px;               /* keeps spacing reasonable */
+    margin: 0 auto;                 /* centers entire two-column block */
+}
+
+.two-column div {
+    width: 40%;                     /* controls column width */
+}       
+```
 
 Sources: Server.py: [1] I adapted code by Robert McDougal demonstrating flask[2] Used ChatGPT to develop API call [3] Used https://www.w3schools.com/Css/css_editor.asp as a template for the CSS and used ChatGPT to edit to my needs [4] Used ChatGPT to understand how to call in a CSS sheet and have buttons go to other pages [5] Used ChatGPT to determine which statistical test would be best, how to implement in python and display on html. [6] Used ChatGPT to turn statistically significant results green and not statistically significant results red on displayed html pages [7] Used ChatGPT to turn data into paraquet form to be faster than calling in data as Excel or pickle form [8] Used ChatGPT to implement difference of difference statistical test and two way ANOVA in python [9] Used ChatGPT to call in human readable version of variables for better graph display [10] Used ChatGPT to call in a plotly graph 
 Data_cleaning.ipynb [1] Used ChatGPT to implement scrolling bars
