@@ -116,7 +116,11 @@ Due to the categorical nature of RUCC categories, I chose to run a two-way ANOVA
 
 The first aspect of the ANOVA looks at the main effect of year, so if there is a statistically significant difference in distance needed to travel to reach healthcare between years. It is worth nothing that doing an ANOVA causes the years to be treated as categorical rather than continuous. Ultimately, for many of the analyses, year was not significant, meaning there was not a difference of distance throughout the years. There were some analyses that returned significant specifically for the trauma variables in which the distance to trauma centers actually decreased, meaning the trauma centers were closer and easier to access. This was suprising to me as it is totally contrary to the hypothesis. I am curious if this is due to more trauma centers being built or expanded or if there is some background reason relating to the trauma center designation that is causing existing centers to be upgraded to trauma centers.
 
-The second aspect of the ANOVA looks at the main effect of the RUCC classification, so if there is a significant difference in distance needed to travel to reach healthcare between the RUCC classifications. For this analysis, there was found to be a significant difference between the RUCC counties distance majority of the time. There were 36 interactions that were not significant, mostly within the maximum measurements. One interesting aspect of this interaction being significant (that I was able to determine thanks to the interactability of Plotly graphs) is that a lot of the times they were deemed significant, the number would not actually be that different from each other. For example, the difference of 6 miles between classification 8 and 9 on the mean distance to a trauma center is considered significant. The method of measurment also did not have any meaningful influence on what was deemed significant or not.
+!['Trauma Centers Getting Closer](report_images/closer_trauma.png)
+
+The second aspect of the ANOVA looks at the main effect of the RUCC classification, so if there is a significant difference in distance needed to travel to reach healthcare between the RUCC classifications. For this analysis, there was found to be a significant difference between the RUCC counties distance majority of the time. There were 36 interactions that were not significant, mostly within the maximum measurements. One interesting aspect of this interaction being significant (that I was able to determine thanks to the interactability of Plotly graphs) is that a lot of the times they were deemed significant, the number would not actually be that different from each other. For example, the difference of 2 miles between classification 3 and 6 of the maximum distance to a trauma center is considered significant. The method of measurment also did not have any meaningful influence on what was deemed significant or not.
+
+![''Significant' RUCC Classifications'](report_images/insig_rucc.png)
 
 The last analysis was a two-way ANOVA of the interaction between year and RUCC codes and if that created a significant difference in the distance. Overall, all the results were not significiant and they were very rarely ever even approaching significance. This means that it is very unlikely that rural counties are seeing a recent increase in the distance needed to travel to reach an ER, ICU, or trauma center no matter the measurement method used compared to metro counties. Ultimately, this did not support our hypothesis.
 
@@ -1926,14 +1930,20 @@ label {
 
 Code Sources: 
 
-Server.py: [1] I adapted code by Robert McDougal demonstrating flask [2] Used ChatGPT to develop API call [3] Used ChatGPT to understand how to call in a CSS sheet and have buttons go to other pages [5] Used ChatGPT to determine which statistical test would be best, how to implement in python and display on html. [7] Used ChatGPT to turn data into paraquet form to be faster than calling in data as Excel or pickle form [9] Used ChatGPT to call in human readable version of variables for better graph display [10] Used ChatGPT to call in a plotly graph
+Server.py: [1] I adapted code by Robert McDougal demonstrating flask [2] Used ChatGPT to develop API call [3] Used ChatGPT to understand how to call in a CSS sheet and have buttons go to other pages [4] Used ChatGPT to turn data into paraquet form to be faster than calling in data as Excel or pickle form [9] Used ChatGPT to call in human readable version of variables for better graph display [5] Used ChatGPT to call in a plotly graph - done prior to the class lecture. [6] Used ChatGPT to troubleshoot having a wanted image show up based on what user selects in RUCC state breakdown [7] Used ChatGPT to format dictionary that brings in human readable values to the plotly graph [8] Use ChatGPT to understand what variable sto pass through have the ANOVA and linear correlation analyses under the graphs 
 
-Data_cleaning.ipynb [1] Used ChatGPT to implement scrolling bars
+Analysis: [1] Used ChatGPT to determine which statistical test would be best, how to implement in python and display on html. [2] Use StatisticsAI to understand linear regression [3] used python to implement a linear regression in which RUCC categories are dummy coded 
 
-Home.html: [1]Used ChatGPT to call in images to display on html pages [2] Used ChatGPT to call in style sheet
+Data_cleaning.ipynb [1] Used ChatGPT to implement scrolling bars and different ways to congregate variables for summary statistics [2] Used ChatGPT to implement box and whisker plots that would cycle through each years dataset and concact all classifications into one graph [3] Used ChatGPT to have bar graph of total hospitals and hospital rate per classifcation per year appear in two graphs
 
-Deeper_analysis.html: [1] Used ChatGPT to make subheaders and change size of font [2] used ChatGPT to select an option to stay on for dropdown menus [3] Used ChatGPT to display 2 columsn for drop down options
+Home.html: [1]Used ChatGPT to call in images to display on html pages [2] Used ChatGPT to call in style sheet [3] Used ChatGPT to understand tags with html that will connect to style heading to make font change size
 
-Compare_graphs.html: [1] Used ChatGPT to turn statistically significant results green and not statistically significant results red on displayed html pages 
+Deeper_analysis.html: [1] Used ChatGPT to make subheaders and change size of font [2] used ChatGPT to select an option to stay on for dropdown menus [3] Used ChatGPT to display 2 columns for drop down options
+
+Compare_graphs.html: [1] Used ChatGPT to turn statistically significant results green and not statistically significant results red on displayed html pages [2] Used ChatGPT to call in plotly_layout | to json [3] Used ChatGPT to add ANOVA and linear regression outputs
+
+Index.html: [1] Used ChatGPT to change usertext imput in Robert McDougal's original file to be a dropdown instead 
 
 Style.css: [1] Used https://www.w3schools.com/Css/css_editor.asp as a template for the CSS and used ChatGPT to edit to my needs
+
+GitHub link: https://github.com/gheenc/compmethods-cg2288
